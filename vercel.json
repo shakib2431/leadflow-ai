@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/draft-followups",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/process-followups",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

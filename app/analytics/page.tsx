@@ -16,6 +16,7 @@ import {
   Legend,
   LineChart,
   Line,
+  CartesianGrid,
 } from "recharts";
 import { supabase } from "@/lib/supabase";
 
@@ -29,6 +30,14 @@ export default function AnalyticsPage() {
   useState<any[]>([]);
   const [followupModal, setFollowupModal] =
   useState(false);
+  const hotRadarLeads = leads
+  .filter(
+    (lead) =>
+      lead.ai_score >= 80 &&
+      lead.status !== "won"
+  )
+  .slice(0, 5);
+  
 
 const [followupText, setFollowupText] =
   useState("");
@@ -112,66 +121,7 @@ const proposalConversionRate =
           100
       )
     : 0;
-    <div
-  className="grid gap-4 mt-4"
-  style={{
-    gridTemplateColumns:
-      "repeat(5,minmax(0,1fr))",
-  }}
->
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-blue-800">
-    <p className="text-zinc-400">
-      Generated
-    </p>
-
-    <h2 className="text-3xl font-bold text-blue-500">
-      {totalProposals}
-    </h2>
-  </div>
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-green-800">
-    <p className="text-zinc-400">
-      Won
-    </p>
-
-    <h2 className="text-3xl font-bold text-green-500">
-      {wonProposals}
-    </h2>
-  </div>
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-red-800">
-    <p className="text-zinc-400">
-      Lost
-    </p>
-
-    <h2 className="text-3xl font-bold text-red-500">
-      {lostProposals}
-    </h2>
-  </div>
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-yellow-800">
-    <p className="text-zinc-400">
-      Pending
-    </p>
-
-    <h2 className="text-3xl font-bold text-yellow-500">
-      {pendingProposals}
-    </h2>
-  </div>
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-purple-800">
-    <p className="text-zinc-400">
-      Conversion Rate
-    </p>
-
-    <h2 className="text-3xl font-bold text-purple-500">
-      {proposalConversionRate}%
-    </h2>
-  </div>
-
-</div>
-
+ 
 const totalProposalValue =
   proposalHistory.reduce(
     (sum, proposal) =>
@@ -199,7 +149,8 @@ const averageProposalValue =
     : 0;
 
 const wonLeads = leads.filter(
-  (lead) => lead.status === "won"
+  (lead) =>
+    lead.pipeline_stage === "won"
 ).length;
 
 const lostLeads = leads.filter(
@@ -210,7 +161,10 @@ const activeLeads =
 
 const conversionRate =
   totalLeads > 0
-    ? ((wonLeads / totalLeads) * 100).toFixed(1)
+    ? (
+        (wonLeads / totalLeads) *
+        100
+      ).toFixed(1)
     : "0";
     const overdueFollowups = followups.filter(
   (f) =>
@@ -223,6 +177,12 @@ const completedFollowups = followups.filter(
 ).length;
 const pendingFollowups = followups.filter(
   (f) => f.status === "pending"
+).length;
+
+const overdueCount = followups.filter(
+  (f) =>
+    f.status !== "completed" &&
+    new Date(f.due_date) < new Date()
 ).length;
 const completionRate =
   completedFollowups + pendingFollowups > 0
@@ -257,6 +217,38 @@ const topOpportunity = [...leads]
   const opportunityValue =
   topOpportunity?.estimated_value ||
   50000;
+  const funnelData = [
+  {
+    label: "Leads",
+    value: totalLeads,
+    color: "from-cyan-500 to-blue-500",
+  },
+  {
+    label: "Contacted",
+    value: leads.filter(
+      (l) => l.status === "contacted"
+    ).length,
+    color: "from-violet-500 to-purple-500",
+  },
+  {
+    label: "Qualified",
+    value: leads.filter(
+      (l) => l.status === "qualified"
+    ).length,
+    color: "from-yellow-500 to-orange-500",
+  },
+  {
+  label: "Proposal",
+  value: leads.filter(
+    (l) => l.proposal_generated === true
+  ).length,
+},
+  {
+    label: "Won",
+    value: wonLeads,
+    color: "from-green-500 to-emerald-500",
+  },
+];
 const recentActivity = [...leads]
   .sort(
     (a, b) =>
@@ -273,10 +265,38 @@ const recentLeads = [...leads]
       new Date(a.created_at).getTime()
   )
   .slice(0, 5);
-  const bestLeads = [...leads]
-  .filter(
-    (lead) => lead.ai_score !== null
-  )
+const bestLeads = [...leads]
+  .map((lead) => {
+
+    let calculatedScore =
+      lead.ai_score || 0;
+
+    if (!lead.ai_score) {
+
+      if (lead.status === "hot")
+        calculatedScore += 40;
+
+      if (lead.status === "warm")
+        calculatedScore += 20;
+
+      if (
+        lead.pipeline_stage ===
+        "contacted"
+      )
+        calculatedScore += 20;
+
+      if (
+        lead.pipeline_stage ===
+        "qualified"
+      )
+        calculatedScore += 30;
+    }
+
+    return {
+      ...lead,
+      ai_score: calculatedScore,
+    };
+  })
   .sort(
     (a, b) =>
       (b.ai_score || 0) -
@@ -288,15 +308,14 @@ const pipelineData = [
   "new",
   "contacted",
   "qualified",
-  "hot",
   "negotiation",
   "won",
   "lost",
 ]
-  .map((status) => ({
-    status,
+  .map((stage) => ({
+    status: stage,
     count: leads.filter(
-      (lead) => lead.status === status
+      (lead) => lead.pipeline_stage === stage
     ).length,
   }))
   .filter((item) => item.count > 0);
@@ -365,7 +384,7 @@ const warmLeads =
 const coldLeads =
   leads.filter(
     (lead) =>
-      lead.status === "unresponsive"
+      lead.status === "cold"
   ).length;
 
 const analyzedLeads =
@@ -384,13 +403,18 @@ const averageAiScore =
         ) / analyzedLeads.length
       )
     : 0;
-    const estimatedHotValue = 50000;
 
-const estimatedWarmValue = 25000;
-
-const forecastRevenue =
-  hotLeads * estimatedHotValue +
-  warmLeads * estimatedWarmValue;
+const forecastRevenue = leads
+  .filter(
+    (lead) =>
+      lead.pipeline_stage === "negotiation" ||
+      lead.pipeline_stage === "won"
+  )
+  .reduce(
+    (sum, lead) =>
+      sum + (lead.deal_value || 0),
+    0
+  );
     const temperatureChartData = [
   {
     name: "Hot",
@@ -557,39 +581,94 @@ const smartFollowups = leads
         ? "Follow Up Tomorrow"
         : "Nurture This Week",
   }));
-  console.log(proposalHistory);
-  
+
+  const [lastUpdated] = useState(
+  new Date().toLocaleString()
+);
+
   return (
   <>
-    <div className="p-6">
-    <h1 className="text-3xl font-bold text-white mb-4">
-      Analytics Dashboard
-    </h1>
+    <div
+  className="min-h-screen p-6 space-y-6"
+  style={{
+    background:
+      "radial-gradient(circle at top, rgba(139,92,246,0.15), transparent 35%), #050816",
+  }}
+>
+   <div className="mb-8">
+
+  <h1 className="
+  text-5xl
+  font-bold
+  text-white
+  tracking-tight
+  ">
+    Analytics Overview
+  </h1>
+
+  <p className="text-zinc-400 mt-2 text-lg">
+    Real-time insights into your CRM performance
+  </p>
+
+</div>
 
   <div
   className="grid gap-4"
   style={{
     gridTemplateColumns:
-      "repeat(7,minmax(0,1fr))",
+      "repeat(4,minmax(0,1fr))",
   }}
 >
 
-      <div className="bg-zinc-900 p-5 rounded-xl border border-zinc-800">
+      <div
+  className="
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-5
+  rounded-3xl
+  border
+  border-white/10
+
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  hover:-translate-y-1
+
+  transition-all
+  duration-300
+"
+>
         <p className="text-zinc-400">Total Leads</p>
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="text-5xl font-bold text-white">
           {totalLeads}
         </h2>
       </div>
 
-      <div className="bg-zinc-900 p-5 rounded-xl border border-zinc-800">
+      <div
+  className="
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-5
+  rounded-3xl
+  border
+  border-white/10
+
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  hover:-translate-y-1
+
+  transition-all
+  duration-300
+"
+>
        <p className="text-zinc-400">
   Qualified / Hot Leads
 </p>
-        <h2 className="text-3xl font-bold text-white">
+        <h2 className="text-5xl font-bold text-white">
           {hotLeads}
         </h2>
       </div>
-      <div className="bg-zinc-900 p-5 rounded-xl border border-purple-800">
+      <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-purple-800">
   <p className="text-zinc-400">
     Top Pipeline Stage
   </p>
@@ -603,50 +682,100 @@ const smartFollowups = leads
   </p>
 </div>
 
-      <div className="bg-zinc-900 p-5 rounded-xl border border-zinc-800">
+      <div
+  className="
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-5
+  rounded-3xl
+  border
+  border-white/10
+
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  hover:-translate-y-1
+
+  transition-all
+  duration-300
+"
+>
        <p className="text-zinc-400">
   Warm Leads
 </p>
 
-<h2 className="text-3xl font-bold text-yellow-500">
+<h2 className="text-5xl font-bold text-yellow-500">
   {warmLeads}
 </h2>
       </div>
 
-   <div className="bg-zinc-900 p-5 rounded-xl border border-zinc-800">
+   <div
+  className="
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-5
+  rounded-3xl
+  border
+  border-white/10
+
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  hover:-translate-y-1
+
+  transition-all
+  duration-300
+"
+>
   <p className="text-zinc-400">
     Average AI Score
   </p>
 
-  <h2 className="text-3xl font-bold text-blue-500">
+  <h2 className="text-5xl font-bold text-blue-500">
     {averageAiScore}
   </h2>
 </div>
-<div className="bg-zinc-900 p-5 rounded-xl border border-green-800">
+<div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-green-800">
   <p className="text-zinc-400">
     Revenue Forecast
   </p>
 
-  <h2 className="text-3xl font-bold text-green-500">
+  <h2 className="text-5xl font-bold text-green-500">
     ₹{forecastRevenue.toLocaleString()}
   </h2>
 </div>
-<div className="bg-zinc-900 p-5 rounded-xl border border-cyan-800">
+<div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-cyan-800">
   <p className="text-zinc-400">
     Predicted Closures
   </p>
 
-  <h2 className="text-3xl font-bold text-cyan-500">
+  <h2 className="text-5xl font-bold text-cyan-500">
     {predictedClosures}
   </h2>
 </div>
 
-      <div className="bg-zinc-900 p-5 rounded-xl border border-zinc-800">
+      <div
+  className="
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-5
+  rounded-3xl
+  border
+  border-white/10
+
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  hover:-translate-y-1
+
+  transition-all
+  duration-300
+"
+>
   <p className="text-zinc-400">
     Follow-up Completion
   </p>
 
-  <h2 className="text-3xl font-bold text-purple-500">
+  <h2 className="text-5xl font-bold text-purple-500">
     {completionRate}%
   </h2>
 </div>
@@ -664,157 +793,587 @@ const smartFollowups = leads
   }}
 >
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-red-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-red-800">
     <p className="text-zinc-400">
       Overdue Followups
     </p>
 
-    <h2 className="text-3xl font-bold text-red-500">
+    <h2 className="text-5xl font-bold text-red-500">
       {overdueFollowups}
     </h2>
   </div>
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-yellow-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-yellow-800">
     <p className="text-zinc-400">
       Pending Followups
     </p>
 
-    <h2 className="text-3xl font-bold text-yellow-500">
+    <h2 className="text-5xl font-bold text-yellow-500">
       {pendingFollowups}
     </h2>
   </div>
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-green-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-green-800">
     <p className="text-zinc-400">
       Completed Followups
     </p>
 
-    <h2 className="text-3xl font-bold text-green-500">
+    <h2 className="text-5xl font-bold text-green-500">
       {completedFollowups}
     </h2>
   </div>
-  <div className="bg-zinc-900 p-5 rounded-xl border border-cyan-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-cyan-800">
   <p className="text-zinc-400">
     Cold Leads
   </p>
 
-  <h2 className="text-3xl font-bold text-cyan-500">
+  <h2 className="text-5xl font-bold text-cyan-500">
     {coldLeads}
   </h2>
 </div>
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-purple-800">
+<div
+  className="
+  mt-8
+  rounded-[32px]
+  border
+  border-violet-500/20
+  bg-gradient-to-br
+  from-violet-500/5
+  via-black/20
+  bg-gradient-to-br
+from-violet-500/10
+via-indigo-500/5
+to-cyan-500/5
+  backdrop-blur-2xl
+  p-8
+  shadow-[0_0_80px_rgba(139,92,246,0.12)]
+"
+>
+<div
+  className="
+  mb-8
+  rounded-3xl
+  border
+  border-cyan-500/20
+  bg-gradient-to-br
+  from-cyan-500/5
+  via-violet-500/5
+  to-transparent
+  backdrop-blur-xl
+  p-8
+  hover:border-cyan-500/40
+  transition-all
+  "
+>
 
-  <h2 className="text-xl font-semibold text-white mb-4">
-    🧠 AI Insight
-  </h2>
+  <div className="flex items-center gap-3 mb-4">
+    <span className="text-2xl">🧠</span>
 
-  {topOpportunity && (
-    <>
-      <p className="text-white text-lg font-semibold">
-        {topOpportunity.full_name}
+    <h2 className="text-2xl font-bold text-white">
+      AI Executive Summary
+    </h2>
+  </div>
+
+  <div className="grid grid-cols-4 gap-4 mb-6">
+
+    <div>
+      <p className="text-zinc-500 text-sm">
+        Total Leads
       </p>
 
-      <div className="flex items-center gap-3 mt-2">
+      <p className="text-3xl font-bold text-white">
+        {totalLeads}
+      </p>
+    </div>
 
-  <p className="text-green-400">
-    AI Score: {topOpportunity.ai_score}
-  </p>
+    <div>
+      <p className="text-zinc-500 text-sm">
+        Pipeline Value
+      </p>
 
- <span className="bg-red-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
-  🔥 HIGH PRIORITY
-</span>
+      <p className="text-3xl font-bold text-green-400">
+        ₹{opportunityValue.toLocaleString()}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-zinc-500 text-sm">
+        Conversion Rate
+      </p>
+
+      <p className="text-3xl font-bold text-cyan-400">
+        {totalLeads
+          ? Math.round(
+              (wonLeads / totalLeads) * 100
+            )
+          : 0}
+        %
+      </p>
+    </div>
+
+    <div>
+      <p className="text-zinc-500 text-sm">
+        Best Lead
+      </p>
+
+      <p className="text-3xl font-bold text-violet-400">
+        {topOpportunity?.full_name}
+      </p>
+    </div>
+
+  </div>
+
+  <div
+    className="
+    rounded-2xl
+    bg-white/[0.03]
+    border
+    border-white/10
+    p-4
+    "
+  >
+
+    <p className="text-cyan-300 font-medium">
+      🤖 AI Insight
+    </p>
+
+    <p className="text-zinc-300 mt-2">
+      {topOpportunity?.full_name} is the highest
+      probability opportunity in your pipeline.
+      Follow up immediately to maximize revenue.
+      No overdue opportunities detected.
+    </p>
+
+  </div>
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+  <h2 className="text-xl font-semibold text-white mb-4">
+    🤖 AI Command Center
+  </h2>
+<div
+  className="grid gap-4 mb-8"
+  style={{
+    gridTemplateColumns:
+      "repeat(5,minmax(0,1fr))",
+  }}
+>
+
+ <div
+className="
+bg-white/[0.04]
+backdrop-blur-xl
+rounded-2xl
+p-4
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+transition-all
+duration-300
+"
+>
+    <p className="text-zinc-500 text-xs uppercase">
+      Leads
+    </p>
+    <p className="text-2xl font-bold text-white">
+      {totalLeads}
+    </p>
+  </div>
+
+ <div
+className="
+bg-white/[0.04]
+backdrop-blur-xl
+rounded-2xl
+p-4
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+transition-all
+duration-300
+"
+>
+    <p className="text-zinc-500 text-xs uppercase">
+      Converted
+    </p>
+    <p className="text-2xl font-bold text-green-400">
+      {wonLeads}
+    </p>
+  </div>
+
+ <div
+className="
+bg-white/[0.04]
+backdrop-blur-xl
+rounded-2xl
+p-4
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+transition-all
+duration-300
+"
+>
+    <p className="text-zinc-500 text-xs uppercase">
+      Warm
+    </p>
+    <p className="text-2xl font-bold text-yellow-400">
+      {warmLeads}
+    </p>
+  </div>
+
+ <div
+className="
+bg-white/[0.04]
+backdrop-blur-xl
+rounded-2xl
+p-4
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+transition-all
+duration-300
+"
+>
+    <p className="text-zinc-500 text-xs uppercase">
+      Completed
+    </p>
+    <p className="text-2xl font-bold text-green-400">
+      {completedFollowups}
+    </p>
+  </div>
+
+ <div
+className="
+bg-white/[0.04]
+backdrop-blur-xl
+rounded-2xl
+p-4
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+transition-all
+duration-300
+"
+>
+    <p className="text-zinc-500 text-xs uppercase">
+      Overdue
+    </p>
+    <p className="text-2xl font-bold text-red-400">
+      {overdueCount}
+    </p>
+  </div>
+
+</div>
+
+<div
+  className="grid gap-5 mt-6"
+  style={{
+    gridTemplateColumns:
+      "2fr 1fr 1fr",
+  }}
+>
+
+  {/* LEFT BIG CARD */}
+{topOpportunity && (
+  <>
+<div
+  className="
+  lg:col-span-6
+  relative
+  overflow-hidden
+  rounded-3xl
+  border
+  border-violet-500/20
+  bg-gradient-to-br
+  from-violet-500/10
+  via-indigo-500/5
+  bg-gradient-to-br
+from-violet-500/10
+via-indigo-500/5
+to-cyan-500/5
+  backdrop-blur-xl
+  p-8
+  hover:border-violet-500/40
+  hover:shadow-[0_0_80px_rgba(139,92,246,0.25)]
+  transition-all
+  duration-500
+  "
+>
+  <div
+  className="
+  absolute
+  top-0
+  right-0
+  w-72
+  h-72
+  bg-violet-500/10
+  blur-3xl
+  rounded-full
+  "
+></div>
+
+    <div className="
+inline-flex
+items-center
+px-4
+py-2
+rounded-full
+bg-violet-500/10
+border
+border-violet-500/20
+text-violet-300
+text-xs
+font-semibold
+tracking-wider
+mb-4
+">
+    ✨ AI INSIGHT
+    </div>
+
+  <h2 className="text-4xl font-bold text-white leading-tight max-w-2xl">
+  {topOpportunity.full_name}
+  <br />
+  is your strongest opportunity today.
+</h2>
+
+   <p className="text-zinc-300 mt-4 text-lg max-w-2xl leading-relaxed">
+      High chance to close.
+Follow up now to maximize revenue.
+    </p>
+    <div className="flex gap-2 mt-4">
+
+  <span
+    className="
+    px-3 py-1
+    rounded-full
+    bg-green-500/10
+    border
+    border-green-500/20
+    text-green-400
+    text-xs
+    "
+  >
+    WON
+  </span>
+
+  <span
+    className="
+    px-3 py-1
+    rounded-full
+    bg-violet-500/10
+    border
+    border-violet-500/20
+    text-violet-400
+    text-xs
+    "
+  >
+    AI {topOpportunity.ai_score}
+  </span>
+
+</div>
+
+    <div className="flex gap-3 mt-8">
+
+      <button
+        onClick={() =>
+          router.push(`/leads/${topOpportunity.id}`)
+        }
+        className="px-5 py-3 rounded-3xl bg-violet-600 hover:bg-violet-500 transition-all"
+      >
+        Open Lead
+      </button>
+
+      <button
+        onClick={() =>
+          window.open(
+            `https://wa.me/${topOpportunity.phone}`,
+            "_blank"
+          )
+        }
+        className="px-5 py-3 rounded-3xl border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-all"
+      >
+        WhatsApp
+      </button>
+
+    </div>
+
+  </div>
+
+  {/* SCORE */}
+
+ <div
+  className="
+  lg:col-span-3
+  rounded-3xl
+  border
+  border-violet-500/20
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-6
+  hover:-translate-y-1
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  transition-all
+  duration-300
+  "
+>
+
+    <p className="text-zinc-400 text-sm">
+      AI Score
+    </p>
+
+    <h2 className="text-5xl font-bold text-violet-400 mt-2">
+      {topOpportunity.ai_score}
+    </h2>
+
+   <div className="space-y-2">
+
+  <div className="text-green-400 text-sm">
+    Excellent
+  </div>
+
+  <div className="text-green-400 text-xs">
+    ↑ 12% this week
+  </div>
+  <div className="mt-6 flex items-end gap-1 h-12">
+
+  <div className="w-2 h-3 bg-violet-500 rounded-full"></div>
+  <div className="w-2 h-5 bg-violet-500 rounded-full"></div>
+  <div className="w-2 h-4 bg-violet-500 rounded-full"></div>
+  <div className="w-2 h-8 bg-violet-500 rounded-full"></div>
+  <div className="w-2 h-7 bg-violet-500 rounded-full"></div>
+  <div className="w-2 h-10 bg-violet-500 rounded-full"></div>
+
+</div>
+
+</div>
+
+  </div>
+
+  {/* REVENUE */}
+
+ <div
+  className="
+  lg:col-span-3
+  rounded-3xl
+  border
+  border-violet-500/20
+  bg-white/[0.03]
+  backdrop-blur-xl
+  p-6
+  hover:-translate-y-1
+  hover:border-violet-500/30
+  hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]
+  transition-all
+  duration-300
+  "
+>
+
+    <p className="text-zinc-400 text-sm">
+      Potential Revenue
+    </p>
+
+    <h2 className="text-4xl font-bold text-green-400 mt-2">
+      ₹{opportunityValue.toLocaleString()}
+    </h2>
+<div className="space-y-2">
+
+  <div className="text-green-400 text-sm">
+    High Value
+  </div>
+
+  <div className="text-green-400 text-xs">
+    ↑ Revenue Opportunity
+  </div>
+  <div className="mt-6 flex items-end gap-1 h-12">
+
+  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+  <div className="w-2 h-3 bg-green-500 rounded-full"></div>
+  <div className="w-2 h-4 bg-green-500 rounded-full"></div>
+  <div className="w-2 h-6 bg-green-500 rounded-full"></div>
+  <div className="w-2 h-8 bg-green-500 rounded-full"></div>
+  <div className="w-2 h-10 bg-green-500 rounded-full"></div>
+
+</div>
+
+</div>
+    
+
+  </div>
+  
+  </>
+)}
+</div>
+
+</div>
+<div className="mt-8 bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-white/10">
 
   <h2 className="text-xl font-semibold text-white mb-4">
     📈 Recent Activity
   </h2>
 
-  {recentActivity.map((lead) => (
- <div
+{recentActivity.map((lead) => (
+
+<div
   key={lead.id}
-  className="flex items-center justify-between gap-4 py-3 border-b border-zinc-800"
+  className="
+  flex
+  items-center
+  justify-between
+  bg-white/[0.03]
+  rounded-2xl
+  p-4
+  mb-3
+  border
+  border-white/10
+  hover:border-violet-500/20
+  hover:-translate-y-1
+  transition-all
+  "
 >
-      <div>
-        <p className="text-white">
-          {lead.full_name}
-        </p>
-<p className="text-zinc-400 text-sm">
-  {lead.status === "hot" && "🔥 Became Hot Lead"}
-  {lead.status === "warm" && "📞 Follow-up Required"}
-  {lead.status === "qualified" && "🎯 Lead Qualified"}
-  {lead.status === "won" && "✅ Deal Closed"}
-  {lead.status === "lost" && "❌ Opportunity Lost"}
-</p>
-      </div>
 
-<span className="text-zinc-500 text-sm">
-  {new Date(
-    lead.created_at
-  ).toLocaleDateString()}
-</span>
-    </div>
-  ))}
-</div>
+  <div>
 
-      <p className="text-zinc-300 mt-4">
-        {topOpportunity.ai_next_action}
-      </p>
-<p className="text-zinc-500 mt-4 text-sm">
-  {topOpportunity.ai_summary}
-</p>
-      <p className="text-yellow-400 mt-4">
-        Potential Revenue:
-        ₹{opportunityValue.toLocaleString()}
-      </p>
+    <p className="text-white font-medium">
+      {lead.full_name}
+    </p>
 
- <div className="flex items-center gap-4 mt-4">
+    <p className="text-zinc-400 text-sm">
+      {lead.status === "hot" && "🔥 Became Hot Lead"}
+      {lead.status === "warm" && "📞 Follow-up Required"}
+      {lead.status === "qualified" && "🎯 Lead Qualified"}
+      {lead.status === "won" && "✅ Deal Closed"}
+      {lead.status === "lost" && "❌ Opportunity Lost"}
+    </p>
 
-  <button
-    className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white"
-    onClick={() =>
-      router.push(
-        `/leads/${topOpportunity.id}`
-      )
-    }
-  >
-    Open Lead
-  </button>
+  </div>
 
- <button
- className="
-bg-purple-600
-hover:bg-purple-500
-hover:scale-105
-transition-all
-duration-200
-text-white
-px-5
-py-2
-rounded-lg
-font-semibold
-shadow-lg
-hover:shadow-purple-500/50
-"
-  onClick={() =>
-    window.open(
-      `https://wa.me/${topOpportunity.phone}`,
-      "_blank"
-    )
-  }
->
-  💬 WhatsApp
-</button>
+  <span className="text-zinc-500 text-sm">
+    {new Date(lead.created_at).toLocaleDateString()}
+  </span>
 
 </div>
-    </>
-  )}
 
+))}
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-red-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-red-800">
 
   <h2 className="text-xl font-semibold text-white mb-6">
     🚨 Follow-Up Action Center
@@ -822,32 +1381,104 @@ hover:shadow-purple-500/50
 
   {actionLeads.map((lead) => (
 
-    <div
-      key={lead.id}
-      className="flex justify-between items-center py-4 border-b border-zinc-800"
+   <div
+key={lead.id}
+className="
+flex
+justify-between
+items-center
+bg-gradient-to-r
+from-red-500/5
+to-transparent
+rounded-2xl
+p-5
+mb-3
+border
+border-red-500/10
+hover:border-red-500/30
+hover:-translate-y-1
+transition-all
+"
+>
+
+   <div>
+
+  <div className="flex items-center gap-2 mb-1">
+
+    <span
+      className="
+      px-2
+      py-1
+      rounded-full
+      bg-red-500/10
+      text-red-400
+      text-xs
+      "
     >
+      ACTION
+    </span>
 
-      <div>
-        <p className="text-white font-medium">
-          {lead.full_name}
-        </p>
+    <p className="text-white font-medium">
+      {lead.full_name}
+    </p>
 
-        <p className="text-zinc-400 text-sm">
-          {lead.status === "hot"
-            ? "🔥 High Priority"
-            : "📞 Follow-up Required"}
-        </p>
-      </div>
+  </div>
 
- 
+  <p className="text-zinc-400 text-sm">
+    {lead.status === "hot"
+      ? "🔥 High Priority"
+      : "📞 Follow-up Required"}
+  </p>
 
-  
+</div>
 
+<div className="flex gap-2">
+
+  <button
+    onClick={() =>
+      router.push(`/leads/${lead.id}`)
+    }
+    className="
+    px-4
+    py-2
+    rounded-xl
+    bg-violet-600
+    hover:bg-violet-500
+    text-sm
+    transition-all
+    "
+  >
+    Open
+  </button>
+
+  <button
+    onClick={() =>
+      window.open(
+        `https://wa.me/${lead.phone}`,
+        "_blank"
+      )
+    }
+    className="
+    px-4
+    py-2
+    rounded-xl
+    border
+    border-green-500/30
+    text-green-400
+    hover:bg-green-500/10
+    text-sm
+    transition-all
+    "
+  >
+    WhatsApp
+  </button>
+
+</div>
     </div>
 
   ))}
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-green-800">
+<div className="mt-8 bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-green-800">
   <h2 className="text-2xl font-semibold text-white mb-6">
     🏆 Top Opportunities
   </h2>
@@ -855,7 +1486,22 @@ hover:shadow-purple-500/50
   {topOpportunities.map((lead) => (
     <div
       key={lead.id}
-      className="flex justify-between items-center py-4 border-b border-zinc-800"
+      className="
+flex
+justify-between
+items-center
+bg-gradient-to-r
+from-violet-500/5
+to-transparent
+rounded-2xl
+p-5
+mb-3
+border
+border-white/10
+hover:border-violet-500/30
+hover:-translate-y-1
+transition-all
+"
     >
       <div>
         <p className="text-white font-semibold">
@@ -875,16 +1521,34 @@ hover:shadow-purple-500/50
 </span>
       </div>
 
-      <div className="flex items-center gap-6">
-        <span className="text-green-400 font-bold">
-          AI {lead.ai_score}
-        </span>
+      <div className="flex items-center gap-3">
+       <span
+  className="
+  px-3
+  py-1
+  rounded-full
+  bg-green-500/10
+  text-green-400
+  text-xs
+  font-semibold
+  "
+>
+  AI {lead.ai_score}
+</span>
 
-        <span className="text-yellow-400">
-          ₹{(
-            lead.estimated_value || 50000
-          ).toLocaleString()}
-        </span>
+    <span
+  className="
+  px-3
+  py-1
+  rounded-full
+  bg-yellow-500/10
+  text-yellow-400
+  text-xs
+  font-semibold
+  "
+>
+  ₹50,000
+</span>
 
        <button
   className="
@@ -905,7 +1569,7 @@ hover:shadow-purple-500/50
             )
           }
         >
-          WhatsApp
+         💬 WhatsApp
         </button>
         <button
   className="
@@ -1044,14 +1708,14 @@ LeadFlow AI
 
   }}
 >
-  🤖 AI Follow-Up
+  ✨ Follow-Up
 </button>
       </div>
     </div>
 
   ))}
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-cyan-800">
+<div className="mt-8 bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-red-800">
 
   <h2 className="text-2xl font-semibold text-white mb-6">
     📈 Deals Closing This Week
@@ -1075,41 +1739,50 @@ LeadFlow AI
 
     <div
       key={lead.id}
-      className="flex justify-between items-center py-3 border-b border-zinc-800"
+      className="flex justify-between items-center py-3 border-b border-white/10"
     >
 
-      <div>
+<div className="flex justify-between items-center w-full">
 
-        <p className="text-white font-medium">
+  <div>
 
-          {index === 0 && "🥇 "}
-          {index === 1 && "🥈 "}
-          {index === 2 && "🥉 "}
+    <p className="text-white font-medium">
 
-          {lead.full_name}
+      {index === 0 && "🥇 "}
+      {index === 1 && "🥈 "}
+      {index === 2 && "🥉 "}
 
-        </p>
+      {lead.full_name}
 
-        <p className="text-zinc-400 text-sm">
-          AI Score: {lead.ai_score}
-        </p>
+    </p>
 
-      </div>
+    <p className="text-zinc-400 text-sm">
+      AI Score: {lead.ai_score}
+    </p>
 
-      <span className="text-green-400 font-semibold">
-        ₹
-        {(
-          lead.estimated_value ||
-          50000
-        ).toLocaleString()}
-      </span>
+  </div>
+
+  <div className="text-right">
+
+    <p className="text-green-400 font-bold text-xl">
+      ₹{(lead.estimated_value || 50000).toLocaleString()}
+    </p>
+
+    <p className="text-cyan-400 text-sm">
+      Closing Soon
+    </p>
+
+  </div>
+
+</div>
 
     </div>
 
   ))}
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-blue-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-blue-800">
 
   <h2 className="text-2xl font-semibold text-white mb-6">
     📄 Proposal History
@@ -1131,7 +1804,7 @@ LeadFlow AI
     items-center
     py-4
     border-b
-    border-zinc-800
+    border-white/10
     cursor-pointer
     hover:bg-zinc-800/40
     transition-all
@@ -1248,30 +1921,286 @@ LeadFlow AI
   ))}
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-yellow-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-yellow-800">
 
   <h2 className="text-2xl font-semibold text-white mb-6">
     🔔 Notification Center
   </h2>
 
-  {notifications.length === 0 ? (
+{notifications.length === 0 ? (
+
+  <div
+    className="
+    bg-white/[0.03]
+    rounded-2xl
+    p-5
+    border
+    border-white/10
+    text-zinc-400
+    "
+  >
+    No notifications
+  </div>
+
+) : (
+
+  notifications.map((item, index) => (
+
+    <div
+      key={item.id}
+      className="
+      flex
+      justify-between
+      items-center
+      bg-white/[0.03]
+      rounded-2xl
+      p-4
+      mb-3
+      border
+      border-white/10
+      hover:border-yellow-500/20
+      hover:-translate-y-1
+      transition-all
+      "
+    >
+
+      <div>
+
+        <div className="flex items-center gap-2 mb-2">
+
+          <span
+            className={`
+            px-2
+            py-1
+            rounded-full
+            text-xs
+            font-semibold
+            ${
+              index === 0
+                ? "bg-red-500/20 text-red-400"
+                : index === 1
+                ? "bg-yellow-500/20 text-yellow-400"
+                : "bg-cyan-500/20 text-cyan-400"
+            }
+            `}
+          >
+            {index === 0
+              ? "HIGH"
+              : index === 1
+              ? "MEDIUM"
+              : "LOW"}
+          </span>
+
+          <span className="text-white">
+            {item.icon}
+          </span>
+
+        </div>
+
+        <p className="text-white">
+          {item.text}
+        </p>
+
+      </div>
+
+      <div className="text-right">
+
+        <p className="text-zinc-500 text-sm">
+          {index === 0
+            ? "2 mins ago"
+            : index === 1
+            ? "15 mins ago"
+            : "1 hour ago"}
+        </p>
+
+      </div>
+
+    </div>
+
+  ))
+
+)}
+
+</div>
+<div className="mt-8 bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-cyan-500/20">
+
+  <h2 className="text-2xl font-semibold text-white mb-8">
+    📊 Conversion Funnel
+  </h2>
+
+  <div className="space-y-4">
+
+    {funnelData.map((step, index) => (
+
+      <div key={step.label}>
+
+       <div
+  className={`
+  bg-gradient-to-r
+  ${step.color}
+  rounded-2xl
+  p-5
+  flex
+  justify-between
+  items-center
+  shadow-lg
+  hover:scale-[1.02]
+  transition-all
+  `}
+style={{
+  width:
+    index === 0
+      ? "100%"
+      : index === 1
+      ? "90%"
+      : index === 2
+      ? "80%"
+      : "70%",
+  margin: "0 auto",
+}}
+>
+
+          <div>
+
+            <p className="text-white/80 text-sm">
+              Stage
+            </p>
+
+            <h3 className="text-white text-xl font-bold">
+  {step.label}
+</h3>
+
+<p className="text-white/70 text-xs">
+  {totalLeads > 0
+    ? `${Math.round(
+        (step.value / totalLeads) * 100
+      )}%`
+    : "0%"}
+</p>
+
+          </div>
+
+          <div className="text-right">
+
+            <p className="text-white/80 text-sm">
+              Leads
+            </p>
+
+            <p className="text-3xl font-bold text-white">
+              {step.value}
+            </p>
+
+          </div>
+
+        </div>
+
+        {index !== funnelData.length - 1 && (
+
+          <div className="flex justify-center py-2">
+
+            <div className="text-cyan-400 text-2xl">
+              ↓
+            </div>
+
+          </div>
+
+        )}
+
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
+<div className="mt-8 bg-white/[0.03] backdrop-blur-xl p-6 rounded-3xl border border-orange-500/20">
+
+  <h2 className="text-2xl font-semibold text-white mb-6">
+    🎯 AI Opportunity Radar
+  </h2>
+
+  {hotRadarLeads.length === 0 ? (
 
     <p className="text-zinc-400">
-      No notifications
+      No high-priority opportunities detected.
     </p>
 
   ) : (
 
-    notifications.map((item) => (
+    hotRadarLeads.map((lead) => (
 
       <div
-        key={item.id}
-        className="py-4 border-b border-zinc-800"
+        key={lead.id}
+        className="
+        flex
+        justify-between
+        items-center
+        bg-gradient-to-r
+        from-orange-500/5
+        to-transparent
+        rounded-2xl
+        p-4
+        mb-3
+        border
+        border-orange-500/10
+        hover:border-orange-500/30
+        transition-all
+        "
       >
 
-        <p className="text-white">
-          {item.icon} {item.text}
-        </p>
+        <div>
+
+         <div className="flex items-center gap-2">
+
+  <span
+    className="
+    px-2
+    py-1
+    rounded-full
+    bg-orange-500/20
+    text-orange-400
+    text-xs
+    font-semibold
+    "
+  >
+    HOT
+  </span>
+
+  <p className="text-white font-semibold">
+    {lead.full_name}
+  </p>
+
+</div>
+
+          <p className="text-orange-400 text-sm">
+            AI Score {lead.ai_score}
+          </p>
+
+        </div>
+
+    <button
+  onClick={() =>
+    router.push(`/leads/${lead.id}`)
+  }
+  className="
+  px-5
+  py-3
+  rounded-2xl
+  bg-gradient-to-r
+  from-orange-500
+  to-amber-500
+  text-white
+  font-semibold
+  shadow-[0_0_25px_rgba(249,115,22,0.35)]
+  hover:shadow-[0_0_40px_rgba(249,115,22,0.55)]
+  hover:scale-105
+  transition-all
+  duration-300
+  "
+>
+  🔥 Review Lead
+</button>
 
       </div>
 
@@ -1280,47 +2209,184 @@ LeadFlow AI
   )}
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-blue-800">
+<div
+className="
+mt-8
+rounded-3xl
+border
+border-violet-500/20
+bg-gradient-to-r
+from-violet-500/10
+bg-gradient-to-br
+from-violet-500/10
+via-indigo-500/5
+to-cyan-500/5
+backdrop-blur-xl
+p-8
+"
+>
+
+  <div className="flex items-center gap-3 mb-6">
+    <span className="text-3xl">🤖</span>
+
+    <h2 className="text-3xl font-bold text-white">
+      AI Executive Summary
+    </h2>
+  </div>
+
+ <div
+  className="grid gap-4"
+  style={{
+    gridTemplateColumns:
+      "repeat(5,minmax(0,1fr))",
+  }}
+>
+
+    <div className="bg-black/20 rounded-2xl p-4">
+      <p className="text-zinc-400 text-sm">
+        Leads Captured
+      </p>
+
+      <p className="text-3xl font-bold text-white">
+        {totalLeads}
+      </p>
+    </div>
+
+    <div className="bg-black/20 rounded-2xl p-4">
+      <p className="text-zinc-400 text-sm">
+        High Priority
+      </p>
+
+      <p className="text-3xl font-bold text-red-400">
+        {hotLeads}
+      </p>
+    </div>
+
+    <div className="bg-black/20 rounded-2xl p-4">
+      <p className="text-zinc-400 text-sm">
+        Revenue Potential
+      </p>
+
+      <p className="text-3xl font-bold text-green-400">
+        ₹{weeklyRevenue.toLocaleString()}
+      </p>
+    </div>
+
+    <div className="bg-black/20 rounded-2xl p-4">
+      <p className="text-zinc-400 text-sm">
+        Conversion Rate
+      </p>
+
+      <p className="text-3xl font-bold text-cyan-400">
+        {closeProbability}%
+      </p>
+    </div>
+
+    <div className="bg-black/20 rounded-2xl p-4">
+      <p className="text-zinc-400 text-sm">
+        Best Lead
+      </p>
+
+      <p className="text-2xl font-bold text-violet-400">
+        {topOpportunity?.full_name}
+      </p>
+    </div>
+
+  </div>
+
+</div>
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-blue-800">
 
   <h2 className="text-2xl font-semibold text-white mb-6">
     📅 Smart Follow-Up Scheduler
   </h2>
 
-  {smartFollowups.map((lead) => (
+{smartFollowups.map((lead, index) => (
 
-    <div
-      key={lead.id}
-      className="flex justify-between items-center py-4 border-b border-zinc-800"
+  <div
+    key={lead.id}
+    className="
+    flex
+    justify-between
+    items-center
+    bg-white/[0.03]
+    backdrop-blur-xl
+    rounded-2xl
+    p-5
+    mb-3
+    border
+    border-white/10
+    hover:border-blue-500/30
+    hover:-translate-y-1
+    transition-all
+    "
+  >
+     <div>
+
+  <div className="flex items-center gap-2 mb-1">
+
+    <span
+      className={`
+      px-2
+      py-1
+      rounded-full
+      text-xs
+      font-semibold
+      ${
+        index === 0
+          ? "bg-red-500/20 text-red-400"
+          : index === 1
+          ? "bg-yellow-500/20 text-yellow-400"
+          : "bg-cyan-500/20 text-cyan-400"
+      }
+      `}
     >
+      {index === 0
+        ? "TODAY"
+        : index === 1
+        ? "TOMORROW"
+        : "THIS WEEK"}
+    </span>
 
-      <div>
+    <p className="text-white font-semibold">
+      {lead.full_name}
+    </p>
 
-        <p className="text-white font-semibold">
-          {lead.full_name}
-        </p>
+  </div>
 
-        <p className="text-zinc-400 text-sm">
-          AI Score: {lead.ai_score}
-        </p>
+  <p className="text-zinc-400 text-sm">
+    AI Score: {lead.ai_score}
+  </p>
+<p className="text-cyan-400 text-xs mt-1">
+  Recommended by AI based on engagement activity
+</p>
+</div>
 
-      </div>
-
-      <button
-  className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-    lead.ai_score >= 90
-      ? "bg-red-600 text-white"
-      : lead.ai_score >= 70
-      ? "bg-yellow-600 text-white"
-      : "bg-blue-600 text-white"
-  }`}
+<button
   onClick={() =>
     window.open(
       `https://wa.me/${lead.phone}`,
       "_blank"
     )
   }
+  className="
+  px-6
+  py-3
+  rounded-2xl
+  bg-gradient-to-r
+  from-violet-600
+  to-purple-500
+  text-white
+  font-semibold
+  shadow-[0_0_25px_rgba(139,92,246,0.35)]
+  hover:shadow-[0_0_40px_rgba(139,92,246,0.55)]
+  hover:scale-105
+  transition-all
+  duration-300
+  "
 >
-  {lead.recommendation}
+  ✨ {lead.recommendation}
 </button>
 
     </div>
@@ -1328,7 +2394,8 @@ LeadFlow AI
   ))}
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
   <h2 className="text-xl font-semibold text-white mb-4">
     Today's Tasks
   </h2>
@@ -1341,7 +2408,7 @@ LeadFlow AI
     todaysTasks.map((task) => (
       <div
         key={task.id}
-        className="flex justify-between py-3 border-b border-zinc-800"
+        className="flex justify-between py-3 border-b border-white/10"
       >
         <span className="text-white">
           {task.title}
@@ -1354,7 +2421,8 @@ LeadFlow AI
     ))
   )}
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
   <h2 className="text-xl font-semibold text-white mb-6">
     Pipeline Analytics
   </h2>
@@ -1362,15 +2430,30 @@ LeadFlow AI
   <div style={{ width: "100%", height: 350 }}>
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={pipelineData}>
+        <CartesianGrid
+ stroke="#27272a"
+  strokeDasharray="3 3"
+  vertical={false}
+/>
         <XAxis dataKey="status" />
         <YAxis />
-        <Tooltip />
+        <Tooltip
+  contentStyle={{
+    backgroundColor: "#09090b",
+    border: "1px solid #8b5cf6",
+    borderRadius: "12px",
+    color: "#fff",
+  }}
+  labelStyle={{
+    color: "#fff",
+  }}
+/>
 
-        <Bar
-          dataKey="count"
-          fill="#a855f7"
-          radius={[4, 4, 0, 0]}
-        />
+<Bar
+  dataKey="count"
+  fill="#8b5cf6"
+  radius={[20,20,0,0]}
+/>
       </BarChart>
     </ResponsiveContainer>
   </div>
@@ -1385,7 +2468,8 @@ LeadFlow AI
 
   {/* Lead Sources */}
 
-  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
     <h2 className="text-xl font-semibold text-white mb-6">
       Lead Sources Chart
     </h2>
@@ -1393,13 +2477,15 @@ LeadFlow AI
     <div style={{ width: "100%", height: 350 }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie
-            data={sourceChartData}
-            dataKey="value"
-            nameKey="name"
-            outerRadius={120}
-            label
-          >
+         <Pie
+  data={sourceChartData}
+  dataKey="value"
+  nameKey="name"
+  innerRadius={70}
+  outerRadius={120}
+  paddingAngle={5}
+  stroke="none"
+>
             {sourceChartData.map((_, index) => (
               <Cell
                 key={index}
@@ -1415,8 +2501,44 @@ LeadFlow AI
             ))}
           </Pie>
 
-          <Tooltip />
-          <Legend />
+         <text
+  x="50%"
+  y="48%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fill="#ffffff"
+  fontSize="26"
+  fontWeight="bold"
+>
+  {totalLeads}
+</text>
+
+<text
+  x="50%"
+  y="58%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fill="#71717a"
+  fontSize="12"
+>
+  Total Leads
+</text>
+
+<Tooltip
+  contentStyle={{
+    backgroundColor: "#09090b",
+    border: "1px solid #8b5cf6",
+    borderRadius: "12px",
+    color: "#fff",
+  }}
+/>
+
+<Legend
+  wrapperStyle={{
+    color: "#fff",
+    paddingTop: 20,
+  }}
+/>
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -1424,7 +2546,8 @@ LeadFlow AI
 
   {/* Follow-up Health */}
 
-  <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
     <h2 className="text-xl font-semibold text-white mb-6">
       Follow-up Health
     </h2>
@@ -1433,24 +2556,63 @@ LeadFlow AI
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={followupChartData}
-            dataKey="value"
-            nameKey="name"
-            outerRadius={120}
-            label
-          >
+  data={followupChartData}
+  dataKey="value"
+  nameKey="name"
+  innerRadius={70}
+  outerRadius={120}
+  paddingAngle={5}
+  stroke="none"
+>
             <Cell fill="#22c55e" />
             <Cell fill="#f59e0b" />
             <Cell fill="#ef4444" />
           </Pie>
 
-          <Tooltip />
-          <Legend />
+          <text
+  x="50%"
+  y="48%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fill="#ffffff"
+  fontSize="24"
+  fontWeight="bold"
+>
+  {completedFollowups}
+</text>
+
+<text
+  x="50%"
+  y="58%"
+  textAnchor="middle"
+  dominantBaseline="middle"
+  fill="#71717a"
+  fontSize="12"
+>
+  Completed
+</text>
+
+<Tooltip
+  contentStyle={{
+    backgroundColor: "#09090b",
+    border: "1px solid #22c55e",
+    borderRadius: "12px",
+    color: "#fff",
+  }}
+/>
+
+<Legend
+  wrapperStyle={{
+    color: "#fff",
+    paddingTop: 20,
+  }}
+/>
         </PieChart>
       </ResponsiveContainer>
     </div>
   </div>
-<div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800 mt-6">
+{/* <div className="bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10 mt-6">
   <h2 className="text-xl font-semibold text-white mb-6">
     AI Lead Temperature
   </h2>
@@ -1475,20 +2637,47 @@ LeadFlow AI
       </PieChart>
     </ResponsiveContainer>
   </div>
-</div>
+</div> */}
 
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
   <h2 className="text-xl font-semibold text-white mb-6">
     Lead Growth Trend
   </h2>
 
   <div style={{ width: "100%", height: 350 }}>
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={leadTrendData}>
-        <XAxis dataKey="day" />
-        <YAxis />
-        <Tooltip />
+      <LineChart
+  data={leadTrendData}
+  margin={{
+    top: 20,
+    right: 20,
+    left: 0,
+    bottom: 0,
+  }}
+> 
+      <XAxis
+  dataKey="day"
+  stroke="#71717a"
+  tick={{ fill: "#71717a" }}
+  axisLine={false}
+  tickLine={false}
+/>
+      <YAxis
+  stroke="#71717a"
+  tick={{ fill: "#71717a" }}
+  axisLine={false}
+  tickLine={false}
+/>
+      <Tooltip
+  contentStyle={{
+    backgroundColor: "#09090b",
+    border: "1px solid #8b5cf6",
+    borderRadius: "12px",
+    color: "#fff",
+  }}
+/>
 
         <Line
           type="monotone"
@@ -1500,7 +2689,8 @@ LeadFlow AI
     </ResponsiveContainer>
   </div>
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
   <h2 className="text-xl font-semibold text-white mb-6">
     Recent Leads
   </h2>
@@ -1508,7 +2698,20 @@ LeadFlow AI
   {recentLeads.map((lead) => (
     <div
       key={lead.id}
-      className="flex justify-between items-center py-4 border-b border-zinc-800"
+      className="
+flex
+justify-between
+items-center
+bg-white/[0.03]
+backdrop-blur-xl
+rounded-2xl
+p-4
+mb-3
+border
+border-white/10
+hover:border-violet-500/20
+transition-all
+"
     >
       <div>
         <p className="text-white font-medium">
@@ -1526,7 +2729,8 @@ LeadFlow AI
     </div>
   ))}
 </div>
-<div className="mt-8 bg-zinc-900 p-6 rounded-xl border border-zinc-800">
+<div className="mt-8 bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl border border-white/10">
   <h2 className="text-xl font-semibold text-white mb-6">
     Best Leads To Call Today
   </h2>
@@ -1534,7 +2738,20 @@ LeadFlow AI
   {bestLeads.map((lead) => (
     <div
       key={lead.id}
-      className="flex justify-between items-center py-4 border-b border-zinc-800"
+      className="
+flex
+justify-between
+items-center
+bg-white/[0.03]
+backdrop-blur-xl
+rounded-2xl
+p-4
+mb-3
+border
+border-white/10
+hover:border-violet-500/20
+transition-all
+"
     >
       <div>
         <p className="text-white font-medium">
@@ -1583,53 +2800,58 @@ LeadFlow AI
       "repeat(4,minmax(0,1fr))",
   }}
 >
-
-  <div className="bg-zinc-900 p-5 rounded-xl border border-purple-800">
+{/* 
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-purple-800">
     <p className="text-zinc-400">
       Proposals Generated
     </p>
 
-    <h2 className="text-3xl font-bold text-purple-500">
+    <h2 className="text-5xl font-bold text-purple-500">
       {totalProposals}
     </h2>
   </div>
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-green-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-green-800">
     <p className="text-zinc-400">
       Proposal Value
     </p>
 
-    <h2 className="text-3xl font-bold text-green-500">
+    <h2 className="text-5xl font-bold text-green-500">
       ₹{totalProposalValue.toLocaleString()}
     </h2>
   </div>
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-yellow-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-yellow-800">
     <p className="text-zinc-400">
       Highest Proposal
     </p>
 
-    <h2 className="text-3xl font-bold text-yellow-500">
+    <h2 className="text-5xl font-bold text-yellow-500">
       ₹{highestProposal.toLocaleString()}
     </h2>
   </div>
 
-  <div className="bg-zinc-900 p-5 rounded-xl border border-cyan-800">
+  <div className="bg-white/[0.03]
+backdrop-blur-xl p-5 rounded-3xl border border-cyan-800">
     <p className="text-zinc-400">
       Avg Proposal Value
     </p>
 
-    <h2 className="text-3xl font-bold text-cyan-500">
+    <h2 className="text-5xl font-bold text-cyan-500">
       ₹{averageProposalValue.toLocaleString()}
     </h2>
-  </div>
+  </div> */}
 
 </div>
 
 {proposalModal && (
   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 overflow-y-auto">
 
-    <div className="bg-zinc-900 p-8 rounded-xl w-[800px] max-w-[90vw] border border-purple-700">
+    <div className="bg-white/[0.03]
+backdrop-blur-xl p-8rounded-3xl w-[800px] max-w-[90vw] border border-purple-700">
       
 
       <h2 className="text-2xl text-white mb-4">
@@ -1663,49 +2885,7 @@ LeadFlow AI
   >
     📋 Copy
   </button>
-  <div className="flex justify-end gap-3 mt-4">
-
-  <button
-    onClick={() => {
-      navigator.clipboard.writeText(
-        followupText
-      );
-      alert("Follow-up copied!");
-    }}
-    className="bg-green-600 text-white px-4 py-2 rounded-lg"
-  >
-    📋 Copy
-  </button>
-
-  <button
-    onClick={() => {
-
-      const encodedMessage =
-        encodeURIComponent(
-          followupText
-        );
-
-      window.open(
-        `https://wa.me/?text=${encodedMessage}`,
-        "_blank"
-      );
-
-    }}
-    className="bg-cyan-600 text-white px-4 py-2 rounded-lg"
-  >
-    💬 WhatsApp
-  </button>
-
-  <button
-    onClick={() =>
-      setFollowupModal(false)
-    }
-    className="bg-red-600 text-white px-4 py-2 rounded-lg"
-  >
-    Close
-  </button>
-
-</div>
+  
 <button
   onClick={() => {
 
@@ -1770,7 +2950,8 @@ LeadFlow AI
 {followupModal && (
   <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
 
-    <div className="bg-zinc-900 p-6 rounded-xl w-[700px] max-h-[80vh] overflow-auto">
+    <div className="bg-white/[0.03]
+backdrop-blur-xl p-6 rounded-3xl w-[700px] max-h-[80vh] overflow-auto">
 
       <h2 className="text-2xl font-bold text-white mb-4">
         🤖 AI Follow-Up

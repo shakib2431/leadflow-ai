@@ -3,11 +3,10 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET() {
 
-  const { data } =
-    await supabaseAdmin
-      .from("follow_ups")
-.select("*")
-.eq("status", "pending")
+ const { data } =
+  await supabaseAdmin
+    .from("follow_ups")
+    .select("*")
       .order("due_date", {
         ascending: true,
       });

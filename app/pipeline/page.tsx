@@ -43,15 +43,87 @@ export default function PipelinePage() {
         .from("leads")
         .select("*");
 
-    if (!error && data) {
-      setLeads(data);
+if (!error && data) {
+
+  const normalizedLeads = data.map((lead) => {
+
+    if (lead.pipeline_stage) {
+      return lead;
+    }
+
+    let stage = "new";
+
+    switch (lead.status) {
+
+      case "warm":
+        stage = "contacted";
+        break;
+
+      case "hot":
+        stage = "qualified";
+        break;
+
+      case "converted":
+        stage = "won";
+        break;
+
+      default:
+        stage = "new";
+    }
+
+    return {
+      ...lead,
+      pipeline_stage: stage,
+    };
+  });
+
+  // BACKFILL OLD RECORDS IN SUPABASE
+  for (const lead of normalizedLeads) {
+
+    const originalLead = data.find(
+      (d) => d.id === lead.id
+    );
+
+    if (!originalLead?.pipeline_stage) {
+
+      await supabase
+        .from("leads")
+        .update({
+          pipeline_stage: lead.pipeline_stage,
+        })
+        .eq("id", lead.id);
     }
   }
 
-  useEffect(() => {
-    loadLeads();
-  }, []);
+  setLeads(normalizedLeads);
+}
+  }
+  
 
+useEffect(() => {
+
+  loadLeads();
+
+  const channel = supabase
+    .channel("pipeline-sync")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "leads",
+      },
+      () => {
+        loadLeads();
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+
+}, []);
   async function handleDragEnd(
     result: any
   ) {

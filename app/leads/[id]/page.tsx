@@ -360,6 +360,25 @@ const scoreColor =
       </div>
     );
   }
+  const suggestedMessage =
+  lead?.status === "converted"
+    ? `Hi ${lead?.full_name},
+
+Thank you for choosing us. We'd love to hear your feedback and discuss future opportunities.`
+
+    : lead?.status === "warm"
+    ? `Hi ${lead?.full_name},
+
+I wanted to follow up regarding your interest. I'd be happy to answer any questions and discuss next steps.`
+
+    : lead?.status === "hot"
+    ? `Hi ${lead?.full_name},
+
+I noticed you're actively evaluating our offering. Let's schedule a quick discussion and move things forward.`
+
+    : `Hi ${lead?.full_name},
+
+Just checking in regarding your inquiry. Let me know if you need any additional information.`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
@@ -512,14 +531,12 @@ to-cyan-500/5 p-6">
     </div>
 
     <div className="md:col-span-2">
-      <p className="text-white/40 text-sm mb-1">
-        Reason
-      </p>
-
-      <p className="text-white/80">
-        {lead?.ai_score_reason ||
-          "No reasoning available"}
-      </p>
+     <div className="mt-2 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
+  <p className="text-white/90">
+    {lead?.ai_score_reason ||
+      "No reasoning available"}
+  </p>
+</div>
     </div>
 
   </div>
@@ -829,11 +846,22 @@ max-h-[700px] overflow-y-auto">
         Suggested Message
       </p>
 
-      <div className="bg-black/20 rounded-xl p-4 mt-2 text-sm">
-        Hi {lead?.full_name}, I wanted to
-        follow up regarding your inquiry.
-        Let me know if you have any questions.
-      </div>
+  <div className="bg-black/20 rounded-xl p-4 mt-2 text-sm whitespace-pre-wrap">
+  {suggestedMessage}
+</div>
+<button
+  onClick={() =>
+    window.open(
+      `https://wa.me/${lead?.phone}?text=${encodeURIComponent(
+        suggestedMessage
+      )}`,
+      "_blank"
+    )
+  }
+  className="mt-3 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 transition-all text-sm font-medium"
+>
+  💬 Send Suggested Message
+</button>
     </div>
 
   </div>

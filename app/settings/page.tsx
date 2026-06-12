@@ -4,37 +4,68 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function SettingsPage() {
-  const [business, setBusiness] = useState<any>(null);
+const [business, setBusiness] = useState<any>(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
 
   useEffect(() => {
     loadBusiness();
   }, []);
 
 async function loadBusiness() {
-  const res =
-    await fetch("/api/business");
+  try {
+    setLoading(true);
 
-  const json =
-    await res.json();
+    const res = await fetch("/api/business");
 
-  console.log(json);
+    if (!res.ok) {
+      throw new Error("Failed to load settings");
+    }
 
-  if (
-    json.data &&
-    json.data.length > 0
-  ) {
-    setBusiness(
-      json.data[0]
+    const json = await res.json();
+
+    if (
+      json?.data &&
+      json.data.length > 0
+    ) {
+      setBusiness(json.data[0]);
+    } else {
+      setBusiness({
+        name: "",
+        website: "",
+        industry: "",
+        timezone: "Asia/Kolkata",
+        currency: "INR",
+      });
+    }
+  } catch (err) {
+    console.error(err);
+
+    setError(
+      "Unable to load business settings. Using default values."
     );
+
+    setBusiness({
+      name: "",
+      website: "",
+      industry: "",
+      timezone: "Asia/Kolkata",
+      currency: "INR",
+    });
+  } finally {
+    setLoading(false);
   }
 }
-  if (!business) {
-    return (
-      <div className="p-10 text-white">
-        Loading...
+ if (loading) {
+  return (
+    <div className="p-10">
+      <div className="animate-pulse space-y-4">
+        <div className="h-10 bg-zinc-800 rounded w-64"></div>
+        <div className="h-40 bg-zinc-900 rounded"></div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   async function saveBusiness() {
   const res = await fetch(
@@ -61,7 +92,11 @@ async function loadBusiness() {
 
   return (
     <div className="p-10 text-white">
-
+{error && (
+  <div className="mb-6 rounded-lg bg-yellow-500/20 border border-yellow-500 p-4 text-yellow-300">
+    {error}
+  </div>
+)}
       <h1 className="text-4xl font-bold mb-8">
         Business Settings
       </h1>

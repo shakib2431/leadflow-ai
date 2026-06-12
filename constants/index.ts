@@ -30,7 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     icon: Users,
     label: "Leads",
-    badge: "124",
+    // badge: "124",
     href: "/leads",
   },
   {
@@ -42,7 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
   {
     icon: MessageSquare,
     label: "Conversations",
-    badge: "8",
+    // badge: "8",
     href: "/conversations",
   },
 

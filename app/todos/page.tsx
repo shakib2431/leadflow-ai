@@ -5,22 +5,60 @@ import { useEffect, useState } from "react";
 export default function TodosPage() {
   const [followups, setFollowups] =
     useState<any[]>([]);
-
+const [loading, setLoading] =
+  useState(true);
+ 
   async function loadFollowups() {
+
+  try {
+
+    setLoading(true);
+
     const res = await fetch(
       "/api/followups"
     );
 
     const data = await res.json();
 
-    setFollowups(data.followups || []);
+    setFollowups(
+      data.followups || []
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    setLoading(false);
+
   }
+}
 
   useEffect(() => {
   loadFollowups();
 }, []);
 
 const now = new Date();
+if (loading) {
+
+  return (
+
+    <div className="p-8 space-y-4">
+
+      {[1, 2, 3].map((i) => (
+
+        <div
+          key={i}
+          className="h-40 rounded-2xl bg-[#111827] animate-pulse"
+        />
+
+      ))}
+
+    </div>
+
+  );
+}
 
 return (
     <div className="p-8">
@@ -28,13 +66,34 @@ return (
       <h1 className="text-3xl font-bold mb-6">
         Follow-ups
       </h1>
+{followups.length === 0 && (
 
+  <div className="rounded-2xl border border-white/10 bg-[#111827] p-10 text-center">
+
+    <h2 className="text-xl font-semibold">
+      No Follow-ups Yet
+    </h2>
+
+    <p className="text-white/50 mt-2">
+      Create your first follow-up task.
+    </p>
+
+    <button
+      className="mt-5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700"
+    >
+      + Create Follow-up
+    </button>
+
+  </div>
+
+)}
       <div className="space-y-4">
 
 {followups.map((item) => {
 
   const overdue =
-    new Date(item.due_date) < now;
+  item.status !== "completed" &&
+  new Date(item.due_date) < now;
 
   return (
 
@@ -63,65 +122,69 @@ return (
       )}
 
       <div className="mt-3 text-sm text-white/40">
-        Due: {item.due_date}
+       Due: {new Date(item.due_date).toLocaleString()}
       </div>
-
-      <div className="mt-2">
-        Status: {item.status}
-      </div>
-      <div className="flex gap-3 mt-4">
-
-  <button
-    onClick={async () => {
-
-      await fetch(
-        "/api/followups/send-now",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            id: item.id,
-          }),
-        }
-      );
-
-      loadFollowups();
-
-    }}
-    className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700"
-  >
-    🚀 Send Now
-  </button>
-
-  <button
-    onClick={async () => {
-
-      await fetch(
-        "/api/followups/complete",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            id: item.id,
-          }),
-        }
-      );
-
-      loadFollowups();
-
-    }}
-   className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700"
-  >
-    Mark Complete
-  </button>
-
+<div className="mt-2">
+  Status: {item.status}
 </div>
+
+{item.status !== "completed" && (
+
+  <div className="flex gap-3 mt-4">
+
+    <button
+      onClick={async () => {
+
+        await fetch(
+          "/api/followups/send-now",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              id: item.id,
+            }),
+          }
+        );
+
+        loadFollowups();
+
+      }}
+      className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700"
+    >
+      🚀 Send Now
+    </button>
+
+    <button
+      onClick={async () => {
+
+        await fetch(
+          "/api/followups/complete",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+            body: JSON.stringify({
+              id: item.id,
+            }),
+          }
+        );
+
+        loadFollowups();
+
+      }}
+      className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700"
+    >
+      Mark Complete
+    </button>
+
+  </div>
+
+)}
 
       {overdue && (
         <div className="mt-3">

@@ -15,6 +15,10 @@
     full_name: string;
     email: string;
     phone: string;
+    messages?: {
+  message: string;
+  created_at: string;
+}[];
     conversations?: any[]; // <--- Add this line so TypeScript knows it exists!
   }
 
@@ -81,19 +85,74 @@ const [aiSuggestion, setAiSuggestion] =
 const [showAiSuggestion, setShowAiSuggestion] =
   useState(false);
   const [showAiInsights, setShowAiInsights] = useState(false);
+ function formatTimeAgo(dateString: string) {
 
+  const now = new Date();
+  const date = new Date(dateString);
+
+  const diff =
+    Math.floor(
+      (now.getTime() - date.getTime()) /
+      1000
+    );
+
+  if (diff < 60) {
+    return "Just now";
+  }
+
+  if (diff < 3600) {
+    return `${Math.floor(diff / 60)}m ago`;
+  }
+
+  if (diff < 86400) {
+    return `${Math.floor(diff / 3600)}h ago`;
+  }
+
+  if (diff < 172800) {
+    return "Yesterday";
+  }
+
+  return date.toLocaleDateString();
+}
 async function loadLeads() {
-    const { data } = await supabase
-      .from("leads")
-      .select(`*, conversations(unread_count)`);
+ 
+   const { data } = await supabase
+  .from("leads")
+  .select(`
+    *,
+    conversations(unread_count),
+    messages(
+      message,
+      created_at
+    )
+  `);
 
-    if (data) {
-      setLeads(data);
-      if (data.length > 0) {
-        // ONLY set the selected lead if you don't already have one open!
-        setSelectedLead((current) => current || data[0]); 
-      }
-    }
+ if (data) {
+
+  const sortedLeads = [...data].sort((a: any, b: any) => {
+
+    const dateA =
+      a.messages?.[0]?.created_at || "";
+
+    const dateB =
+      b.messages?.[0]?.created_at || "";
+
+    return (
+      new Date(dateB).getTime() -
+      new Date(dateA).getTime()
+    );
+
+  });
+
+  setLeads(sortedLeads);
+
+  if (sortedLeads.length > 0) {
+    setSelectedLead(
+      (current) =>
+        current || sortedLeads[0]
+    );
+  }
+}
   }
 
   async function loadMessages(
@@ -670,341 +729,355 @@ setShowAiSuggestion(
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
 
 {filteredLeads.map((lead) => (
-
-             <button
-                key={lead.id}
-                onClick={() => {
-                  // 1. Instantly switch the chat view (no waiting!)
-                  setSelectedLead(lead);
-                  
-                  // 2. ONLY clear the database if there's actually a badge to clear
-                  if (lead.conversations?.[0]?.unread_count > 0) {
-                     supabase
-                      .from("conversations")
-                      .update({ unread_count: 0 })
-                      .eq("lead_id", lead.id)
-                      .then(() => loadLeads()); // refresh silently in background
-                  }
-                }}
-                className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between ${
-                  selectedLead?.id === lead.id
-                    ? "bg-violet-500/10 border-violet-500/20"
-                    : "bg-white/[0.03] border-white/5"
-                }`}
-              >
-                <div>
-                  <h2 className="font-semibold">{lead.full_name}</h2>
-                  <p className="text-sm text-white/40 mt-1">{lead.email}</p>
-                </div>
+            <button
+              key={lead.id}
+              onClick={() => {
+                // 1. Instantly switch the chat view
+                setSelectedLead(lead);
                 
-                {/* Red Badge for Unread Messages */}
-                {(lead.conversations?.[0]?.unread_count ?? 0) > 0 && selectedLead?.id !== lead.id && (
-                  <div className="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold shadow-lg shadow-red-500/20">
-                    {lead.conversations?.[0]?.unread_count}
+                // 2. Clear the database badge
+                if (lead.conversations?.[0]?.unread_count > 0) {
+                  supabase
+                    .from("conversations")
+                    .update({ unread_count: 0 })
+                    .eq("lead_id", lead.id)
+                    .then(() => loadLeads());
+                }
+              }}
+              className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center justify-between ${
+                selectedLead?.id === lead.id
+                  ? "bg-gradient-to-r from-violet-500/20 to-purple-500/10 border-violet-500/30 shadow-lg shadow-violet-500/10"
+                  : "bg-white/[0.03] border-white/5 hover:bg-white/[0.05]"
+              }`}
+            >
+              {/* Card Inner Wrapper */}
+              <div className="flex-1 min-w-0 flex items-start gap-3">
+                
+                {/* Avatar */}
+                <div className="w-10 h-10 shrink-0 rounded-full bg-violet-500/20 border border-violet-500/20 flex items-center justify-center font-bold text-violet-300">
+                  {lead.full_name?.charAt(0) || "?"}
+                </div>
+
+                {/* Text Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="font-semibold truncate text-sm text-white/90">
+                      {lead.full_name}
+                    </h2>
+                    {lead.messages?.[0]?.created_at && (
+                      <span className="text-[10px] text-white/40 shrink-0">
+                        {formatTimeAgo(lead.messages[0].created_at)}
+                      </span>
+                    )}
                   </div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+                  
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-yellow-500/20 text-yellow-300 shrink-0">
+                      🔥 Warm
+                    </span>
+                    <p className="text-[11px] text-white/40 truncate">
+                      {lead.email}
+                    </p>
+                  </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-  <div className="h-[76px] border-b border-white/10 flex items-center px-6">
-
-    <div className="flex items-center justify-between w-full">
-
-      <div>
-
-        <h2 className="font-semibold text-lg">
-          {selectedLead?.full_name}
-        </h2>
-
-        <p className="text-sm text-green-400">
-          Active Lead
-        </p>
-
-      </div>
-
-      <button
-        onClick={summarizeConversation}
-        disabled={summaryLoading}
-        className="px-5 h-11 rounded-2xl bg-violet-500/20 border border-violet-500/20 hover:bg-violet-500/30 transition-all text-sm font-medium"
-      >
-
-        {summaryLoading
-          ? "Analyzing..."
-          : "✨ Summarize Chat"}
-
-      </button>
-
-    </div>
-  </div>
-
-  {summary && (
-    <div className="mx-6 mt-5">
-      <div className="flex items-center justify-between mb-4">
-        {/* Left Side: Badges remain visible */}
-        <div className="flex gap-2">
-          {aiTemperature === "Hot" && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500 text-red-400 font-semibold text-xs">
-              🔥 Hot Lead ({aiScore})
-            </div>
-          )}
-          {aiTemperature === "Warm" && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-semibold text-xs">
-              🟡 Warm Lead ({aiScore})
-            </div>
-          )}
-         {aiTemperature === "Cold" && (
-  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500 text-red-400 font-semibold text-xs">
-    🔴 Cold Lead ({aiScore})
-  </div>
-)}
-        </div>
-
-        {/* Right Side: Toggle Button */}
-        <button
-          onClick={() => setShowAiInsights(!showAiInsights)}
-          className="text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors flex items-center gap-1 bg-violet-500/10 px-3 py-1.5 rounded-lg border border-violet-500/20"
-        >
-          {showAiInsights ? "Hide Insights ▲" : "✨ View AI Insights ▼"}
-        </button>
-      </div>
-
-      {/* The Collapsible Content */}
-      {showAiInsights && (
-        <div className="p-5 rounded-2xl border border-violet-500/20 bg-violet-500/10 space-y-5 animate-in fade-in slide-in-from-top-2">
-          <h3 className="font-semibold text-violet-300">
-            AI Conversation Analysis
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
-                Summary
-              </p>
-              <p className="text-sm text-white/80 leading-relaxed">
-                {summary}
-              </p>
-            </div>
-          <div>
-  <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
-    AI Score
-  </p>
-
-  <p className="text-2xl font-bold text-violet-300">
-    {aiScore ?? 0}/100
-  </p>
-</div>
-            <div className="col-span-2">
-              <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
-                Recommended Action
-              </p>
-              <p className="text-sm text-white/80">{aiNextAction}</p>
-            </div>
-            <div className="col-span-2">
-  <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
-    AI Reasoning
-  </p>
-
-  <p className="text-sm text-white/80 leading-relaxed">
-    {aiReason}
-  </p>
-</div>
-          </div>
-        </div>
-      )}
-    </div>
-  )}
-
-          {/* Messages */}
-        <div
-    id="chat-container"
-    className="flex-1 overflow-y-auto p-6 space-y-4"
-  >
-
-            {messages.map((message) => (
-
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.sender === "agent"
-                    ? "justify-end"
-                    : "justify-start"
-                }`}
-              >
-
-                <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-                    message.sender === "agent"
-                      ? "bg-violet-600"
-                      : "bg-white/10"
-                  }`}
-                >
-
-                  <p className="text-sm">
-                    {message.message}
+                  <p className="text-xs text-white/50 mt-2 truncate">
+                    {lead.messages?.[0]?.message || "No messages yet"}
                   </p>
-
                 </div>
               </div>
-            ))}
+              
+              {/* Red Badge for Unread Messages */}
+              {(lead.conversations?.[0]?.unread_count ?? 0) > 0 && selectedLead?.id !== lead.id && (
+                <div className="ml-3 w-5 h-5 shrink-0 rounded-full bg-red-500 text-white flex items-center justify-center text-[10px] font-bold shadow-lg shadow-red-500/20">
+                  {lead.conversations?.[0]?.unread_count}
+                </div>
+              )}
+            </button>
+          ))}
           </div>
-          
+        </div>
 
-          {/* Input */}
-          <div className="p-5 border-t border-white/10">
+     {/* --- START OF PASTED CODE: Middle Chat Area --- */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        
+        {/* Header Section */}
+        <div className="h-[76px] shrink-0 border-b border-white/10 flex items-center justify-between px-6 overflow-hidden">
+          <div>
+            <h2 className="font-semibold text-lg">{selectedLead?.full_name}</h2>
+            <p className="text-sm text-green-400">Active Lead</p>
+          </div>
 
-            <div className="flex items-center gap-3">
+          <button
+            onClick={summarizeConversation}
+            disabled={summaryLoading}
+            className="px-5 h-11 rounded-2xl bg-violet-500/20 border border-violet-500/20 hover:bg-violet-500/30 transition-all text-sm font-medium"
+          >
+            {summaryLoading ? "Analyzing..." : "✨ Summarize Chat"}
+          </button>
+        </div>
+
+        {/* Summary Modal Section */}
+        {summary && (
+          <div className="mx-6 mt-5 shrink-0">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex gap-2">
+                {aiTemperature === "Hot" && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500 text-red-400 font-semibold text-xs">
+                    🔥 Hot Lead ({aiScore})
+                  </div>
+                )}
+                {aiTemperature === "Warm" && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-semibold text-xs">
+                    🟡 Warm Lead ({aiScore})
+                  </div>
+                )}
+                {aiTemperature === "Cold" && (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500 text-red-400 font-semibold text-xs">
+                    🔴 Cold Lead ({aiScore})
+                  </div>
+                )}
+              </div>
 
               <button
-    onClick={generateAiReply}
-    disabled={aiLoading}
-    className="w-14 h-14 rounded-2xl bg-violet-500/20 border border-violet-500/20 flex items-center justify-center hover:bg-violet-500/30 transition-all"
-  >
-
-    <Sparkles
-      size={20}
-      className={
-        aiLoading
-          ? "animate-spin"
-          : ""
-      }
-    />
-
-  </button>
-
-              <input
-                value={newMessage}
-                onChange={(e) =>
-                  setNewMessage(
-                    e.target.value
-                  )
-                }
-                type="text"
-                placeholder="Type your message..."
-                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm outline-none"
-              />
-
-              <button
-                onClick={sendMessage}
-                className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center"
+                onClick={() => setShowAiInsights(!showAiInsights)}
+                className="text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors flex items-center gap-1 bg-violet-500/10 px-3 py-1.5 rounded-lg border border-violet-500/20"
               >
-
-                <Send size={18} />
-
+                {showAiInsights ? "Hide Insights ▲" : "✨ View AI Insights ▼"}
               </button>
             </div>
-            
+
+            {showAiInsights && (
+              <div className="p-5 rounded-2xl border border-violet-500/20 bg-violet-500/10 space-y-5 animate-in fade-in slide-in-from-top-2">
+                <h3 className="font-semibold text-violet-300">
+                  AI Conversation Analysis
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2">
+                    <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
+                      Summary
+                    </p>
+                    <p className="text-sm text-white/80 leading-relaxed">
+                      {summary}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
+                      AI Score
+                    </p>
+                    <p className="text-2xl font-bold text-violet-300">
+                      {aiScore ?? 0}/100
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
+                      Recommended Action
+                    </p>
+                    <p className="text-sm text-white/80">{aiNextAction}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[10px] uppercase tracking-wider text-violet-400/70 mb-1 font-semibold">
+                      AI Reasoning
+                    </p>
+                    <p className="text-sm text-white/80 leading-relaxed">
+                      {aiReason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+        )}
 
-          {showAiSuggestion && (
-
-  <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-
-    <div className="w-[600px] rounded-3xl bg-[#0f172a] border border-violet-500/20 p-6">
-
-      <h2 className="text-xl font-semibold mb-4">
-        AI Follow-Up Suggestion
-      </h2>
-
-      <textarea
-        value={aiSuggestion}
-        onChange={(e) =>
-          setAiSuggestion(
-            e.target.value
-          )
-        }
-        className="w-full h-40 rounded-xl bg-black/20 border border-white/10 p-4"
-      />
-
-      <div className="flex justify-end gap-3 mt-4">
-
-        <button
-          onClick={() =>
-            setShowAiSuggestion(false)
-          }
-          className="px-5 py-2 rounded-xl border border-white/10"
+        {/* Messages */}
+        <div
+          id="chat-container"
+          className="flex-1 overflow-y-auto p-6 space-y-4 min-w-0"
         >
-          Cancel
-        </button>
-<button
-  onClick={async () => {
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${
+                message.sender === "agent" ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-[600px] rounded-2xl px-4 py-3 ${
+                  message.sender === "agent"
+                    ? "bg-violet-600"
+                    : "bg-white/10"
+                }`}
+              >
+                <p className="text-sm">{message.message}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
-    if (!selectedLead)
-      return;
+        {/* Input area */}
+        <div className="p-5 border-t border-white/10 shrink-0">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={generateAiReply}
+              disabled={aiLoading}
+              className="w-14 h-14 rounded-2xl bg-violet-500/20 border border-violet-500/20 flex items-center justify-center hover:bg-violet-500/30 transition-all"
+            >
+              <Sparkles
+                size={20}
+                className={aiLoading ? "animate-spin" : ""}
+              />
+            </button>
 
-    try {
+            <input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              type="text"
+              placeholder="Type your message..."
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm outline-none"
+            />
 
-      const response =
-        await fetch(
-          "/api/send-whatsapp",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-            body: JSON.stringify({
-              phone:
-                selectedLead.phone,
-              message:
-                aiSuggestion,
-            }),
-          }
-        );
+            <button
+              onClick={sendMessage}
+              className="w-12 h-12 rounded-2xl bg-violet-600 flex items-center justify-center"
+            >
+              <Send size={18} />
+            </button>
+          </div>
+        </div>
 
-      const result =
-        await response.json();
+        {/* AI Suggestion Modal overlay */}
+        {showAiSuggestion && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="w-[600px] rounded-3xl bg-[#0f172a] border border-violet-500/20 p-6">
+              <h2 className="text-xl font-semibold mb-4">
+                AI Follow-Up Suggestion
+              </h2>
 
-      console.log(
-        "AI Follow-up Sent:",
-        result
-      );
+              <textarea
+                value={aiSuggestion}
+                onChange={(e) => setAiSuggestion(e.target.value)}
+                className="w-full h-40 rounded-xl bg-black/20 border border-white/10 p-4 outline-none"
+              />
 
-      await supabase
-        .from("messages")
-        .insert({
-          lead_id:
-            selectedLead.id,
-          sender:
-            "agent",
-          message:
-            aiSuggestion,
-        });
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  onClick={() => setShowAiSuggestion(false)}
+                  className="px-5 py-2 rounded-xl border border-white/10 hover:bg-white/5"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!selectedLead) return;
+                    try {
+                      const response = await fetch("/api/send-whatsapp", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          phone: selectedLead.phone,
+                          message: aiSuggestion,
+                        }),
+                      });
 
-      loadMessages(
-        selectedLead.id
-      );
+                      const result = await response.json();
+                      console.log("AI Follow-up Sent:", result);
 
-      setShowAiSuggestion(
-        false
-      );
+                      await supabase.from("messages").insert({
+                        lead_id: selectedLead.id,
+                        sender: "agent",
+                        message: aiSuggestion,
+                      });
 
-    } catch (err) {
-
-      console.error(
-        "AI Follow-up Error:",
-        err
-      );
-
-    }
-
-  }}
-  className="px-5 py-2 rounded-xl bg-violet-600"
->
-  🚀 Send WhatsApp
-</button>
-
+                      loadMessages(selectedLead.id);
+                      setShowAiSuggestion(false);
+                    } catch (err) {
+                      console.error("AI Follow-up Error:", err);
+                    }
+                  }}
+                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 transition-colors"
+                >
+                  🚀 Send WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+      {/* --- END OF PASTED CODE --- */}
+        {/* AI Copilot */}
 
+<div
+  className="
+  w-[320px]
+  border-l
+  border-white/10
+  bg-white/[0.02]
+  backdrop-blur-xl
+  p-5
+  overflow-y-auto
+  "
+>
+
+  <h2 className="text-lg font-semibold mb-5">
+    🤖 AI Copilot
+  </h2>
+
+  <div className="space-y-4">
+
+    <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10">
+      <p className="text-xs text-white/50 mb-1">
+        AI Score
+      </p>
+
+      <p className="text-3xl font-bold text-violet-400">
+        {aiScore ?? "--"}
+      </p>
+    </div>
+
+    <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10">
+      <p className="text-xs text-white/50 mb-1">
+        Temperature
+      </p>
+
+      <p className="font-semibold">
+        {aiTemperature || "Not Analyzed"}
+      </p>
+    </div>
+
+    <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10">
+      <p className="text-xs text-white/50 mb-2">
+        Summary
+      </p>
+
+      <p className="text-sm text-white/80">
+        {summary || "Run AI Summary"}
+      </p>
+    </div>
+
+    <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10">
+      <p className="text-xs text-white/50 mb-2">
+        Recommended Action
+      </p>
+
+      <p className="text-sm text-green-400">
+        {aiNextAction || "Awaiting analysis"}
+      </p>
+    </div>
+
+    <div className="bg-white/[0.03] rounded-2xl p-4 border border-white/10">
+      <p className="text-xs text-white/50 mb-2">
+        AI Reasoning
+      </p>
+
+      <p className="text-sm text-white/70">
+        {aiReason || "Run AI Summary"}
+      </p>
     </div>
 
   </div>
 
-)}
-          
-        </div>
+</div>
         
       </div>
       

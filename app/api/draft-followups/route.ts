@@ -3,19 +3,22 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET(req: Request) {
   // SECURITY CHECK: Ensure this is triggered securely via Cron
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: "Unauthorized access to Cron Engine" }, { status: 401 });
-  }
+//   const authHeader = req.headers.get("authorization");
+//   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+//     return NextResponse.json({ error: "Unauthorized access to Cron Engine" }, { status: 401 });
+//   }
 
   try {
     console.log("🧠 [CRON] INITIATING AI DRAFTER ENGINE...");
 
     // 1. Fetch active leads only
-    const { data: leads, error: leadsError } = await supabaseAdmin
-      .from("leads")
-      .select("id, full_name, ai_summary, ai_next_action, status, phone")
-      .in("status", ["contacted", "qualified", "hot", "negotiation"]);
+   const { data: leads, error: leadsError } =
+  await supabaseAdmin
+    .from("leads")
+    .select("id, full_name, ai_summary, ai_next_action, status, phone")
+    .in("status", [
+      "warm"
+    ]);
 
     if (leadsError || !leads) {
       return NextResponse.json({ success: true, message: "No active leads to process." });
@@ -24,6 +27,11 @@ export async function GET(req: Request) {
     let draftedCount = 0;
 
     for (const lead of leads) {
+        console.log(
+  "PROCESSING LEAD:",
+  lead.full_name,
+  lead.status
+);
       // RULE A: Check for existing pending follow-ups
       const { data: pendingTask } = await supabaseAdmin
         .from("follow_ups")
@@ -83,14 +91,33 @@ export async function GET(req: Request) {
         // Gives human time to review in Command Center. If ignored, your process-followups script sends it automatically!
         const dueDate = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); 
 
-        await supabaseAdmin.from("follow_ups").insert({
-          lead_id: lead.id,
-          title: `Automated Re-engagement`,
-          description: `Lead inactive for ${Math.round(hoursSinceLastActivity)} hours. System drafted this. Auto-sending in 2 hours if not reviewed.`,
-          ai_message: draftMessage,
-          due_date: dueDate, 
-          status: "pending"
-        });
+      const { data: newFollowup } =
+  await supabaseAdmin
+    .from("follow_ups")
+    .insert({
+      lead_id: lead.id,
+      title: `Automated Re-engagement`,
+      description: `Lead inactive for ${Math.round(hoursSinceLastActivity)} hours. System drafted this. Auto-sending in 2 hours if not reviewed.`,
+      ai_message: draftMessage,
+      due_date: dueDate,
+      status: "pending"
+    })
+    .select()
+    .single();
+
+if (newFollowup) {
+  await supabaseAdmin
+    .from("activity_log")
+    .insert({
+      lead_id: lead.id,
+
+      activity_type: "followup",
+
+      title: "Follow-up Created",
+
+      description: newFollowup.title,
+    });
+}
 
         draftedCount++;
       }

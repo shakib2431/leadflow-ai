@@ -15,6 +15,25 @@ export async function POST(
         status: "completed",
       })
       .eq("id", id);
+      const { data: followup } = await supabaseAdmin
+  .from("follow_ups")
+  .select("*")
+  .eq("id", id)
+  .single();
+
+if (followup) {
+  await supabaseAdmin
+    .from("activity_log")
+    .insert({
+      lead_id: followup.lead_id,
+
+      activity_type: "followup",
+
+      title: "Follow-up Completed",
+
+      description: followup.title,
+    });
+}
 
   if (error) {
     return NextResponse.json(

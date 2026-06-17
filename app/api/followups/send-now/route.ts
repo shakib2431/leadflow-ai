@@ -74,13 +74,45 @@ export async function POST(
         }
       );
 
-    const result =
-      await response.json();
+const result =
+  await response.json();
 
-    console.log(
-      "SEND NOW RESULT:",
-      result
-    );
+console.log(
+  "SEND NOW RESULT:",
+  result
+);
+
+if (result.error) {
+  return NextResponse.json(
+    {
+      error: "WhatsApp delivery failed",
+      details: result.error,
+    },
+    {
+      status: 400,
+    }
+  );
+}
+
+const { error: activityError } =
+  await supabaseAdmin
+    .from("activity_log")
+    .insert({
+      lead_id: lead.id,
+
+      activity_type: "whatsapp",
+
+      title: "WhatsApp Sent",
+
+      description:
+        followup.ai_message ||
+        followup.description,
+    });
+
+console.log(
+  "ACTIVITY LOG ERROR:",
+  activityError
+);
 
     // Mark complete
 

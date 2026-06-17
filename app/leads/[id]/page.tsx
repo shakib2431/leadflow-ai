@@ -3,9 +3,11 @@
 import LeadTimeline from "@/components/lead-timeline";
 import FollowupModal from "@/components/followup-modal";
 import AiMessageModal from "@/components/ai-message-modal";
+import EmailModal from "@/components/email-modal";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import ActivityFeed from "@/components/activity-feed";
 import {
   Mail,
   Phone,
@@ -34,18 +36,39 @@ export default function LeadDetailsPage() {
 
   const [lead, setLead] = useState<Lead | null>(null);
   const [notes, setNotes] = useState<any[]>([]);
+  const [memory, setMemory] = useState<any>(null);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [emailOpen, setEmailOpen] =
+  useState(false);
+
+const [emailSubject, setEmailSubject] =
+  useState("");
+
+const [emailBody, setEmailBody] =
+  useState("");
+
+const [emailLoading, setEmailLoading] =
+  useState(false);
+const [emails, setEmails] = useState<any[]>([]);
+
   const [aiLoading, setAiLoading] = useState(false);
   const [followupOpen, setFollowupOpen] = useState(false);
   const [followupLoading, setFollowupLoading] = useState(false);
-  const [followups, setFollowups] =
-  useState<any[]>([]);
-  const [pendingFollowups, setPendingFollowups] =
-  useState<any[]>([]);
-  const [completedFollowups, setCompletedFollowups] =
-  useState<any[]>([]);
+  const [followups, setFollowups] = useState<any[]>([]);
+  const [pendingFollowups, setPendingFollowups] = useState<any[]>([]);
+  const [completedFollowups, setCompletedFollowups] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [revivalData, setRevivalData] =
+  useState<any>(null);
+
+const [revivalLoading, setRevivalLoading] =
+  useState(false);
+
+
+
 
   async function loadLead() {
     const { data, error } = await supabase
@@ -86,31 +109,39 @@ export default function LeadDetailsPage() {
 
     if (!error) {
       const newItem = {
-        note: newNote,
+        description: newNote,
         created_at: new Date().toISOString(),
       };
 
       setNotes([newItem, ...notes]);
       setNewNote("");
+      // Add entry to activity log via hook structure or manual update trigger
+      await fetchActivities();
     }
   }
 
-useEffect(() => {
-  loadLead();
-}, []);
+  useEffect(() => {
+    loadLead();
+  }, []);
 
-useEffect(() => {
-  if (lead) {
-    fetchFollowups();
-  }
+ useEffect(() => {
+  fetchActivities();
+  fetchFollowups();
+  fetchProposals();
+  fetchEmails();
 }, [lead]);
-// NEW: Realtime Listener for the Lead Page
+useEffect(() => {
+  if (lead?.id) {
+    fetchMemory();
+  }
+}, [lead?.id]);
+
+  // Realtime Listener for the Lead Page
   useEffect(() => {
     if (!lead?.id) return;
 
     const channel = supabase
       .channel("lead-page-realtime")
-      // Listen for changes to THIS lead's follow-ups
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "follow_ups", filter: `lead_id=eq.${lead.id}` },
@@ -118,7 +149,13 @@ useEffect(() => {
           fetchFollowups(); 
         }
       )
-      // Listen for changes to THIS lead's data (like status changes)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "activity_log", filter: `lead_id=eq.${lead.id}` },
+        () => {
+          fetchActivities();
+        }
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "leads", filter: `id=eq.${lead.id}` },
@@ -133,51 +170,39 @@ useEffect(() => {
     };
   }, [lead?.id]);
 
-async function sendAiFollowup(item: any) {
+  async function sendAiFollowup(item: any) {
+    if (!lead) return;
 
-  if (!lead) return;
+    try {
+      const response = await fetch(
+        "/api/send-whatsapp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phone: lead.phone,
+            message: item.ai_message,
+          }),
+        }
+      );
 
-  try {
+      const data = await response.json();
+      console.log("WhatsApp Followup Result:", data);
 
-    const response = await fetch(
-      "/api/send-whatsapp",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone: lead.phone,
-          message: item.ai_message,
-        }),
-      }
-    );
+      await supabase
+        .from("follow_ups")
+        .update({
+          status: "completed",
+        })
+        .eq("id", item.id);
 
-    const data = await response.json();
-
-    console.log(
-      "WhatsApp Followup Result:",
-      data
-    );
-
-    await supabase
-      .from("follow_ups")
-      .update({
-        status: "completed",
-      })
-      .eq("id", item.id);
-
-   await fetchFollowups();
-
-  } catch (err) {
-
-    console.error(
-      "Followup Send Error:",
-      err
-    );
-
+      await fetchFollowups();
+    } catch (err) {
+      console.error("Followup Send Error:", err);
+    }
   }
-}
 
   async function updateStatus(status: string) {
     if (!lead) return;
@@ -200,24 +225,7 @@ async function sendAiFollowup(item: any) {
     setAiLoading(true);
 
     try {
-      const prompt = `
-You are an expert sales assistant.
-
-Lead Name:
-${lead.full_name}
-
-Lead Source:
-${lead.source}
-
-Message Type:
-${type}
-
-Custom Instructions:
-${customPrompt || "None"}
-
-Generate a professional WhatsApp message.
-Keep it persuasive, human, and concise.
-`;
+      const prompt = `You are an expert sales assistant. Lead Name: ${lead.full_name} Lead Source: ${lead.source} Message Type: ${type} Custom Instructions: ${customPrompt || "None"} Generate a professional WhatsApp message. Keep it persuasive, human, and concise.`;
 
       const response = await fetch("/api/generate-message", {
         method: "POST",
@@ -241,110 +249,173 @@ Keep it persuasive, human, and concise.
     }
   }
 
-async function saveFollowup(title: string, note: string, dueDate: string) {
-  if (!lead) return;
+  async function saveFollowup(title: string, note: string, dueDate: string) {
+    if (!lead) return;
 
-  setFollowupLoading(true);
+    setFollowupLoading(true);
 
-  try {
-    const { error } = await supabase
+    try {
+      const { error } = await supabase
+        .from("follow_ups")
+        .insert([
+          {
+            lead_id: lead.id,
+            title: title,
+            description: note,
+            due_date: dueDate,
+            status: "pending",
+          },
+        ]);
+
+      if (error) {
+        console.error("Supabase error payload received:", error);
+        alert(`Failed to save follow-up: ${error.message}`);
+        return;
+      }
+
+      await fetchFollowups();
+      setFollowupOpen(false);
+      alert("Follow-up saved successfully!");
+    } catch (error) {
+      console.error("Runtime component crash handler caught:", error);
+    } finally {
+      setFollowupLoading(false);
+    }
+  }
+
+  async function fetchFollowups() {
+    if (!lead) return;
+
+    const { data, error } = await supabase
       .from("follow_ups")
-      .insert([
-        {
-          lead_id: lead.id,
-          title: title,
-          description: note,
-          due_date: dueDate,
-          status: "pending",
-        },
-      ]);
+      .select("*")
+      .eq("lead_id", lead.id)
+      .order("created_at", {
+        ascending: false,
+      });
 
     if (error) {
-      console.error("Supabase error payload received:", error);
-      alert(`Failed to save follow-up: ${error.message}`);
+      console.error(error);
       return;
     }
 
-    await fetchFollowups();
-
-    setFollowupOpen(false);
-    alert("Follow-up saved successfully!");
-
-  } catch (error) {
-    console.error("Runtime component crash handler caught:", error);
-  } finally {
-    setFollowupLoading(false);
+    const fetchedFollowups = data || [];
+    setFollowups(fetchedFollowups);
+    setPendingFollowups(fetchedFollowups.filter((item: any) => item.status !== "completed"));
+    setCompletedFollowups(fetchedFollowups.filter((item: any) => item.status === "completed"));
   }
-}
-async function fetchFollowups() {
 
-  if (!lead) return;
+  async function fetchActivities() {
+    if (!lead?.id) return;
 
- const { data, error } =
-  await supabase
-    .from("follow_ups")
+    const { data } = await supabase
+      .from("activity_log")
+      .select("*")
+      .eq("lead_id", lead.id)
+      .order("created_at", {
+        ascending: false,
+      });
+
+    setActivities(data || []);
+  }
+
+  async function fetchProposals() {
+    if (!lead?.id) return;
+
+    const { data } = await supabase
+      .from("proposals")
+      .select("*")
+      .eq("lead_id", lead.id)
+      .order("created_at", {
+        ascending: false,
+      });
+
+    setProposals(data || []);
+  }
+  async function fetchEmails() {
+  if (!lead?.id) return;
+
+  const { data } = await supabase
+    .from("email_history")
     .select("*")
     .eq("lead_id", lead.id)
     .order("created_at", {
       ascending: false,
     });
 
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  setFollowups(data || []);
-  const pending =
-(data || []).filter(
-  (item: any) =>
-    item.status !== "completed"
-);
-
-const completed =
-(data || []).filter(
-  (item: any) =>
-    item.status === "completed"
-);
-
-setPendingFollowups(pending);
-
-setCompletedFollowups(
-  completed
-);
+  setEmails(data || []);
 }
-const timelineItems = [
-  ...notes.map((note) => ({
-    type: "📝 Note",
-    text: note.note,
-    date: note.created_at,
-  })),
+async function fetchMemory() {
+  console.log("MEMORY FETCH", lead);
 
-  ...followups.map((followup) => ({
+  if (!lead?.id) return;
+
+const { data, error } = await supabase
+  .from("lead_memory")
+  .select("*")
+  .eq("lead_id", lead.id)
+  .maybeSingle();
+
+  console.log(data, error);
+
+  if (error) return;
+
+  setMemory(data);
+}
+
+async function generateRevival() {
+  if (!lead) return;
+
+  try {
+    setRevivalLoading(true);
+
+    const res = await fetch(
+      "/api/generate-revival",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+        body: JSON.stringify({
+          leadName: lead.full_name,
+          leadScore: score,
+          daysInactive: 14,
+          stage: lead.status,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    setRevivalData(data.data);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setRevivalLoading(false);
+  }
+}
+
+
+  const timelineItems = activities.map((activity) => ({
     type:
-      followup.status === "completed"
-        ? "✅ Follow-up Completed"
-        : "📅 Follow-up Created",
+      activity.activity_type === "note"
+        ? "📝 Note"
+        : activity.activity_type === "followup"
+        ? activity.title.includes("Completed")
+          ? "✅ Follow-up Completed"
+          : "📅 Follow-up Created"
+        : activity.activity_type === "whatsapp"
+        ? "💬 WhatsApp Sent"
+        : "⚡ Activity",
+    text: activity.description,
+    date: activity.created_at,
+  }));
 
-    text: followup.title,
-    date: followup.created_at,
-  })),
-].sort(
-  (a, b) =>
-    new Date(b.date).getTime() -
-    new Date(a.date).getTime()
-);
+  const score = lead?.ai_score || 0;
+  const scoreColor = score >= 70 ? "text-green-400" : score >= 40 ? "text-yellow-400" : "text-red-400";
 
-
-const score = lead?.ai_score || 0;
-
-
-const scoreColor =
-  score >= 70
-    ? "text-green-400"
-    : score >= 40
-    ? "text-yellow-400"
-    : "text-red-400";
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] text-white p-10">
@@ -360,26 +431,59 @@ const scoreColor =
       </div>
     );
   }
+
   const suggestedMessage =
-  lead?.status === "converted"
-    ? `Hi ${lead?.full_name},
+    lead?.status === "converted"
+      ? `Hi ${lead?.full_name},\n\nThank you for choosing us. We'd love to hear your feedback and discuss future opportunities.`
+      : lead?.status === "warm"
+      ? `Hi ${lead?.full_name},\n\nI wanted to follow up regarding your interest. I'd be happy to answer any questions and discuss next steps.`
+      : lead?.status === "hot"
+      ? `Hi ${lead?.full_name},\n\nI noticed you're actively evaluating our offering. Let's schedule a quick discussion and move things forward.`
+      : `Hi ${lead?.full_name},\n\nJust checking in regarding your inquiry. Let me know if you need any additional information.`;
 
-Thank you for choosing us. We'd love to hear your feedback and discuss future opportunities.`
+  async function sendEmail(subject: string, body: string) {
+  if (!lead?.email) {
+    alert("This lead does not have an email address.");
+    return;
+  }
 
-    : lead?.status === "warm"
-    ? `Hi ${lead?.full_name},
+  try {
+    setEmailLoading(true);
 
-I wanted to follow up regarding your interest. I'd be happy to answer any questions and discuss next steps.`
+    // Notice we changed this to /api/test-email to match your folder!
+    await fetch("/api/send-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    body: JSON.stringify({
+  lead_id: lead.id,
+  to: lead.email,
+  subject,
+  body,
+}),
+    });
 
-    : lead?.status === "hot"
-    ? `Hi ${lead?.full_name},
+    alert("Email sent successfully!");
+    setEmailOpen(false);
 
-I noticed you're actively evaluating our offering. Let's schedule a quick discussion and move things forward.`
+    // Log it to the timeline
+    await supabase.from("activity_log").insert([{
+      lead_id: lead.id,
+      activity_type: "email",
+      title: "Email Sent",
+      description: `Subject: ${subject}`
+    }]);
+    
+    await fetchActivities();
 
-    : `Hi ${lead?.full_name},
-
-Just checking in regarding your inquiry. Let me know if you need any additional information.`;
-
+  } catch (err) {
+    console.error(err);
+    alert("Failed to send email.");
+  } finally {
+    setEmailLoading(false);
+  }
+}
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
       {/* HEADER */}
@@ -388,20 +492,19 @@ Just checking in regarding your inquiry. Let me know if you need any additional 
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-3xl font-bold">
             {lead.full_name?.charAt(0)}
           </div>
-
           <div>
-            <h1 className="text-4xl font-bold">{lead.full_name} 🟢 AI Score 90
-🔥 Hot Lead
-WhatsApp Lead</h1>
-            <p className="text-white/40 mt-1">Lead profile & activity</p>
+            <h1 className="text-4xl font-bold flex items-center gap-3">
+              {lead.full_name}
+            </h1>
+            <p className="text-white/40 mt-1">Lead profile & automated communication tracking</p>
           </div>
         </div>
 
-        {/* STATUS */}
+        {/* STATUS DROPDOWN */}
         <select
           value={lead.status}
           onChange={(e) => updateStatus(e.target.value)}
-          className="bg-[#111827] border border-white/10 rounded-2xl px-4 py-3 text-white outline-none"
+          className="bg-[#111827] border border-white/10 rounded-2xl px-4 py-3 text-white outline-none cursor-pointer hover:border-white/20 transition-all"
         >
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
@@ -413,473 +516,433 @@ WhatsApp Lead</h1>
         </select>
       </div>
 
+      {/* THREE COLUMN GRID TRACK */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* LEFT */}
+        
+        {/* LEFT COLUMN: MAIN CONTENT PROFILE HOUSING (2 COLS ENTIRE WINDOW VIEW) */}
         <div className="xl:col-span-2 space-y-6">
-          {/* INFO CARD */}
+          
+          {/* PROFILE INFO CONTAINER */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <h2 className="text-2xl font-semibold mb-6">Lead Information</h2>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
                 <div className="flex items-center gap-2 text-white/40 text-sm mb-2">
-                  <User size={15} />
-                  Full Name
+                  <User size={15} /> Full Name
                 </div>
                 <div className="text-lg font-medium">{lead.full_name}</div>
               </div>
-
               <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
                 <div className="flex items-center gap-2 text-white/40 text-sm mb-2">
-                  <Mail size={15} />
-                  Email
+                  <Mail size={15} /> Email
                 </div>
-                <div className="text-lg font-medium">{lead.email}</div>
+                <div className="text-lg font-medium truncate">{lead.email || "No Email Provided"}</div>
               </div>
-
               <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
                 <div className="flex items-center gap-2 text-white/40 text-sm mb-2">
-                  <Phone size={15} />
-                  Phone
+                  <Phone size={15} /> Phone
                 </div>
                 <div className="text-lg font-medium">{lead.phone}</div>
               </div>
-
               <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
                 <div className="flex items-center gap-2 text-white/40 text-sm mb-2">
-                  <MessageCircle size={15} />
-                  Source
+                  <MessageCircle size={15} /> Source
                 </div>
                 <div className="text-lg font-medium capitalize">{lead.source}</div>
               </div>
             </div>
           </div>
-{/* AI Analysis */}
-
-<div className="mt-6 rounded-3xl border border-violet-500/20 bg-gradient-to-br
-from-violet-500/10
-to-cyan-500/5 p-6">
-
-  <div className="flex items-center gap-2 mb-4">
-    <span className="text-xl">🤖</span>
-    <h2 className="text-xl font-semibold">
-      AI Analysis
-    </h2>
-  </div>
-
- <div className="bg-black/20 rounded-2xl p-5 border border-white/5">
-
-    <div>
-      <p className="text-white/40 text-sm mb-1">
-        Lead Score
-      </p>
-
-    <div
-  className={`text-3xl font-bold ${scoreColor}`}
->
-  {score}
-
-  <span className="text-sm text-white/40 ml-2">
-    /100
-  </span>
-</div>
-
-<div className="mt-2">
-
-  <span
-    className={`px-3 py-1 rounded-full text-xs font-medium
-      ${
-        score >= 70
-          ? "bg-green-500/20 text-green-400"
-          : score >= 40
-          ? "bg-yellow-500/20 text-yellow-400"
-          : "bg-red-500/20 text-red-400"
-      }`}
-  >
-    {
-      score >= 70
-        ? "🔥 Hot Lead"
-        : score >= 40
-        ? "🟡 Warm Lead"
-        : "🔴 Cold Lead"
-    }
-  </span>
-
-</div>
-    </div>
-
-    <div>
-      <p className="text-white/40 text-sm mb-1">
-        Recommended Action
-      </p>
-
-      <p className="text-white/80">
-        {lead?.ai_next_action ||
-          "No recommendation yet"}
-      </p>
-    </div>
-
-    <div className="md:col-span-2">
-      <p className="text-white/40 text-sm mb-1">
-        Summary
-      </p>
-
-      <p className="text-white/80">
-        {lead?.ai_summary ||
-          "No AI summary available"}
-      </p>
-    </div>
-
-    <div className="md:col-span-2">
-     <div className="mt-2 p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
-  <p className="text-white/90">
-    {lead?.ai_score_reason ||
-      "No reasoning available"}
-  </p>
-</div>
-    </div>
-
-  </div>
-
-</div>
-          {/* NOTES */}
+          
+          {/* PROPOSAL HISTORY INTERFACE ENGINE */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-semibold">Notes</h2>
-              <button className="bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-xl text-sm transition-all">
-                + Add Note
-              </button>
+              <h2 className="text-2xl font-semibold">💰 Proposal History</h2>
+              <span className="text-white/50 text-sm">{proposals.length} proposals</span>
             </div>
-
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Write a note..."
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                  className="flex-1 h-12 rounded-2xl bg-black/30 border border-white/10 px-4 text-white outline-none"
-                />
-                <button
-                  onClick={addNote}
-                  className="px-5 rounded-2xl bg-violet-600 hover:bg-violet-500 transition-all"
-                >
-                  Add
-                </button>
+            {proposals.length === 0 ? (
+              <div className="text-white/40 text-sm italic">No proposals built or sent for this lead yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {proposals.map((proposal) => (
+                  <div key={proposal.id} className="p-4 rounded-2xl border border-white/10 bg-black/20 flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-medium text-white">{proposal.title}</h3>
+                      <span className="text-xs uppercase px-2.5 py-1 rounded-md font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                        {proposal.status}
+                      </span>
+                    </div>
+                    <div className="text-xl font-bold text-green-400">₹{Number(proposal.value).toLocaleString('en-IN')}</div>
+                  </div>
+                ))}
               </div>
-
-              {notes.map((item, index) => (
-                <div
-                  key={index}
-                  className="rounded-2xl bg-black/30 border border-white/10 p-5"
-                >
-                  <p className="text-white">{item.description}</p>
-                  <p className="text-white/30 text-sm mt-3">
-                    {new Date(item.created_at).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
+            )}
           </div>
-        </div>
-        {/* Followups */}
-
-<div className="grid md:grid-cols-2 gap-6 mt-6">
-
-<div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6">
-
-
-  <div className="flex items-center justify-between mb-5">
-
-    <h3 className="text-xl font-semibold">
-      Upcoming Follow-ups
-    </h3>
-
-    <span className="text-sm text-white/50">
-  {pendingFollowups.length} reminders
-</span>
-
-  </div>
-
-  <div className="space-y-4">
-
-    {pendingFollowups.length === 0 && (
-
-      <div className="text-sm text-white/40">
-        No follow-ups yet
-      </div>
-
-    )}
-
-    {pendingFollowups.map((item) => (
-
-<div
-  key={item.id}
-  className={`p-4 rounded-2xl border transition-all ${
-    item.due_date &&
-    new Date(item.due_date) < new Date()
-      ? "border-red-500/40 bg-red-500/10"
-      : item.due_date &&
-        new Date(item.due_date).toDateString() ===
-          new Date().toDateString()
-      ? "border-orange-500/40 bg-orange-500/10"
-      : "border-violet-500/30 bg-violet-500/10"
-  }`}
->
-  <div className="flex items-start justify-between">
-
-    <div>
-
-      <h4 className="font-medium">
-        {item.title || "Untitled"}
-      </h4>
-
-  <p className="text-sm text-white/60 mt-1">
-  {item.description}
-</p>
-{item.ai_message && (
-
-  <div className="mt-3 p-3 rounded-xl bg-black/20 border border-violet-500/20">
-
-    <p className="text-xs uppercase tracking-wider text-violet-300 mb-2">
-      AI Follow-up Message
-    </p>
-
-    <p className="text-sm text-white/80 whitespace-pre-wrap">
-      {item.ai_message}
-    </p>
-
-    <button
-      onClick={() => sendAiFollowup(item)}
-      className="mt-4 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 transition-all text-sm font-medium"
-    >
-      🚀 Send AI Follow-up
-    </button>
-
-  </div>
-
-)}
-      <div
-        className={`text-xs mt-3 font-medium ${
-          item.due_date &&
-          new Date(item.due_date) < new Date()
-            ? "text-red-300"
-            : item.due_date &&
-              new Date(item.due_date).toDateString() ===
-                new Date().toDateString()
-            ? "text-orange-300"
-            : "text-violet-300"
-        }`}
-      >
-        {item.due_date &&
-        new Date(item.due_date) < new Date()
-          ? "Overdue"
-          : item.due_date &&
-            new Date(item.due_date).toDateString() ===
-              new Date().toDateString()
-          ? "Due Today"
-          : "Upcoming"}
-      </div>
-
-    </div>
-
-    <div className="text-xs text-violet-200">
-      {item.due_date
-        ? new Date(
-            item.due_date
-          ).toLocaleString()
-        : "No date"}
-    </div>
-
-  </div>
-</div>
-
-    ))}
-
-  </div>
-
-</div>
-{/* Completed Followups */}
-
-<div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6">
-
-  <div className="flex items-center justify-between mb-5">
-
-    <h3 className="text-xl font-semibold">
-      Completed Follow-ups
-    </h3>
-
-    <span className="text-sm text-white/50">
-      {completedFollowups.length} completed
-    </span>
-
-  </div>
-
-  <div className="space-y-4">
-
-    {completedFollowups.length === 0 && (
-
-      <div className="text-sm text-white/40">
-        No completed follow-ups
-      </div>
-
-    )}
-
-    {completedFollowups.map((item) => (
-
-      <div
-        key={item.id}
-        className="p-4 rounded-2xl border border-green-500/30 bg-green-500/10"
-      >
-
-        <h4 className="font-medium">
-          {item.title}
-        </h4>
-
-        <p className="text-sm text-white/60 mt-1">
-          {item.description}
-        </p>
-
-        <div className="text-green-400 text-xs mt-3 font-medium">
-          Completed ✅
-        </div>
-
-      </div>
-
-    ))}
-
-  </div>
-
-</div>
-         
-        </div>
-        
-<div className="min-h-[700px]
-max-h-[700px] overflow-y-auto">
-
-  <LeadTimeline
-    items={timelineItems}
-  />
-
-</div>
- {/* QUICK ACTIONS */}
+          {/* Email HISTORY INTERFACE */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-            <h2 className="text-2xl font-semibold mb-5">Quick Actions</h2>
-
-            <div className="space-y-3">
-              <button
-                onClick={() => {
-                  window.open(
-                    `https://wa.me/${lead.phone}?text=${encodeURIComponent(
-                      `Hi ${lead.full_name}, just following up regarding your inquiry.`
-                    )}`,
-                    "_blank"
-                  );
-                }}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 font-medium"
-              >
-                Send WhatsApp
-              </button>
-
-              <button
-                onClick={() => setAiModalOpen(true)}
-                disabled={aiLoading}
-                className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/40 hover:bg-white/5 transition-all text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {aiLoading ? "Generating..." : "Generate AI Message"}
-              </button>
-
-              <Link
-                href="/conversations"
-                className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/30 bg-black/20 flex items-center justify-center font-medium transition-all"
-              >
-                Open Conversation
-              </Link>
-
-              <button className="w-full bg-black/30 border border-white/10 rounded-2xl py-3 hover:border-violet-500/30 transition-all">
-                Schedule Call
-              </button>
-
-              <button
-                onClick={() => setFollowupOpen(true)}
-                className="w-full bg-black/30 border border-white/10 rounded-2xl py-3 hover:border-violet-500/30 transition-all"
-              >
-                Add Follow-up
-              </button>
-            </div>
-          </div>
-          <div className="bg-[#111827] border border-violet-500/20 rounded-3xl p-6">
-
-  <h2 className="text-xl font-semibold mb-4">
-    🚀 AI Sales Coach
+  <h2 className="text-2xl font-semibold mb-4">
+    📧 Email History
   </h2>
 
-  <div className="space-y-4">
+  {emails.length === 0 ? (
+    <p className="text-white/40">
+      No emails sent yet.
+    </p>
+  ) : (
+    <div className="space-y-3">
+      {emails.map((email) => (
+        <div
+          key={email.id}
+          className="p-4 rounded-xl bg-black/20 border border-white/10"
+        >
+          <div className="font-medium">
+            {email.subject}
+          </div>
 
-    <div>
-      <p className="text-white/40 text-sm">
-        Lead Priority
-      </p>
+          <div className="text-white/50 text-sm mt-1">
+            To: {email.recipient}
+          </div>
 
-      <p className="font-semibold text-green-400">
-        {score >= 70
-          ? "High"
-          : score >= 40
-          ? "Medium"
-          : "Low"}
-      </p>
+          <div className="text-white/70 text-sm mt-2">
+            {email.body}
+          </div>
+
+          <div className="text-xs text-white/30 mt-2">
+            {new Date(
+              email.created_at
+            ).toLocaleString()}
+          </div>
+        </div>
+      ))}
     </div>
-
-    <div>
-      <p className="text-white/40 text-sm">
-        Recommended Action
-      </p>
-
-      <p>
-        {lead?.ai_next_action ||
-          "Follow up with the lead"}
-      </p>
-    </div>
-
-    <div>
-      <p className="text-white/40 text-sm">
-        Suggested Message
-      </p>
-
-  <div className="bg-black/20 rounded-xl p-4 mt-2 text-sm whitespace-pre-wrap">
-  {suggestedMessage}
+  )}
 </div>
-<button
-  onClick={() =>
-    window.open(
-      `https://wa.me/${lead?.phone}?text=${encodeURIComponent(
-        suggestedMessage
-      )}`,
-      "_blank"
-    )
-  }
-  className="mt-3 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 transition-all text-sm font-medium"
->
-  💬 Send Suggested Message
-</button>
-    </div>
 
+{/* Lead Memory */}
+
+<div className="mt-6 bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
+
+  <h2 className="text-2xl font-semibold mb-5">
+    🧠 Lead Memory
+  </h2>
+
+  {!memory ? (
+    <div className="text-white/40">
+      No memory recorded yet.
+    </div>
+  ) : (
+    <div className="space-y-4">
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Summary
+        </div>
+        <div>{memory.summary}</div>
+      </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Budget
+        </div>
+        <div>{memory.budget}</div>
+      </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Objections
+        </div>
+        <div>{memory.objections}</div>
+      </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Decision Maker
+        </div>
+        <div>{memory.decision_maker}</div>
+      </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Next Action
+        </div>
+        <div>{memory.next_action}</div>
+      </div>
+
+    </div>
+  )}
+
+</div>
+
+<div className="mt-6 bg-[#111827] border border-red-500/20 rounded-3xl p-6">
+
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-2xl font-semibold">
+      🔥 Lead Revival Engine
+    </h2>
+
+    <button
+      onClick={generateRevival}
+      disabled={revivalLoading}
+      className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500"
+    >
+      {revivalLoading
+        ? "Analyzing..."
+        : "Generate Revival"}
+    </button>
   </div>
 
-</div>
-    {/* RIGHT */}
-<div className="space-y-6 sticky top-6 self-start">
-          {/* ACTIVITY */}
-          
+  {!revivalData ? (
+    <div className="text-white/40">
+      No revival analysis generated.
+    </div>
+  ) : (
+    <div className="space-y-4">
 
+      <div>
+        <div className="text-white/40 text-sm">
+          Risk Level
+        </div>
+        <div>
+          {revivalData.risk_level}
+        </div>
       </div>
- </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Reason
+        </div>
+        <div>
+          {revivalData.reason}
+        </div>
+      </div>
+
+      <div>
+        <div className="text-white/40 text-sm">
+          Revival Message
+        </div>
+        <div>
+          {revivalData.revival_message}
+        </div>
+      </div>
+
+    </div>
+  )}
+
+</div>
+
+          {/* AI ANALYSIS FRAME */}
+          <div className="rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 to-cyan-500/5 p-6 space-y-5">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🤖</span>
+              <h2 className="text-xl font-semibold">AI Operating Analytics</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-black/30 rounded-2xl p-4 border border-white/5">
+                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Lead Score Matrix</p>
+                <div className={`text-3xl font-bold ${scoreColor}`}>
+                  {score} <span className="text-sm text-white/40 font-normal">/100</span>
+                </div>
+                <div className="mt-2">
+                  <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    score >= 70 ? "bg-green-500/20 text-green-400" : score >= 40 ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"
+                  }`}>
+                    {score >= 70 ? "🔥 Hot Engagement" : score >= 40 ? "🟡 Warm Velocity" : "🔴 Cold Nurture"}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-black/30 rounded-2xl p-4 border border-white/5">
+                <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Next Autopilot Task</p>
+                <p className="text-sm text-white/90 leading-relaxed">{lead?.ai_next_action || "Awaiting conversational telemetry raw logs..."}</p>
+              </div>
+            </div>
+            <div className="bg-black/30 rounded-2xl p-4 border border-white/5">
+              <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Lead Profile Summary</p>
+              <p className="text-sm text-white/80 leading-relaxed">{lead?.ai_summary || "No automated executive summary generated yet."}</p>
+            </div>
+            {lead?.ai_score_reason && (
+              <div className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/20 text-sm text-white/70 leading-relaxed italic">
+                {lead.ai_score_reason}
+              </div>
+            )}
+          </div>
+
+          {/* MANUAL AGENT NOTES UTILITY */}
+          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+            <h2 className="text-2xl font-semibold mb-5">CRM Internal Documentation</h2>
+            <div className="flex gap-3 mb-6">
+              <input
+                type="text"
+                placeholder="Type profile updates or manually verified constraints..."
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                className="flex-1 h-12 rounded-2xl bg-black/30 border border-white/10 px-4 text-white outline-none text-sm placeholder:text-white/20 focus:border-violet-500/50 transition-all"
+              />
+              <button onClick={addNote} className="px-6 rounded-2xl bg-violet-600 hover:bg-violet-500 font-medium text-sm transition-all shadow-lg shadow-violet-600/10">
+                Save Log
+              </button>
+            </div>
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+              {notes.length === 0 ? (
+                <p className="text-sm text-white/30 italic">No manual staff commentary saved yet.</p>
+              ) : (
+                notes.map((item, index) => (
+                  <div key={index} className="rounded-2xl bg-black/20 border border-white/5 p-4 flex flex-col gap-2">
+                    <p className="text-sm text-white/80">{item.description}</p>
+                    <span className="text-white/30 text-xs">{new Date(item.created_at).toLocaleString()}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* TASK REMINDER SPLIT PANELS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Upcoming Actions</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400">{pendingFollowups.length} active</span>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                {pendingFollowups.length === 0 ? (
+                  <div className="text-xs text-white/30 italic py-4">No scheduled automation routines.</div>
+                ) : (
+                  pendingFollowups.map((item) => (
+                    <div key={item.id} className={`p-4 rounded-xl border flex flex-col gap-3 transition-all ${
+                      item.due_date && new Date(item.due_date) < new Date() ? "border-red-500/40 bg-red-500/5" : "border-violet-500/20 bg-black/20"
+                    }`}>
+                      <div>
+                        <h4 className="font-medium text-sm text-white">{item.title}</h4>
+                        <p className="text-xs text-white/50 mt-1 leading-relaxed">{item.description}</p>
+                      </div>
+                      {item.ai_message && (
+                        <div className="p-3 rounded-lg bg-black/40 border border-white/5 flex flex-col gap-2">
+                          <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Autonomous Outreach Message</p>
+                          <p className="text-xs text-white/70 italic whitespace-pre-wrap">"{item.ai_message}"</p>
+                          <button onClick={() => sendAiFollowup(item)} className="mt-1 w-full py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition-all text-xs font-semibold">
+                            🚀 Fire Now
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Completed Audits</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">{completedFollowups.length} logged</span>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                {completedFollowups.length === 0 ? (
+                  <div className="text-xs text-white/30 italic py-4">No executed workflows found.</div>
+                ) : (
+                  completedFollowups.map((item) => (
+                    <div key={item.id} className="p-4 rounded-xl border border-green-500/20 bg-green-500/5 flex flex-col gap-1">
+                      <h4 className="font-medium text-sm text-white/90">{item.title}</h4>
+                      <p className="text-xs text-white/40 leading-relaxed">{item.description}</p>
+                      <span className="text-green-400 font-semibold text-[10px] uppercase mt-2">Verified Complete ✅</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: ACTION RADAR + ACTIVITY ENGINE TRACKING HUB (1 COL WINDOW VIEW) */}
+        <div className="space-y-6">
+          {/* Add your new Intelligence Feed here */}
+  <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+    <ActivityFeed leadId={lead.id} />
+  </div>
+
+  {/* Existing Command Console... */}
+  <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+     {/* ... your existing buttons ... */}
+  </div>
+          
+          {/* QUICK REACTION PANEL */}
+          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+            <h2 className="text-2xl font-semibold mb-5">Command Console</h2>
+            <div className="space-y-3">
+              <button onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(`Hi ${lead.full_name}, checking in regarding your inquiry.`)}`, "_blank")}
+                className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 font-medium tracking-wide hover:opacity-90 transition-all shadow-lg shadow-violet-600/10">
+                Send WhatsApp Direct
+              </button>
+              <button onClick={() => setAiModalOpen(true)} disabled={aiLoading}
+                className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/40 hover:bg-white/5 transition-all text-white font-medium disabled:opacity-50">
+                {aiLoading ? "Consulting LLM..." : "Generate Custom AI Proposal/Outreach"}
+              </button>
+           <button
+  onClick={() => setEmailOpen(true)}
+  className="w-full h-14 rounded-2xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all font-medium"
+>
+  📧 Send Email
+</button>
+<Link
+  href={`/workspace/${lead.id}`}
+  className="w-full h-14 rounded-2xl border border-green-500/30 hover:bg-green-500/10 flex items-center justify-center"
+>
+  🧠 Open AI Workspace
+</Link>
+              <Link href="/conversations" className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/30 bg-black/20 flex items-center justify-center font-medium transition-all">
+                Open Integrated Inbox
+              </Link>
+              <button onClick={() => setFollowupOpen(true)} className="w-full h-14 bg-black/30 border border-white/10 rounded-2xl hover:border-violet-500/30 transition-all font-medium text-sm">
+                + Schedule Next Routine Task
+              </button>
+            </div>
+          </div>
+
+          {/* AI COACH ENGINE CARD */}
+          <div className="bg-[#111827] border border-violet-500/20 rounded-3xl p-6 space-y-4">
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">🎯 Conversational Assistant</h2>
+            <div>
+              <p className="text-white/40 text-xs uppercase tracking-wider">Assigned Operational Velocity</p>
+              <p className="font-semibold mt-0.5 text-base text-green-400">{score >= 70 ? "High Velocity Target" : score >= 40 ? "Standard Track" : "Low Nurture Loop"}</p>
+            </div>
+            <div>
+              <p className="text-white/40 text-xs uppercase tracking-wider">Dynamic Suggestion</p>
+              <div className="bg-black/40 rounded-xl p-4 mt-2 text-xs text-white/70 whitespace-pre-wrap leading-relaxed border border-white/5 font-mono">
+                {suggestedMessage}
+              </div>
+              <button onClick={() => window.open(`https://wa.me/${lead?.phone}?text=${encodeURIComponent(suggestedMessage)}`, "_blank")}
+                className="mt-3 w-full py-2.5 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all">
+                💬 Push Suggestion to WhatsApp
+              </button>
+            </div>
+          </div>
+
+          {/* CONSOLIDATED TIMELINE FEED SYSTEM */}
+          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6 flex flex-col gap-4">
+            <h3 className="text-xl font-semibold">Unified Activity Stream</h3>
+            <div className="max-h-[500px] overflow-y-auto pr-1">
+              {timelineItems.length === 0 ? (
+                <div className="text-sm text-white/30 italic p-4 text-center">No structural transactional logging captured.</div>
+              ) : (
+                <LeadTimeline items={timelineItems} />
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* MODAL ARCHITECTURE CONTROLLERS */}
       <AiMessageModal
         open={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
         onGenerate={generateLeadAiMessage}
         loading={aiLoading}
       />
+  <EmailModal
+  open={emailOpen}
+  onClose={() => setEmailOpen(false)}
+  onSend={sendEmail}
+  loading={emailLoading}
+  leadEmail={lead?.email}
+/>
       
       <FollowupModal
         open={followupOpen}

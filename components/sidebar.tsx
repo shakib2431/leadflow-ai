@@ -3,7 +3,7 @@
 import { 
   MessageCircle, X, Zap, LayoutDashboard, Users, 
   Webhook, MessageSquare, BarChart3, Settings, 
-  ListTodo, Bot 
+  ListTodo, Bot, Sparkles 
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 // We define the navigation here so Next.js doesn't get confused by external constant files
 const SIDEBAR_NAV = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Action Queue", href: "/action-queue", icon: Sparkles, badge: "AI Agent" },
   { label: "Leads", href: "/leads", icon: Users },
   { label: "Pipeline", href: "/pipeline", icon: Webhook },
   { label: "Conversations", href: "/conversations", icon: MessageSquare },
@@ -80,16 +81,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             >
               <item.icon
                 size={16}
-                className={isActive ? "text-violet-400" : "group-hover:text-white/60"}
+                className={isActive ? "text-cyan-400" : "group-hover:text-white/60"}
               />
               <span className="flex-1 text-left">{item.label}</span>
               {item.badge && (
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-violet-500/20 text-violet-400">
+                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
+                  item.badge === "AI Agent" ? "bg-cyan-500/20 text-cyan-400" : "bg-violet-500/20 text-violet-400"
+                }`}>
                   {item.badge}
                 </span>
               )}
               {isActive && (
-                <div className="w-1 h-1 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
+                <div className={`w-1 h-1 rounded-full shadow-[0_0_8px_rgba(139,92,246,0.8)] ${
+                  item.label === "Action Queue" ? "bg-cyan-400" : "bg-violet-400"
+                }`} />
               )}
             </Link>
           );

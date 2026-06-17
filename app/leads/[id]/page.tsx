@@ -4,7 +4,7 @@ import LeadTimeline from "@/components/lead-timeline";
 import FollowupModal from "@/components/followup-modal";
 import AiMessageModal from "@/components/ai-message-modal";
 import EmailModal from "@/components/email-modal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ActivityFeed from "@/components/activity-feed";
@@ -16,6 +16,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+
 
 interface Lead {
   id: string;
@@ -63,9 +64,42 @@ const [emails, setEmails] = useState<any[]>([]);
   const [proposals, setProposals] = useState<any[]>([]);
   const [revivalData, setRevivalData] =
   useState<any>(null);
+  const feedRef = useRef<any>(null);
 
 const [revivalLoading, setRevivalLoading] =
   useState(false);
+  // Inside your LeadDetailsPage component:
+const [triageText, setTriageText] = useState("");
+const [triageLoading, setTriageLoading] = useState(false);
+const [triageSuggestion, setTriageSuggestion] = useState<string | null>(null);
+const [triageIntent, setTriageIntent] = useState<string | null>(null);
+
+async function handleTriage() {
+  if (!triageText.trim() || !lead?.id) return;
+  setTriageLoading(true);
+  setTriageSuggestion(null); // clear old suggestions
+
+  try {
+    const res = await fetch("/api/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead_id: lead.id, raw_text: triageText }),
+    });
+
+    const data = await res.json(); // Catch the API response
+
+    if (res.ok) {
+      setTriageText("");
+      setTriageIntent(data.intent);           // Save the intent to state
+      setTriageSuggestion(data.suggestion);   // Save the suggestion to state
+      feedRef.current?.fetchLogs();
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setTriageLoading(false);
+  }
+}
 
 
 
@@ -852,6 +886,7 @@ async function generateRevival() {
 
         {/* RIGHT COLUMN: ACTION RADAR + ACTIVITY ENGINE TRACKING HUB (1 COL WINDOW VIEW) */}
         <div className="space-y-6">
+          
           {/* Add your new Intelligence Feed here */}
   <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
     <ActivityFeed leadId={lead.id} />
@@ -861,6 +896,52 @@ async function generateRevival() {
   <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
      {/* ... your existing buttons ... */}
   </div>
+  <div className="bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
+  <h2 className="text-xl font-semibold mb-4">🧠 Email Triage Engine</h2>
+  <textarea
+    value={triageText}
+    onChange={(e) => setTriageText(e.target.value)}
+    placeholder="Paste the lead's email reply here..."
+    className="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-cyan-500 outline-none mb-3"
+  />
+  <button 
+    onClick={handleTriage}
+    disabled={triageLoading}
+    className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-medium transition-all"
+  >
+    {triageLoading ? "Analyzing Intent..." : "Analyze Reply & Suggest"}
+  </button>
+  {/* DISPLAY AI SUGGESTION HERE */}
+{triageSuggestion && (
+  <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+    <div className="flex items-center justify-between mb-2">
+      <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
+        Detected Intent: {triageIntent}
+      </span>
+    </div>
+    <p className="text-sm text-white/90 italic leading-relaxed">
+      "{triageSuggestion}"
+    </p>
+    <div className="mt-3 flex gap-2">
+      <button 
+        onClick={() => {
+          navigator.clipboard.writeText(triageSuggestion);
+          alert("Copied to clipboard!");
+        }}
+        className="text-xs px-3 py-1.5 rounded-lg bg-black/40 hover:bg-white/10 transition-all border border-white/10"
+      >
+        📋 Copy Reply
+      </button>
+      <button 
+        onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(triageSuggestion)}`, "_blank")}
+        className="text-xs px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all border border-green-500/20"
+      >
+        💬 Send via WhatsApp
+      </button>
+    </div>
+  </div>
+)}
+</div>
           
           {/* QUICK REACTION PANEL */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">

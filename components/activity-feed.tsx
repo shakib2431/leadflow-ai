@@ -1,15 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase"; // Use your existing lib import
+import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import { supabase } from "@/lib/supabase";
 
-export default function ActivityFeed({ leadId }: { leadId: string }) {
+const ActivityFeed = forwardRef(({ leadId }: { leadId: string }, ref) => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   async function fetchLogs() {
     if (!leadId) return;
     setLoading(true);
-    // Ensure 'message_logs' matches your Supabase table name EXACTLY
     const { data, error } = await supabase
       .from("message_logs") 
       .select("*")
@@ -20,6 +19,9 @@ export default function ActivityFeed({ leadId }: { leadId: string }) {
     setLogs(data || []);
     setLoading(false);
   }
+
+  // Expose fetchLogs to the parent
+  useImperativeHandle(ref, () => ({ fetchLogs }));
 
   useEffect(() => {
     fetchLogs();
@@ -35,7 +37,7 @@ export default function ActivityFeed({ leadId }: { leadId: string }) {
       ) : (
         logs.map((log) => (
           <div key={log.id} className={`p-4 rounded-xl border ${
-            log.direction === 'outbound' ? 'bg-violet-500/10 border-violet-500/20' : 'bg-black/40 border-white/5'
+            log.direction === 'outbound' ? 'bg-violet-500/10 border-violet-500/20' : 'bg-cyan-500/10 border-cyan-500/20'
           }`}>
             <p className="text-sm text-white/90">{log.content}</p>
             <span className="text-[10px] text-white/30 mt-2 block uppercase">
@@ -46,4 +48,7 @@ export default function ActivityFeed({ leadId }: { leadId: string }) {
       )}
     </div>
   );
-}
+});
+
+ActivityFeed.displayName = "ActivityFeed";
+export default ActivityFeed;

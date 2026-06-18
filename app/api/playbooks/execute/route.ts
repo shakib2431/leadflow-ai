@@ -3,7 +3,10 @@ import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const resend  = new Resend(process.env.RESEND_API_KEY!);
+// const resend  = new Resend(process.env.RESEND_API_KEY!);
+const resend = new Resend(
+  process.env.RESEND_API_KEY || "re_dummy_key_to_bypass_build"
+);
 const ai      = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

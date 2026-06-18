@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import AutonomousAgentWidget from "@/components/autonomous-agent-widget";
 
 import { fetchLeads, Lead } from "@/lib/leads";
 import AddLeadModal from "@/components/add-lead-modal";
@@ -161,6 +162,7 @@ export default function Dashboard() {
     loadFollowups();
     fetchDashboardData();
   }, []);
+  
 
   return (
     <div
@@ -209,6 +211,10 @@ export default function Dashboard() {
                   <Download size={14} /> Export Data
                 </Link>
               </div>
+            </div>
+            {/* 💥 ADD THE WIDGET RIGHT HERE 💥 */}
+            <div className="mb-12">
+              <AutonomousAgentWidget />
             </div>
 
             <section className="mb-12">
@@ -440,6 +446,7 @@ export default function Dashboard() {
   );
 }
 
+
 // --- SUB-COMPONENTS ---
 const MetricCard = ({ label, value, color, icon }: any) => (
   <div className="bg-[#0d0e12] p-5 rounded-2xl border border-white/[0.04] flex flex-col justify-center shadow-lg shadow-black/10">
@@ -447,6 +454,7 @@ const MetricCard = ({ label, value, color, icon }: any) => (
     <p className={`text-2xl font-bold tracking-tight ${color}`}>{value}</p>
   </div>
 );
+
 
 const ActionList = ({ icon, title, items }: any) => {
   if (!items || items.length === 0) return null;

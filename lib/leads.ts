@@ -6,11 +6,10 @@ export interface Lead {
   full_name: string;
   phone: string;
   email: string;
-
   status: string;
-
   source?: string;
   created_at?: string;
+  portal_token?: string;
 
   ai_score?: number;
   ai_summary?: string;

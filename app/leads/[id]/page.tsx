@@ -8,6 +8,8 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ActivityFeed from "@/components/activity-feed";
+import RevenueOpsPanel from "@/components/revenue-ops-panel"; 
+// Adjust the path "@components/..." based on where you saved the file!
 import {
   Mail,
   Phone,
@@ -886,6 +888,12 @@ async function generateRevival() {
 
         {/* RIGHT COLUMN: ACTION RADAR + ACTIVITY ENGINE TRACKING HUB (1 COL WINDOW VIEW) */}
         <div className="space-y-6">
+          {/* 💥 INSERT IT HERE, ABOVE YOUR ACTIVITY FEED 💥 */}
+  <RevenueOpsPanel 
+    leadId={lead.id} 
+    leadName={lead.full_name} 
+    leadEmail={lead.email} 
+  />
           
           {/* Add your new Intelligence Feed here */}
   <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">

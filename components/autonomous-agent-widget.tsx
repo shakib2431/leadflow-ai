@@ -27,18 +27,40 @@ export default function AutonomousAgentWidget() {
   useEffect(() => {
     async function wakeAgent() {
       try {
-        const res = await fetch("/api/revenue-agent");
+        // 1. Set a 15-second timeout to prevent the 30s Vercel/Browser crash
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const res = await fetch("/api/revenue-agent", {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId); // Clear timeout if it succeeds quickly
+
+        // 2. Catch 503 or 500 errors gracefully if the AI model is busy
+        if (!res.ok) {
+          console.warn(`Agent API returned status: ${res.status} - Model likely busy.`);
+          return; // Exit early before trying to parse JSON
+        }
+
         const data = await res.json();
-        if (res.ok) setActions(data.actions || []);
-      } catch (err) {
-        console.error("Agent failed to wake:", err);
+        setActions(data.actions || []);
+
+      } catch (err: any) {
+        // 3. Log specifically if it was a timeout vs a network crash
+        if (err.name === 'AbortError') {
+          console.error("Agent failed to wake: Request timed out.");
+        } else {
+          console.error("Agent failed to wake:", err.message);
+        }
       } finally {
+        // 4. Always turn off the loading state, even if the API failed
         setLoading(false);
       }
     }
+    
     wakeAgent();
   }, []);
-
   const handleReject = (actionId: string) => {
     // Optimistic UI update
     setActions(prev => prev.filter(a => a.action_id !== actionId));

@@ -9,7 +9,9 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ActivityFeed from "@/components/activity-feed";
 import RevenueOpsPanel from "@/components/revenue-ops-panel"; 
-// Adjust the path "@components/..." based on where you saved the file!
+// 💥 NEW: Imported the Enrichment Panel
+import { ContactEnrichmentPanel } from "@/components/contact-enrichment-panel"; 
+
 import {
   Mail,
   Phone,
@@ -43,18 +45,12 @@ export default function LeadDetailsPage() {
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [emailOpen, setEmailOpen] =
-  useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
 
-const [emailSubject, setEmailSubject] =
-  useState("");
-
-const [emailBody, setEmailBody] =
-  useState("");
-
-const [emailLoading, setEmailLoading] =
-  useState(false);
-const [emails, setEmails] = useState<any[]>([]);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emails, setEmails] = useState<any[]>([]);
 
   const [aiLoading, setAiLoading] = useState(false);
   const [followupOpen, setFollowupOpen] = useState(false);
@@ -64,47 +60,41 @@ const [emails, setEmails] = useState<any[]>([]);
   const [completedFollowups, setCompletedFollowups] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [proposals, setProposals] = useState<any[]>([]);
-  const [revivalData, setRevivalData] =
-  useState<any>(null);
+  const [revivalData, setRevivalData] = useState<any>(null);
   const feedRef = useRef<any>(null);
 
-const [revivalLoading, setRevivalLoading] =
-  useState(false);
-  // Inside your LeadDetailsPage component:
-const [triageText, setTriageText] = useState("");
-const [triageLoading, setTriageLoading] = useState(false);
-const [triageSuggestion, setTriageSuggestion] = useState<string | null>(null);
-const [triageIntent, setTriageIntent] = useState<string | null>(null);
+  const [revivalLoading, setRevivalLoading] = useState(false);
+  const [triageText, setTriageText] = useState("");
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageSuggestion, setTriageSuggestion] = useState<string | null>(null);
+  const [triageIntent, setTriageIntent] = useState<string | null>(null);
 
-async function handleTriage() {
-  if (!triageText.trim() || !lead?.id) return;
-  setTriageLoading(true);
-  setTriageSuggestion(null); // clear old suggestions
+  async function handleTriage() {
+    if (!triageText.trim() || !lead?.id) return;
+    setTriageLoading(true);
+    setTriageSuggestion(null);
 
-  try {
-    const res = await fetch("/api/triage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lead_id: lead.id, raw_text: triageText }),
-    });
+    try {
+      const res = await fetch("/api/triage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lead_id: lead.id, raw_text: triageText }),
+      });
 
-    const data = await res.json(); // Catch the API response
+      const data = await res.json(); 
 
-    if (res.ok) {
-      setTriageText("");
-      setTriageIntent(data.intent);           // Save the intent to state
-      setTriageSuggestion(data.suggestion);   // Save the suggestion to state
-      feedRef.current?.fetchLogs();
+      if (res.ok) {
+        setTriageText("");
+        setTriageIntent(data.intent);           
+        setTriageSuggestion(data.suggestion);   
+        feedRef.current?.fetchLogs();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setTriageLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setTriageLoading(false);
   }
-}
-
-
-
 
   async function loadLead() {
     const { data, error } = await supabase
@@ -151,7 +141,6 @@ async function handleTriage() {
 
       setNotes([newItem, ...notes]);
       setNewNote("");
-      // Add entry to activity log via hook structure or manual update trigger
       await fetchActivities();
     }
   }
@@ -160,19 +149,19 @@ async function handleTriage() {
     loadLead();
   }, []);
 
- useEffect(() => {
-  fetchActivities();
-  fetchFollowups();
-  fetchProposals();
-  fetchEmails();
-}, [lead]);
-useEffect(() => {
-  if (lead?.id) {
-    fetchMemory();
-  }
-}, [lead?.id]);
+  useEffect(() => {
+    fetchActivities();
+    fetchFollowups();
+    fetchProposals();
+    fetchEmails();
+  }, [lead]);
 
-  // Realtime Listener for the Lead Page
+  useEffect(() => {
+    if (lead?.id) {
+      fetchMemory();
+    }
+  }, [lead?.id]);
+
   useEffect(() => {
     if (!lead?.id) return;
 
@@ -368,71 +357,68 @@ useEffect(() => {
 
     setProposals(data || []);
   }
+
   async function fetchEmails() {
-  if (!lead?.id) return;
+    if (!lead?.id) return;
 
-  const { data } = await supabase
-    .from("email_history")
-    .select("*")
-    .eq("lead_id", lead.id)
-    .order("created_at", {
-      ascending: false,
-    });
+    const { data } = await supabase
+      .from("email_history")
+      .select("*")
+      .eq("lead_id", lead.id)
+      .order("created_at", {
+        ascending: false,
+      });
 
-  setEmails(data || []);
-}
-async function fetchMemory() {
-  console.log("MEMORY FETCH", lead);
-
-  if (!lead?.id) return;
-
-const { data, error } = await supabase
-  .from("lead_memory")
-  .select("*")
-  .eq("lead_id", lead.id)
-  .maybeSingle();
-
-  console.log(data, error);
-
-  if (error) return;
-
-  setMemory(data);
-}
-
-async function generateRevival() {
-  if (!lead) return;
-
-  try {
-    setRevivalLoading(true);
-
-    const res = await fetch(
-      "/api/generate-revival",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-        body: JSON.stringify({
-          leadName: lead.full_name,
-          leadScore: score,
-          daysInactive: 14,
-          stage: lead.status,
-        }),
-      }
-    );
-
-    const data = await res.json();
-
-    setRevivalData(data.data);
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setRevivalLoading(false);
+    setEmails(data || []);
   }
-}
 
+  async function fetchMemory() {
+    if (!lead?.id) return;
+
+    const { data, error } = await supabase
+      .from("lead_memory")
+      .select("*")
+      .eq("lead_id", lead.id)
+      .maybeSingle();
+
+    if (error) return;
+
+    setMemory(data);
+  }
+
+  async function generateRevival() {
+    if (!lead) return;
+
+    try {
+      setRevivalLoading(true);
+
+      const res = await fetch(
+        "/api/generate-revival",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            leadName: lead.full_name,
+            leadScore: score,
+            daysInactive: 14,
+            stage: lead.status,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      setRevivalData(data.data);
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRevivalLoading(false);
+    }
+  }
 
   const timelineItems = activities.map((activity) => ({
     type:
@@ -478,48 +464,47 @@ async function generateRevival() {
       : `Hi ${lead?.full_name},\n\nJust checking in regarding your inquiry. Let me know if you need any additional information.`;
 
   async function sendEmail(subject: string, body: string) {
-  if (!lead?.email) {
-    alert("This lead does not have an email address.");
-    return;
+    if (!lead?.email) {
+      alert("This lead does not have an email address.");
+      return;
+    }
+
+    try {
+      setEmailLoading(true);
+
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lead_id: lead.id,
+          to: lead.email,
+          subject,
+          body,
+        }),
+      });
+
+      alert("Email sent successfully!");
+      setEmailOpen(false);
+
+      await supabase.from("activity_log").insert([{
+        lead_id: lead.id,
+        activity_type: "email",
+        title: "Email Sent",
+        description: `Subject: ${subject}`
+      }]);
+      
+      await fetchActivities();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send email.");
+    } finally {
+      setEmailLoading(false);
+    }
   }
 
-  try {
-    setEmailLoading(true);
-
-    // Notice we changed this to /api/test-email to match your folder!
-    await fetch("/api/send-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    body: JSON.stringify({
-  lead_id: lead.id,
-  to: lead.email,
-  subject,
-  body,
-}),
-    });
-
-    alert("Email sent successfully!");
-    setEmailOpen(false);
-
-    // Log it to the timeline
-    await supabase.from("activity_log").insert([{
-      lead_id: lead.id,
-      activity_type: "email",
-      title: "Email Sent",
-      description: `Subject: ${subject}`
-    }]);
-    
-    await fetchActivities();
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to send email.");
-  } finally {
-    setEmailLoading(false);
-  }
-}
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
       {/* HEADER */}
@@ -552,10 +537,10 @@ async function generateRevival() {
         </select>
       </div>
 
-      {/* THREE COLUMN GRID TRACK */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+{/* THREE COLUMN GRID TRACK */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         
-        {/* LEFT COLUMN: MAIN CONTENT PROFILE HOUSING (2 COLS ENTIRE WINDOW VIEW) */}
+        {/* LEFT COLUMN: MAIN CONTENT & TIMELINES (2/3 WIDTH) */}
         <div className="xl:col-span-2 space-y-6">
           
           {/* PROFILE INFO CONTAINER */}
@@ -588,182 +573,6 @@ async function generateRevival() {
               </div>
             </div>
           </div>
-          
-          {/* PROPOSAL HISTORY INTERFACE ENGINE */}
-          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-semibold">💰 Proposal History</h2>
-              <span className="text-white/50 text-sm">{proposals.length} proposals</span>
-            </div>
-            {proposals.length === 0 ? (
-              <div className="text-white/40 text-sm italic">No proposals built or sent for this lead yet.</div>
-            ) : (
-              <div className="space-y-4">
-                {proposals.map((proposal) => (
-                  <div key={proposal.id} className="p-4 rounded-2xl border border-white/10 bg-black/20 flex flex-col gap-2">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium text-white">{proposal.title}</h3>
-                      <span className="text-xs uppercase px-2.5 py-1 rounded-md font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                        {proposal.status}
-                      </span>
-                    </div>
-                    <div className="text-xl font-bold text-green-400">₹{Number(proposal.value).toLocaleString('en-IN')}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          {/* Email HISTORY INTERFACE */}
-          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-  <h2 className="text-2xl font-semibold mb-4">
-    📧 Email History
-  </h2>
-
-  {emails.length === 0 ? (
-    <p className="text-white/40">
-      No emails sent yet.
-    </p>
-  ) : (
-    <div className="space-y-3">
-      {emails.map((email) => (
-        <div
-          key={email.id}
-          className="p-4 rounded-xl bg-black/20 border border-white/10"
-        >
-          <div className="font-medium">
-            {email.subject}
-          </div>
-
-          <div className="text-white/50 text-sm mt-1">
-            To: {email.recipient}
-          </div>
-
-          <div className="text-white/70 text-sm mt-2">
-            {email.body}
-          </div>
-
-          <div className="text-xs text-white/30 mt-2">
-            {new Date(
-              email.created_at
-            ).toLocaleString()}
-          </div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-{/* Lead Memory */}
-
-<div className="mt-6 bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
-
-  <h2 className="text-2xl font-semibold mb-5">
-    🧠 Lead Memory
-  </h2>
-
-  {!memory ? (
-    <div className="text-white/40">
-      No memory recorded yet.
-    </div>
-  ) : (
-    <div className="space-y-4">
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Summary
-        </div>
-        <div>{memory.summary}</div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Budget
-        </div>
-        <div>{memory.budget}</div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Objections
-        </div>
-        <div>{memory.objections}</div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Decision Maker
-        </div>
-        <div>{memory.decision_maker}</div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Next Action
-        </div>
-        <div>{memory.next_action}</div>
-      </div>
-
-    </div>
-  )}
-
-</div>
-
-<div className="mt-6 bg-[#111827] border border-red-500/20 rounded-3xl p-6">
-
-  <div className="flex justify-between items-center mb-4">
-    <h2 className="text-2xl font-semibold">
-      🔥 Lead Revival Engine
-    </h2>
-
-    <button
-      onClick={generateRevival}
-      disabled={revivalLoading}
-      className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500"
-    >
-      {revivalLoading
-        ? "Analyzing..."
-        : "Generate Revival"}
-    </button>
-  </div>
-
-  {!revivalData ? (
-    <div className="text-white/40">
-      No revival analysis generated.
-    </div>
-  ) : (
-    <div className="space-y-4">
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Risk Level
-        </div>
-        <div>
-          {revivalData.risk_level}
-        </div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Reason
-        </div>
-        <div>
-          {revivalData.reason}
-        </div>
-      </div>
-
-      <div>
-        <div className="text-white/40 text-sm">
-          Revival Message
-        </div>
-        <div>
-          {revivalData.revival_message}
-        </div>
-      </div>
-
-    </div>
-  )}
-
-</div>
 
           {/* AI ANALYSIS FRAME */}
           <div className="rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 to-cyan-500/5 p-6 space-y-5">
@@ -800,6 +609,132 @@ async function generateRevival() {
               </div>
             )}
           </div>
+          
+          {/* PROPOSAL & EMAIL HISTORY GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-semibold">💰 Proposals</h2>
+                <span className="text-white/50 text-xs">{proposals.length} total</span>
+              </div>
+              {proposals.length === 0 ? (
+                <div className="text-white/40 text-sm italic">No proposals built or sent for this lead yet.</div>
+              ) : (
+                <div className="space-y-4">
+                  {proposals.map((proposal) => (
+                    <div key={proposal.id} className="p-4 rounded-2xl border border-white/10 bg-black/20 flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-medium text-white text-sm">{proposal.title}</h3>
+                        <span className="text-[10px] uppercase px-2 py-1 rounded-md font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                          {proposal.status}
+                        </span>
+                      </div>
+                      <div className="text-lg font-bold text-green-400">₹{Number(proposal.value).toLocaleString('en-IN')}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+              <h2 className="text-lg font-semibold mb-4">📧 Email History</h2>
+              {emails.length === 0 ? (
+                <p className="text-white/40 text-sm italic">No emails sent yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {emails.map((email) => (
+                    <div key={email.id} className="p-4 rounded-xl bg-black/20 border border-white/10">
+                      <div className="font-medium text-sm text-white/90">{email.subject}</div>
+                      <div className="text-xs text-white/30 mt-2">{new Date(email.created_at).toLocaleString()}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AI MEMORY & REVIVAL ENGINE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Lead Memory */}
+            <div className="bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
+              <h2 className="text-lg font-semibold mb-5">🧠 Lead Memory</h2>
+              {!memory ? (
+                <div className="text-white/40 text-sm italic">No memory recorded yet.</div>
+              ) : (
+                <div className="space-y-4 text-sm">
+                  <div><span className="text-white/40 block text-xs">Summary</span>{memory.summary}</div>
+                  <div><span className="text-white/40 block text-xs">Budget</span>{memory.budget}</div>
+                  <div><span className="text-white/40 block text-xs">Objections</span>{memory.objections}</div>
+                  <div><span className="text-white/40 block text-xs">Next Action</span>{memory.next_action}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Revival Engine */}
+            <div className="bg-[#111827] border border-red-500/20 rounded-3xl p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">🔥 Lead Revival</h2>
+                <button onClick={generateRevival} disabled={revivalLoading} className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-xs font-bold">
+                  {revivalLoading ? "Analyzing..." : "Generate"}
+                </button>
+              </div>
+              {!revivalData ? (
+                <div className="text-white/40 text-sm italic">No revival analysis generated.</div>
+              ) : (
+                <div className="space-y-4 text-sm">
+                  <div><span className="text-white/40 block text-xs">Risk Level</span>{revivalData.risk_level}</div>
+                  <div><span className="text-white/40 block text-xs">Reason</span>{revivalData.reason}</div>
+                  <div><span className="text-white/40 block text-xs">Revival Message</span>{revivalData.revival_message}</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* TASK REMINDER SPLIT PANELS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Upcoming Actions</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400">{pendingFollowups.length} active</span>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                {pendingFollowups.length === 0 ? (
+                  <div className="text-xs text-white/30 italic py-4">No scheduled automation routines.</div>
+                ) : (
+                  pendingFollowups.map((item) => (
+                    <div key={item.id} className={`p-4 rounded-xl border flex flex-col gap-3 transition-all ${
+                      item.due_date && new Date(item.due_date) < new Date() ? "border-red-500/40 bg-red-500/5" : "border-violet-500/20 bg-black/20"
+                    }`}>
+                      <div>
+                        <h4 className="font-medium text-sm text-white">{item.title}</h4>
+                        <p className="text-xs text-white/50 mt-1 leading-relaxed">{item.description}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Completed Audits</h3>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">{completedFollowups.length} logged</span>
+              </div>
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                {completedFollowups.length === 0 ? (
+                  <div className="text-xs text-white/30 italic py-4">No executed workflows found.</div>
+                ) : (
+                  completedFollowups.map((item) => (
+                    <div key={item.id} className="p-4 rounded-xl border border-green-500/20 bg-green-500/5 flex flex-col gap-1">
+                      <h4 className="font-medium text-sm text-white/90">{item.title}</h4>
+                      <p className="text-xs text-white/40 leading-relaxed">{item.description}</p>
+                      <span className="text-green-400 font-semibold text-[10px] uppercase mt-2">Verified Complete ✅</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* MANUAL AGENT NOTES UTILITY */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
@@ -830,180 +765,11 @@ async function generateRevival() {
             </div>
           </div>
 
-          {/* TASK REMINDER SPLIT PANELS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Upcoming Actions</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-400">{pendingFollowups.length} active</span>
-              </div>
-              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
-                {pendingFollowups.length === 0 ? (
-                  <div className="text-xs text-white/30 italic py-4">No scheduled automation routines.</div>
-                ) : (
-                  pendingFollowups.map((item) => (
-                    <div key={item.id} className={`p-4 rounded-xl border flex flex-col gap-3 transition-all ${
-                      item.due_date && new Date(item.due_date) < new Date() ? "border-red-500/40 bg-red-500/5" : "border-violet-500/20 bg-black/20"
-                    }`}>
-                      <div>
-                        <h4 className="font-medium text-sm text-white">{item.title}</h4>
-                        <p className="text-xs text-white/50 mt-1 leading-relaxed">{item.description}</p>
-                      </div>
-                      {item.ai_message && (
-                        <div className="p-3 rounded-lg bg-black/40 border border-white/5 flex flex-col gap-2">
-                          <p className="text-[10px] font-bold text-violet-400 uppercase tracking-widest">Autonomous Outreach Message</p>
-                          <p className="text-xs text-white/70 italic whitespace-pre-wrap">"{item.ai_message}"</p>
-                          <button onClick={() => sendAiFollowup(item)} className="mt-1 w-full py-2 rounded-lg bg-violet-600 hover:bg-violet-500 transition-all text-xs font-semibold">
-                            🚀 Fire Now
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Completed Audits</h3>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400">{completedFollowups.length} logged</span>
-              </div>
-              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
-                {completedFollowups.length === 0 ? (
-                  <div className="text-xs text-white/30 italic py-4">No executed workflows found.</div>
-                ) : (
-                  completedFollowups.map((item) => (
-                    <div key={item.id} className="p-4 rounded-xl border border-green-500/20 bg-green-500/5 flex flex-col gap-1">
-                      <h4 className="font-medium text-sm text-white/90">{item.title}</h4>
-                      <p className="text-xs text-white/40 leading-relaxed">{item.description}</p>
-                      <span className="text-green-400 font-semibold text-[10px] uppercase mt-2">Verified Complete ✅</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: ACTION RADAR + ACTIVITY ENGINE TRACKING HUB (1 COL WINDOW VIEW) */}
-        <div className="space-y-6">
-          {/* 💥 INSERT IT HERE, ABOVE YOUR ACTIVITY FEED 💥 */}
-  <RevenueOpsPanel 
-    leadId={lead.id} 
-    leadName={lead.full_name} 
-    leadEmail={lead.email} 
-  />
-          
-          {/* Add your new Intelligence Feed here */}
-  <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-    <ActivityFeed leadId={lead.id} />
-  </div>
-
-  {/* Existing Command Console... */}
-  <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-     {/* ... your existing buttons ... */}
-  </div>
-  <div className="bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
-  <h2 className="text-xl font-semibold mb-4">🧠 Email Triage Engine</h2>
-  <textarea
-    value={triageText}
-    onChange={(e) => setTriageText(e.target.value)}
-    placeholder="Paste the lead's email reply here..."
-    className="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-cyan-500 outline-none mb-3"
-  />
-  <button 
-    onClick={handleTriage}
-    disabled={triageLoading}
-    className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-medium transition-all"
-  >
-    {triageLoading ? "Analyzing Intent..." : "Analyze Reply & Suggest"}
-  </button>
-  {/* DISPLAY AI SUGGESTION HERE */}
-{triageSuggestion && (
-  <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
-    <div className="flex items-center justify-between mb-2">
-      <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
-        Detected Intent: {triageIntent}
-      </span>
-    </div>
-    <p className="text-sm text-white/90 italic leading-relaxed">
-      "{triageSuggestion}"
-    </p>
-    <div className="mt-3 flex gap-2">
-      <button 
-        onClick={() => {
-          navigator.clipboard.writeText(triageSuggestion);
-          alert("Copied to clipboard!");
-        }}
-        className="text-xs px-3 py-1.5 rounded-lg bg-black/40 hover:bg-white/10 transition-all border border-white/10"
-      >
-        📋 Copy Reply
-      </button>
-      <button 
-        onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(triageSuggestion)}`, "_blank")}
-        className="text-xs px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all border border-green-500/20"
-      >
-        💬 Send via WhatsApp
-      </button>
-    </div>
-  </div>
-)}
-</div>
-          
-          {/* QUICK REACTION PANEL */}
+          {/* 💥 MOVED TIMELINES TO LEFT COLUMN FOR BALANCED HEIGHT 💥 */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
-            <h2 className="text-2xl font-semibold mb-5">Command Console</h2>
-            <div className="space-y-3">
-              <button onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(`Hi ${lead.full_name}, checking in regarding your inquiry.`)}`, "_blank")}
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 font-medium tracking-wide hover:opacity-90 transition-all shadow-lg shadow-violet-600/10">
-                Send WhatsApp Direct
-              </button>
-              <button onClick={() => setAiModalOpen(true)} disabled={aiLoading}
-                className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/40 hover:bg-white/5 transition-all text-white font-medium disabled:opacity-50">
-                {aiLoading ? "Consulting LLM..." : "Generate Custom AI Proposal/Outreach"}
-              </button>
-           <button
-  onClick={() => setEmailOpen(true)}
-  className="w-full h-14 rounded-2xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all font-medium"
->
-  📧 Send Email
-</button>
-<Link
-  href={`/workspace/${lead.id}`}
-  className="w-full h-14 rounded-2xl border border-green-500/30 hover:bg-green-500/10 flex items-center justify-center"
->
-  🧠 Open AI Workspace
-</Link>
-              <Link href="/conversations" className="w-full h-14 rounded-2xl border border-white/10 hover:border-violet-500/30 bg-black/20 flex items-center justify-center font-medium transition-all">
-                Open Integrated Inbox
-              </Link>
-              <button onClick={() => setFollowupOpen(true)} className="w-full h-14 bg-black/30 border border-white/10 rounded-2xl hover:border-violet-500/30 transition-all font-medium text-sm">
-                + Schedule Next Routine Task
-              </button>
-            </div>
+            <ActivityFeed leadId={lead.id} />
           </div>
 
-          {/* AI COACH ENGINE CARD */}
-          <div className="bg-[#111827] border border-violet-500/20 rounded-3xl p-6 space-y-4">
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">🎯 Conversational Assistant</h2>
-            <div>
-              <p className="text-white/40 text-xs uppercase tracking-wider">Assigned Operational Velocity</p>
-              <p className="font-semibold mt-0.5 text-base text-green-400">{score >= 70 ? "High Velocity Target" : score >= 40 ? "Standard Track" : "Low Nurture Loop"}</p>
-            </div>
-            <div>
-              <p className="text-white/40 text-xs uppercase tracking-wider">Dynamic Suggestion</p>
-              <div className="bg-black/40 rounded-xl p-4 mt-2 text-xs text-white/70 whitespace-pre-wrap leading-relaxed border border-white/5 font-mono">
-                {suggestedMessage}
-              </div>
-              <button onClick={() => window.open(`https://wa.me/${lead?.phone}?text=${encodeURIComponent(suggestedMessage)}`, "_blank")}
-                className="mt-3 w-full py-2.5 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all">
-                💬 Push Suggestion to WhatsApp
-              </button>
-            </div>
-          </div>
-
-          {/* CONSOLIDATED TIMELINE FEED SYSTEM */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6 flex flex-col gap-4">
             <h3 className="text-xl font-semibold">Unified Activity Stream</h3>
             <div className="max-h-[500px] overflow-y-auto pr-1">
@@ -1016,8 +782,102 @@ async function generateRevival() {
           </div>
 
         </div>
-      </div>
 
+        {/* RIGHT COLUMN: ACTION RADAR + AI TOOLS (1/3 WIDTH) */}
+        <div className="space-y-6 sticky top-6">
+
+          {/* ENRICHMENT PANEL */}
+          {lead.email ? (
+            <ContactEnrichmentPanel email={lead.email} />
+          ) : (
+            <div className="bg-[#111827] border border-white/10 rounded-3xl p-6 text-center shadow-xl shadow-black/20">
+              <User size={24} className="mx-auto text-white/20 mb-3" />
+              <p className="text-sm text-white/50">Add an email address to run the Auto-Enrichment Engine.</p>
+            </div>
+          )}
+
+          {/* QUICK REACTION PANEL */}
+          <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
+            <h2 className="text-lg font-semibold mb-5">Command Console</h2>
+            <div className="space-y-3">
+              <button onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(`Hi ${lead.full_name}, checking in regarding your inquiry.`)}`, "_blank")}
+                className="w-full h-12 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-sm font-medium tracking-wide hover:opacity-90 transition-all shadow-lg shadow-violet-600/10">
+                Send WhatsApp
+              </button>
+              <button onClick={() => setAiModalOpen(true)} disabled={aiLoading}
+                className="w-full h-12 rounded-xl border border-white/10 hover:border-violet-500/40 hover:bg-white/5 transition-all text-white text-sm font-medium disabled:opacity-50">
+                {aiLoading ? "Consulting LLM..." : "Generate AI Proposal"}
+              </button>
+              <button onClick={() => setEmailOpen(true)} className="w-full h-12 rounded-xl border border-cyan-500/30 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all text-sm font-medium">
+                📧 Send Email
+              </button>
+              <Link href={`/workspace/${lead.id}`} className="w-full h-12 rounded-xl border border-green-500/30 hover:bg-green-500/10 flex items-center justify-center text-sm font-medium">
+                🧠 Open AI Workspace
+              </Link>
+              <button onClick={() => setFollowupOpen(true)} className="w-full h-12 bg-black/30 border border-white/10 rounded-xl hover:border-violet-500/30 transition-all font-medium text-sm text-white/70">
+                + Schedule Routine Task
+              </button>
+            </div>
+          </div>
+
+          <RevenueOpsPanel 
+            leadId={lead.id} 
+            leadName={lead.full_name} 
+            leadEmail={lead.email} 
+          />
+
+          <div className="bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
+            <h2 className="text-lg font-semibold mb-4">🧠 Email Triage</h2>
+            <textarea
+              value={triageText}
+              onChange={(e) => setTriageText(e.target.value)}
+              placeholder="Paste email reply..."
+              className="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-cyan-500 outline-none mb-3"
+            />
+            <button 
+              onClick={handleTriage}
+              disabled={triageLoading}
+              className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-sm font-medium transition-all"
+            >
+              {triageLoading ? "Analyzing..." : "Analyze Reply"}
+            </button>
+            {triageSuggestion && (
+              <div className="mt-4 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                    Intent: {triageIntent}
+                  </span>
+                </div>
+                <p className="text-sm text-white/90 italic leading-relaxed">"{triageSuggestion}"</p>
+                <div className="mt-3 flex gap-2">
+                  <button onClick={() => { navigator.clipboard.writeText(triageSuggestion); alert("Copied!"); }} className="flex-1 text-xs py-1.5 rounded-lg bg-black/40 hover:bg-white/10 border border-white/10">
+                    📋 Copy
+                  </button>
+                  <button onClick={() => window.open(`https://wa.me/${lead.phone}?text=${encodeURIComponent(triageSuggestion)}`, "_blank")} className="flex-1 text-xs py-1.5 rounded-lg bg-green-500/20 text-green-400 border border-green-500/20">
+                    💬 Send WA
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI COACH ENGINE CARD */}
+          <div className="bg-[#111827] border border-violet-500/20 rounded-3xl p-6 space-y-4">
+            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">🎯 AI Coach</h2>
+            <div>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider">Velocity</p>
+              <p className="font-semibold mt-0.5 text-sm text-green-400">{score >= 70 ? "High Target" : score >= 40 ? "Standard Track" : "Low Nurture"}</p>
+            </div>
+            <div>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider">Suggestion</p>
+              <div className="bg-black/40 rounded-xl p-3 mt-2 text-xs text-white/70 whitespace-pre-wrap leading-relaxed border border-white/5 font-mono">
+                {suggestedMessage}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
       {/* MODAL ARCHITECTURE CONTROLLERS */}
       <AiMessageModal
         open={aiModalOpen}
@@ -1025,13 +885,13 @@ async function generateRevival() {
         onGenerate={generateLeadAiMessage}
         loading={aiLoading}
       />
-  <EmailModal
-  open={emailOpen}
-  onClose={() => setEmailOpen(false)}
-  onSend={sendEmail}
-  loading={emailLoading}
-  leadEmail={lead?.email}
-/>
+      <EmailModal
+        open={emailOpen}
+        onClose={() => setEmailOpen(false)}
+        onSend={sendEmail}
+        loading={emailLoading}
+        leadEmail={lead?.email}
+      />
       
       <FollowupModal
         open={followupOpen}

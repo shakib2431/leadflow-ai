@@ -3,7 +3,7 @@
 import { 
   MessageCircle, X, Zap, LayoutDashboard, Users, 
   Webhook, MessageSquare, BarChart3, Settings, 
-  ListTodo, Bot, Sparkles, Mail // 💥 Added Mail icon here
+  ListTodo, Bot, Sparkles, Mail, Map 
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,13 +12,15 @@ import { usePathname } from "next/navigation";
 const SIDEBAR_NAV = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Action Queue", href: "/action-queue", icon: Sparkles, badge: "AI Agent" },
-  { label: "Unified Inbox", href: "/inbox", icon: Mail }, // 💥 Added your new Inbox route here
+  { label: "Unified Inbox", href: "/inbox", icon: Mail },
   { label: "Leads", href: "/leads", icon: Users },
   { label: "Pipeline", href: "/pipeline", icon: Webhook },
   { label: "Conversations", href: "/conversations", icon: MessageSquare },
   { label: "To Do", href: "/todos", icon: ListTodo },
   { label: "Playbooks", href: "/playbooks", icon: Bot, badge: "AI" },
+  { label: "Automations", href: "/automations", icon: Zap }, // 💥 Added Automations here
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Roadmap", href: "/roadmap", icon: Map },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

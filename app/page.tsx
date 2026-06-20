@@ -9,6 +9,7 @@ import {
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AutonomousAgentWidget from "@/components/autonomous-agent-widget";
+import dynamic from "next/dynamic"; // 1. ADD THIS IMPORT
 
 import { fetchLeads, Lead } from "@/lib/leads";
 import AddLeadModal from "@/components/add-lead-modal";

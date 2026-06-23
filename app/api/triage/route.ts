@@ -54,10 +54,19 @@ export async function POST(req: Request) {
     });
 
     // Save the triage analysis
+    // await supabase.from("triage_inbox").insert({
+    //   lead_id: body.lead_id,
+    //   raw_email_body: body.raw_text,
+    //   ai_analysis: aiData,
+    // });
+
+    //06/21/2026 changes
+    // Save the triage analysis
     await supabase.from("triage_inbox").insert({
-      lead_id: body.lead_id,
-      raw_email_body: body.raw_text,
-      ai_analysis: aiData,
+      conversation_id: body.lead_id, // Ensure body.lead_id corresponds to the conversation_id
+      intent: aiData.intent,
+      urgency_score: 5, // Defaulting to 5 if not specified, or add to your prompt
+      ai_tag: aiData.intent.toLowerCase() // Simple tag mapping
     });
 
     // --- THIS IS THE CRITICAL FIX ---

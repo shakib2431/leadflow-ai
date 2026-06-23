@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Building2, DollarSign, Users, Clock, ArrowLeft, Mail } from "lucide-react";
+import ContactEnrichmentPanel from "../../../components/crm/contact-enrichment-panel";
 
 export default function CompanyDetailPage() {
   const params = useParams();
@@ -111,7 +112,7 @@ export default function CompanyDetailPage() {
               ))
             )}
           </div>
-        </div>
+        </div>  
       </div>
     </div>
   );

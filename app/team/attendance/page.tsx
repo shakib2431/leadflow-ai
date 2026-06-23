@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Clock, Calendar, CheckCircle, XCircle, Users, X, Palmtree, Tent } from "lucide-react";
+import { Clock, Calendar, CheckCircle, XCircle, Users, X, Palmtree, Tent, CheckCircle2, AlertCircle } from "lucide-react";
 
-// Seamlessly integrated upcoming regional holidays
 const UPCOMING_HOLIDAYS = [
   { id: 1, name: "Independence Day", date: "15 Aug 2026", days: 1 },
   { id: 2, name: "Diwali", date: "08 Nov 2026", days: 1 }
@@ -12,64 +11,120 @@ const UPCOMING_HOLIDAYS = [
 
 export default function AttendancePage() {
   const [employees, setEmployees] = useState<any[]>([]);
+  const [attendanceToday, setAttendanceToday] = useState<Record<string, string>>({});
   const [pendingPTO, setPendingPTO] = useState<any[]>([]);
   const [approvedPTO, setApprovedPTO] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [showOutTodayModal, setShowOutTodayModal] = useState(false);
 
+  const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local time
+
   useEffect(() => {
     fetchAttendanceData();
   }, []);
 
+  // async function fetchAttendanceData() {
+  //   setLoading(true);
+
+  //   // 1. Fetch Active Employees & their current role
+  //   const { data: empData } = await supabase
+  //     .from("employees")
+  //     .select(`
+  //       id, first_name, last_name, employee_code,
+  //       employment_history (designation)
+  //     `)
+  //     .eq("status", "active");
+  //   if (empData) setEmployees(empData);
+
+  //   // 2. Fetch Today's Daily Attendance (Present/Absent/Half Day)
+  //   const { data: records } = await supabase
+  //     .from("attendance_records")
+  //     .select("employee_id, status")
+  //     .eq("date", todayDate);
+
+  //   if (records) {
+  //     const attendanceMap: Record<string, string> = {};
+  //     records.forEach(r => { attendanceMap[r.employee_id] = r.status; });
+  //     setAttendanceToday(attendanceMap);
+  //   }
   async function fetchAttendanceData() {
     setLoading(true);
 
-    // BUG FIX: Fetch all active AND onboarding employees (Exclude only Offboarding)
-    const { data: empData } = await supabase
-      .from("employees")
-      .select("*")
-      .neq("status", "Offboarding");
+    // 1. Fetch ALL employees (excluding exited)
+    // Update this specific block in your fetchAttendanceData function
+const { data: empData, error: empError } = await supabase
+  .from("employees")
+  .select(`
+    id, first_name, last_name, employee_code, status,
+    employment_history!employment_history_employee_id_fkey (designation)
+  `)
+  .in("status", ["active", "onboarding"]);  
+
+    if (empError) console.error("Error fetching employees:", empError);
     if (empData) setEmployees(empData);
 
+    // 2. Fetch Attendance for TODAY
+    const { data: records } = await supabase
+      .from("attendance_records")
+      .select("employee_id, status")
+      .eq("date", todayDate);
+
+    if (records) {
+      const attendanceMap: Record<string, string> = {};
+      records.forEach(r => { attendanceMap[r.employee_id] = r.status; });
+      setAttendanceToday(attendanceMap);
+    }
+
+    // 3. Fetch Pending Leave Requests (Phase 0 Schema)
     const { data: pendingData } = await supabase
-      .from("time_off_requests")
-      .select("*, employees(full_name, role)")
-      .eq("status", "Pending")
+      .from("leave_requests")
+      .select("*, employees(first_name, last_name)")
+      .eq("status", "pending")
       .order("created_at", { ascending: false });
     if (pendingData) setPendingPTO(pendingData);
 
-    const today = new Date().toISOString().split('T')[0];
+    // 4. Fetch Approved PTO for Today
     const { data: outTodayData } = await supabase
-      .from("time_off_requests")
-      .select("*, employees(full_name, role)")
-      .eq("status", "Approved")
-      .lte("start_date", today)
-      .gte("end_date", today);
+      .from("leave_requests")
+      .select("*, employees(first_name, last_name)")
+      .eq("status", "approved")
+      .lte("start_date", todayDate)
+      .gte("end_date", todayDate);
     if (outTodayData) setApprovedPTO(outTodayData);
 
     setLoading(false);
   }
 
+  // Handle Daily Clock-in / Roster
+  async function markAttendance(employeeId: string, status: 'present' | 'absent' | 'half_day' | 'leave') {
+    setAttendanceToday(prev => ({ ...prev, [employeeId]: status }));
+    const { error } = await supabase
+      .from('attendance_records')
+      .upsert({ 
+        employee_id: employeeId, 
+        date: todayDate, 
+        status: status,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'employee_id,date' });
+
+    if (error) fetchAttendanceData(); // Revert on failure
+  }
+
+  // Handle Leave Approvals
   const handleApprovePTO = async (id: string) => {
     setPendingPTO(prev => prev.filter(req => req.id !== id));
-    const { error } = await supabase.from("time_off_requests").update({ status: "Approved" }).eq("id", id);
-    if (error) {
-      alert("Failed to approve PTO.");
-      fetchAttendanceData(); 
-    } else {
-      fetchAttendanceData(); 
-    }
+    await supabase.from("leave_requests").update({ status: "approved" }).eq("id", id);
+    fetchAttendanceData(); 
   };
 
   const handleDenyPTO = async (id: string) => {
     setPendingPTO(prev => prev.filter(req => req.id !== id));
-    await supabase.from("time_off_requests").update({ status: "Denied" }).eq("id", id);
+    await supabase.from("leave_requests").update({ status: "rejected" }).eq("id", id);
   };
 
   if (loading) return <div className="h-screen flex items-center justify-center text-white/40 bg-[#07070a]">Syncing attendance...</div>;
 
-  // Safe math calculation to prevent negative numbers
   const activeCount = Math.max(0, employees.length - approvedPTO.length);
 
   return (
@@ -110,41 +165,50 @@ export default function AttendancePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* LIVE TEAM STATUS */}
+        {/* LIVE TEAM STATUS (ROSTER) */}
         <div className="lg:col-span-2 p-6 bg-[#0d0e12] rounded-3xl border border-white/5 shadow-xl h-fit">
-          <h3 className="font-bold mb-6 text-sm uppercase tracking-widest text-white/40 flex items-center gap-2">
-            <Clock size={16} /> Live Team Status
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="font-bold text-sm uppercase tracking-widest text-white/40 flex items-center gap-2">
+              <Clock size={16} /> Daily Roster
+            </h3>
+            <span className="text-xs bg-white/5 px-3 py-1 rounded-lg text-white/60 font-mono">{todayDate}</span>
+          </div>
+          
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-white/40 border-b border-white/5">
                   <th className="pb-3 font-medium">Employee</th>
-                  <th className="pb-3 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Expected Schedule</th>
+                  <th className="pb-3 font-medium">Status Today</th>
+                  <th className="pb-3 font-medium text-right">Quick Mark</th>
                 </tr>
               </thead>
               <tbody>
                 {employees.map((emp) => {
-                  const isOutToday = approvedPTO.some(pto => pto.employee_id === emp.id);
+                  const isOutOnPTO = approvedPTO.some(pto => pto.employee_id === emp.id);
+                  const activeRole = emp.employment_history?.find((h:any) => h.effective_to === null)?.designation || "Unassigned";
+                  const currentStatus = isOutOnPTO ? 'leave' : attendanceToday[emp.id];
+
                   return (
                     <tr key={emp.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
                       <td className="py-4">
-                        <div className="font-medium text-white">{emp.full_name}</div>
-                        <div className="text-xs text-white/40">{emp.role}</div>
+                        <div className="font-medium text-white">{emp.first_name} {emp.last_name}</div>
+                        <div className="text-xs text-white/40">{activeRole} • {emp.employee_code}</div>
                       </td>
                       <td className="py-4">
-                        {isOutToday ? (
-                           <span className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-amber-500/10 text-amber-400 border-amber-500/20">
-                             <Calendar size={10} /> On Leave
-                           </span>
-                        ) : (
-                           <span className="flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border bg-white/5 text-white/40 border-white/10">
-                             Not Clocked In
-                           </span>
-                        )}
+                        {!currentStatus && <span className="text-white/40 italic">Not Marked</span>}
+                        {currentStatus === 'present' && <span className="inline-flex items-center gap-1.5 text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-md text-xs font-bold"><CheckCircle2 size={14}/> Present</span>}
+                        {currentStatus === 'absent' && <span className="inline-flex items-center gap-1.5 text-rose-400 bg-rose-400/10 px-2.5 py-1 rounded-md text-xs font-bold"><XCircle size={14}/> Absent</span>}
+                        {currentStatus === 'half_day' && <span className="inline-flex items-center gap-1.5 text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md text-xs font-bold"><Clock size={14}/> Half Day</span>}
+                        {currentStatus === 'leave' && <span className="inline-flex items-center gap-1.5 text-violet-400 bg-violet-400/10 px-2.5 py-1 rounded-md text-xs font-bold"><AlertCircle size={14}/> On Leave</span>}
                       </td>
-                      <td className="py-4 text-white/60">09:00 AM - 05:00 PM</td>
+                      <td className="py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => markAttendance(emp.id, 'present')} disabled={isOutOnPTO} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currentStatus === 'present' ? 'bg-emerald-500 text-white' : 'bg-white/5 text-white/60 hover:bg-emerald-500/20 hover:text-emerald-400'} disabled:opacity-30`}>Present</button>
+                          <button onClick={() => markAttendance(emp.id, 'half_day')} disabled={isOutOnPTO} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currentStatus === 'half_day' ? 'bg-amber-500 text-white' : 'bg-white/5 text-white/60 hover:bg-amber-500/20 hover:text-amber-400'} disabled:opacity-30`}>Half Day</button>
+                          <button onClick={() => markAttendance(emp.id, 'absent')} disabled={isOutOnPTO} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${currentStatus === 'absent' ? 'bg-rose-500 text-white' : 'bg-white/5 text-white/60 hover:bg-rose-500/20 hover:text-rose-400'} disabled:opacity-30`}>Absent</button>
+                        </div>
+                      </td>
                     </tr>
                   )
                 })}
@@ -159,24 +223,22 @@ export default function AttendancePage() {
           {/* PENDING APPROVALS */}
           <div className="p-6 bg-[#0d0e12] rounded-3xl border border-white/5 shadow-xl">
             <h3 className="font-bold mb-6 text-sm uppercase tracking-widest text-white/40 flex items-center gap-2">
-              <Calendar size={16} /> Pending Approvals
+              <Calendar size={16} /> Pending Leave
             </h3>
             <div className="space-y-4">
               {pendingPTO.map((request) => (
                 <div key={request.id} className="p-4 bg-[#07070a] border border-white/5 rounded-xl">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold text-white">{request.employees?.full_name}</span>
-                    <span className="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded uppercase font-bold tracking-wider">{request.type}</span>
+                    <span className="font-bold text-white">{request.employees?.first_name} {request.employees?.last_name}</span>
+                    <span className="text-[10px] bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded uppercase font-bold tracking-wider">{request.leave_type}</span>
                   </div>
                   
                   <p className="text-sm text-white/60 mb-2">
                     {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()}
                   </p>
                   
-                  {/* NEW: Leave Balance Indicator */}
                   <div className="flex items-center justify-between bg-white/[0.02] p-2 rounded-lg mb-4 border border-white/5">
-                    <span className="text-xs text-white/40">Req: <strong className="text-white">{request.days_total} Days</strong></span>
-                    <span className="text-xs text-white/40">Balance: <strong className="text-emerald-400">14 Days</strong></span>
+                    <span className="text-xs text-white/40">Req: <strong className="text-white">{request.days_count} Days</strong></span>
                   </div>
                   
                   <div className="flex gap-2">
@@ -196,7 +258,7 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {/* NEW: COMPANY HOLIDAYS */}
+          {/* COMPANY HOLIDAYS */}
           <div className="p-6 bg-[#0d0e12] rounded-3xl border border-white/5 shadow-xl">
             <h3 className="font-bold mb-4 text-sm uppercase tracking-widest text-white/40 flex items-center gap-2">
               <Palmtree size={16} /> Company Holidays
@@ -241,10 +303,9 @@ export default function AttendancePage() {
                 <div className="space-y-4">
                   {approvedPTO.map(pto => (
                     <div key={pto.id} className="p-4 border border-white/5 rounded-xl bg-white/[0.02]">
-                      <h4 className="font-bold text-white mb-1">{pto.employees?.full_name}</h4>
-                      <p className="text-xs text-white/40 mb-2">{pto.employees?.role}</p>
-                      <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 w-fit px-2 py-1 rounded">
-                        <Calendar size={12} /> {pto.type} until {new Date(pto.end_date).toLocaleDateString()}
+                      <h4 className="font-bold text-white mb-1">{pto.employees?.first_name} {pto.employees?.last_name}</h4>
+                      <div className="flex items-center gap-2 mt-2 text-xs text-amber-400 bg-amber-500/10 w-fit px-2 py-1 rounded">
+                        <Calendar size={12} /> {pto.leave_type} until {new Date(pto.end_date).toLocaleDateString()}
                       </div>
                     </div>
                   ))}

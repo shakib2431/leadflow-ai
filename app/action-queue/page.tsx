@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 import { 
   ArrowRight, MessageSquare, Mail, ShieldAlert, Sparkles, 
   CheckCircle, RefreshCw, X, Database 
@@ -47,18 +48,18 @@ export default function ActionQueuePage() {
     setActions(prev => prev.filter(item => item.lead_id !== leadId));
   }
 
+  // --- CLOSED LOOP AUTOMATION ---
   async function executeAction(action: ActionItem) {
     setProcessingId(action.lead_id);
     const channel = action.recommended_channel || "whatsapp";
-    const content = action.pre_drafted_content || "Following up regarding our last conversation.";
+    const currentContent = action.pre_drafted_content || "Hi! Just following up to see if you had any questions regarding our previous discussion.";
     
-    if (channel === "whatsapp") {
-      const url = `https://wa.me/${action.phone}?text=${encodeURIComponent(content)}`;
-      window.open(url, "_blank");
-      handleDismiss(action.lead_id);
-      setProcessingId(null);
-    } else {
-      try {
+    try {
+      // 1. Send Communication
+      if (channel === "whatsapp") {
+        const url = `https://wa.me/${action.phone}?text=${encodeURIComponent(currentContent)}`;
+        window.open(url, "_blank");
+      } else {
         await fetch("/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -66,15 +67,29 @@ export default function ActionQueuePage() {
             lead_id: action.lead_id,
             to: action.email,
             subject: action.subject_line || "Following up",
-            body: content,
+            body: currentContent,
           }),
         });
-        handleDismiss(action.lead_id);
-      } catch (err) {
-        alert("Failed routing email message out.");
-      } finally {
-        setProcessingId(null);
       }
+
+      // 2. Advance Pipeline Stage (The "Close the Loop" logic)
+      const { error: dbError } = await supabase
+        .from("deals")
+        .update({ stage: "Contact Made" })
+        .eq("contact_id", action.lead_id);
+        
+      if (dbError) {
+        console.error("Pipeline sync failed:", dbError);
+      }
+
+      // 3. Clear from Action Queue
+      handleDismiss(action.lead_id);
+      
+    } catch (err) {
+      alert("Failed routing message out.");
+      console.error(err);
+    } finally {
+      setProcessingId(null);
     }
   }
 
@@ -130,14 +145,12 @@ export default function ActionQueuePage() {
             </p>
           </div>
         ) : (
-     /* QUEUE LIST */
+          /* QUEUE LIST */
           <div className="space-y-5">
             {actions.map((action) => {
               const currentChannel = action.recommended_channel || "whatsapp";
               const currentScore = action.ai_score ?? 50;
               const isProcessing = processingId === action.lead_id;
-              
-              // 1. ADDED THIS LINE: Creates a fallback if the API returns an empty draft
               const currentContent = action.pre_drafted_content || "Hi! Just following up to see if you had any questions regarding our previous discussion.";
 
               return (
@@ -187,7 +200,6 @@ export default function ActionQueuePage() {
                           <p className="text-xs font-semibold text-white/70 mb-2 truncate">Subject: {action.subject_line}</p>
                         )}
                         
-                        {/* 2. CHANGED THIS LINE: Now uses currentContent instead of action.pre_drafted_content */}
                         <p className="text-xs font-mono text-white/70 whitespace-pre-wrap leading-relaxed line-clamp-3">
                           {currentContent}
                         </p>
@@ -203,16 +215,16 @@ export default function ActionQueuePage() {
                         >
                           <X size={16} />
                         </button>
-                        <button 
-                          onClick={() => executeAction(action)}
-                          disabled={isProcessing}
-                          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
-                            isProcessing ? "bg-white/10 text-white/40 cursor-wait" :
-                            currentChannel === "whatsapp" 
-                              ? "bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-500/20" 
-                              : "bg-violet-600/20 text-violet-400 hover:bg-violet-600/30 border border-violet-500/20"
-                          }`}
-                        >
+                      <button 
+  onClick={() => executeAction(action)}
+  disabled={isProcessing} 
+  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
+    isProcessing ? "bg-white/10 text-white/40 cursor-wait" :
+    currentChannel === "whatsapp" 
+      ? "bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-500/20" 
+      : "bg-violet-600/20 text-violet-400 hover:bg-violet-600/30 border border-violet-500/20"
+  }`}
+>
                           {isProcessing ? (
                             <span className="animate-pulse">Dispatching...</span>
                           ) : (

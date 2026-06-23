@@ -3,7 +3,7 @@
 import { 
   MessageCircle, X, Zap, LayoutDashboard, Users, 
   Layers, Sparkles, Mail, Settings, Bot, BarChart3, Building2,
-  Workflow, Map, Clock, DollarSign, UserPlus, Briefcase // <-- Added Clock and DollarSign for HRMS
+  Workflow, Map, Clock, DollarSign, UserPlus, Briefcase, Target, CreditCard // Added CreditCard
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +15,7 @@ const SIDEBAR_NAV = [
       { label: "Dashboard", href: "/", icon: LayoutDashboard },
       { label: "Action Queue", href: "/action-queue", icon: Sparkles, badge: "AI Agent" },
       { label: "Unified Inbox", href: "/inbox", icon: Mail },
+      { label: "Triage Portal", href: "/triage", icon: Target, badge: "AI" }, 
       { label: "Pipeline", href: "/pipeline", icon: Layers },
     ]
   },
@@ -28,13 +29,11 @@ const SIDEBAR_NAV = [
   { 
     group: "HRMS Portal", 
     items: [
-      { label: "Directory", href: "/team", icon: Users },
+      { label: "Hiring Pipeline", href: "/team/recruitment", icon: Briefcase },
       { label: "Onboarding", href: "/team/onboarding", icon: UserPlus },
+      { label: "Directory", href: "/team", icon: Users },
       { label: "Time & PTO", href: "/team/attendance", icon: Clock },
       { label: "Payroll Prep", href: "/team/payroll", icon: DollarSign },
-      
-      { label: "Hiring Pipeline", href: "/team/recruitment", icon: Briefcase },
-      
     ]
   },
   { 
@@ -48,6 +47,7 @@ const SIDEBAR_NAV = [
   { 
     group: "System", 
     items: [
+      { label: "Financials", href: "/financials", icon: CreditCard }, // Added Financials here
       { label: "Roadmap", href: "/roadmap", icon: Map }, 
       { label: "Settings", href: "/settings", icon: Settings },
     ]

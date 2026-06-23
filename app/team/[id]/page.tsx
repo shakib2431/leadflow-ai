@@ -14,7 +14,7 @@ export default function EmployeeProfilePage() {
   const [employee, setEmployee] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false); // NEW STATE
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   
   const [documents, setDocuments] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -28,10 +28,48 @@ export default function EmployeeProfilePage() {
 
   const fetchEmployeeData = async () => {
     if (!id) return;
-    const { data: empData } = await supabase.from("employees").select("*").eq("id", id).maybeSingle();
-    if (empData) setEmployee(empData);
+    
+    // 1. Fetch Relational HR Data (The fix for Phase 0 Schema)
+    const { data: empData, error: empError } = await supabase
+      .from("employees")
+      .select(`
+        *,
+        employment_history!employment_history_employee_id_fkey (
+          designation, department, effective_from, effective_to
+        ),
+        salary_components (
+          amount_monthly, is_active
+        )
+      `)
+      .eq("id", id)
+      .maybeSingle();
 
-    const { data: docData } = await supabase.from("employee_documents").select("*").eq("employee_id", id).order("created_at", { ascending: false });
+    if (empError) {
+      console.error("Failed to fetch employee:", empError);
+    } else if (empData) {
+      // 2. Transform the relational data into the flat structure your UI expects
+      const activeHistory = empData.employment_history?.find((h: any) => h.effective_to === null) || {};
+      const activeSalary = empData.salary_components?.filter((s: any) => s.is_active) || [];
+      const totalSalary = activeSalary.reduce((sum: number, item: any) => sum + item.amount_monthly, 0);
+
+      setEmployee({
+        ...empData,
+        full_name: `${empData.first_name || ''} ${empData.last_name || ''}`.trim(),
+        role: activeHistory.designation || 'Unassigned',
+        department: activeHistory.department || 'Unassigned',
+        start_date: activeHistory.effective_from,
+        salary: totalSalary > 0 ? totalSalary : null,
+        status: empData.status === 'active' ? 'Active' : 'Pending' // Format for UI
+      });
+    }
+
+    // 3. Fetch Documents (Unchanged)
+    const { data: docData } = await supabase
+      .from("employee_documents")
+      .select("*")
+      .eq("employee_id", id)
+      .order("created_at", { ascending: false });
+      
     if (docData) setDocuments(docData);
 
     setLoading(false);
@@ -68,17 +106,16 @@ export default function EmployeeProfilePage() {
     }
   };
 
-  // Mark a task as manually completed by HR
   const handleMarkComplete = (taskId: string) => {
     setTasks(prev => prev.map(task => 
       task.id === taskId ? { ...task, status: 'completed' } : task
     ));
   };
 
-  // Send an automated reminder email to the employee
   const handleNudge = (taskId: string) => {
     alert(`Automated reminder email sent to ${employee.email}!`);
   };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -173,7 +210,6 @@ export default function EmployeeProfilePage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* NEW PREVIEW BUTTON */}
                     {task.status === 'action_required' && task.type === 'send_doc' && (
                       <>
                         <button 
@@ -200,22 +236,17 @@ export default function EmployeeProfilePage() {
                         <Clock size={12} /> Sent (Awaiting Sign)
                       </span>
                     )}
-                 {/* Updated Pending Employee State */}
                     {task.status === 'pending_employee' && (
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded-md uppercase font-bold border border-amber-500/20">
                           Waiting on Employee
                         </span>
-                        
-                        {/* Send Reminder Button */}
                         <button 
                           onClick={() => handleNudge(task.id)}
                           className="px-2.5 py-1 bg-white/[0.05] hover:bg-white/[0.1] text-white/60 hover:text-white rounded text-[10px] font-bold uppercase tracking-wider transition-colors"
                         >
                           Nudge
                         </button>
-                        
-                        {/* Manual Override / Verify Button */}
                         <button 
                           onClick={() => handleMarkComplete(task.id)}
                           className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-bold uppercase tracking-wider transition-colors"
@@ -292,11 +323,9 @@ export default function EmployeeProfilePage() {
 
       <EditEmployeeModal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} employee={employee} onEmployeeUpdated={fetchEmployeeData} />
 
-      {/* NEW: CONTRACT PREVIEW MODAL */}
       {isPreviewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-white text-black w-full max-w-2xl h-[80vh] flex flex-col rounded-md shadow-2xl overflow-hidden font-serif">
-            {/* Modal Toolbar */}
             <div className="bg-[#0d0e12] border-b border-white/10 p-4 flex justify-between items-center text-white font-sans shrink-0">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <FileText size={16} className="text-violet-400" />
@@ -307,7 +336,6 @@ export default function EmployeeProfilePage() {
               </button>
             </div>
             
-            {/* The Document View */}
             <div className="flex-1 overflow-y-auto p-12 bg-[#f4f4f5]">
               <div className="max-w-xl mx-auto bg-white p-10 shadow-sm border border-gray-200">
                 <h1 className="text-2xl font-bold text-center mb-8 uppercase tracking-widest">Employment Agreement</h1>
@@ -344,7 +372,6 @@ export default function EmployeeProfilePage() {
               </div>
             </div>
 
-            {/* Modal Footer Actions */}
             <div className="bg-[#0d0e12] p-4 flex justify-end gap-3 font-sans shrink-0 border-t border-white/10">
               <button 
                 onClick={() => setIsPreviewModalOpen(false)}

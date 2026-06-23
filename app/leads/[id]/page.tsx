@@ -9,8 +9,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ActivityFeed from "@/components/activity-feed";
 import RevenueOpsPanel from "@/components/revenue-ops-panel"; 
-// 💥 NEW: Imported the Enrichment Panel
-import { ContactEnrichmentPanel } from "@/components/contact-enrichment-panel"; 
+import ContactEnrichmentPanel from "@/components/crm/contact-enrichment-panel"; 
 
 import {
   Mail,
@@ -20,7 +19,6 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-
 
 interface Lead {
   id: string;
@@ -315,9 +313,7 @@ export default function LeadDetailsPage() {
       .from("follow_ups")
       .select("*")
       .eq("lead_id", lead.id)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error(error);
@@ -337,9 +333,7 @@ export default function LeadDetailsPage() {
       .from("activity_log")
       .select("*")
       .eq("lead_id", lead.id)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order("created_at", { ascending: false });
 
     setActivities(data || []);
   }
@@ -351,9 +345,7 @@ export default function LeadDetailsPage() {
       .from("proposals")
       .select("*")
       .eq("lead_id", lead.id)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order("created_at", { ascending: false });
 
     setProposals(data || []);
   }
@@ -365,9 +357,7 @@ export default function LeadDetailsPage() {
       .from("email_history")
       .select("*")
       .eq("lead_id", lead.id)
-      .order("created_at", {
-        ascending: false,
-      });
+      .order("created_at", { ascending: false });
 
     setEmails(data || []);
   }
@@ -392,31 +382,66 @@ export default function LeadDetailsPage() {
     try {
       setRevivalLoading(true);
 
-      const res = await fetch(
-        "/api/generate-revival",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            leadName: lead.full_name,
-            leadScore: score,
-            daysInactive: 14,
-            stage: lead.status,
-          }),
-        }
-      );
+      const res = await fetch("/api/generate-revival", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leadName: lead.full_name,
+          leadScore: score,
+          daysInactive: 14,
+          stage: lead.status,
+        }),
+      });
 
       const data = await res.json();
-
       setRevivalData(data.data);
 
     } catch (err) {
       console.error(err);
     } finally {
       setRevivalLoading(false);
+    }
+  }
+
+  async function sendEmail(subject: string, body: string) {
+    if (!lead?.email) {
+      alert("This lead does not have an email address.");
+      return;
+    }
+
+    try {
+      setEmailLoading(true);
+
+      await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lead_id: lead.id,
+          to: lead.email,
+          subject,
+          body,
+        }),
+      });
+
+      alert("Email sent successfully!");
+      setEmailOpen(false);
+
+      await supabase.from("activity_log").insert([{
+        lead_id: lead.id,
+        activity_type: "email",
+        title: "Email Sent",
+        description: `Subject: ${subject}`
+      }]);
+      
+      await fetchActivities();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send email.");
+    } finally {
+      setEmailLoading(false);
     }
   }
 
@@ -463,51 +488,8 @@ export default function LeadDetailsPage() {
       ? `Hi ${lead?.full_name},\n\nI noticed you're actively evaluating our offering. Let's schedule a quick discussion and move things forward.`
       : `Hi ${lead?.full_name},\n\nJust checking in regarding your inquiry. Let me know if you need any additional information.`;
 
-  async function sendEmail(subject: string, body: string) {
-    if (!lead?.email) {
-      alert("This lead does not have an email address.");
-      return;
-    }
-
-    try {
-      setEmailLoading(true);
-
-      await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          lead_id: lead.id,
-          to: lead.email,
-          subject,
-          body,
-        }),
-      });
-
-      alert("Email sent successfully!");
-      setEmailOpen(false);
-
-      await supabase.from("activity_log").insert([{
-        lead_id: lead.id,
-        activity_type: "email",
-        title: "Email Sent",
-        description: `Subject: ${subject}`
-      }]);
-      
-      await fetchActivities();
-
-    } catch (err) {
-      console.error(err);
-      alert("Failed to send email.");
-    } finally {
-      setEmailLoading(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
-      {/* HEADER */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-3xl font-bold">
@@ -521,7 +503,6 @@ export default function LeadDetailsPage() {
           </div>
         </div>
 
-        {/* STATUS DROPDOWN */}
         <select
           value={lead.status}
           onChange={(e) => updateStatus(e.target.value)}
@@ -537,13 +518,10 @@ export default function LeadDetailsPage() {
         </select>
       </div>
 
-{/* THREE COLUMN GRID TRACK */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
         
-        {/* LEFT COLUMN: MAIN CONTENT & TIMELINES (2/3 WIDTH) */}
         <div className="xl:col-span-2 space-y-6">
           
-          {/* PROFILE INFO CONTAINER */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <h2 className="text-2xl font-semibold mb-6">Lead Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -574,7 +552,6 @@ export default function LeadDetailsPage() {
             </div>
           </div>
 
-          {/* AI ANALYSIS FRAME */}
           <div className="rounded-3xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 to-cyan-500/5 p-6 space-y-5">
             <div className="flex items-center gap-2">
               <span className="text-xl">🤖</span>
@@ -610,7 +587,6 @@ export default function LeadDetailsPage() {
             )}
           </div>
           
-          {/* PROPOSAL & EMAIL HISTORY GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-5">
@@ -625,7 +601,7 @@ export default function LeadDetailsPage() {
                     <div key={proposal.id} className="p-4 rounded-2xl border border-white/10 bg-black/20 flex flex-col gap-2">
                       <div className="flex justify-between items-center">
                         <h3 className="font-medium text-white text-sm">{proposal.title}</h3>
-                        <span className="text-[10px] uppercase px-2 py-1 rounded-md font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                        <span className="text-[10px] uppercase tracking-wider px-2 py-1 rounded-md font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
                           {proposal.status}
                         </span>
                       </div>
@@ -653,9 +629,7 @@ export default function LeadDetailsPage() {
             </div>
           </div>
 
-          {/* AI MEMORY & REVIVAL ENGINE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Lead Memory */}
             <div className="bg-[#111827] border border-cyan-500/20 rounded-3xl p-6">
               <h2 className="text-lg font-semibold mb-5">🧠 Lead Memory</h2>
               {!memory ? (
@@ -670,7 +644,6 @@ export default function LeadDetailsPage() {
               )}
             </div>
 
-            {/* Revival Engine */}
             <div className="bg-[#111827] border border-red-500/20 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">🔥 Lead Revival</h2>
@@ -690,7 +663,6 @@ export default function LeadDetailsPage() {
             </div>
           </div>
 
-          {/* TASK REMINDER SPLIT PANELS */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
               <div className="flex items-center justify-between mb-4">
@@ -736,7 +708,6 @@ export default function LeadDetailsPage() {
             </div>
           </div>
 
-          {/* MANUAL AGENT NOTES UTILITY */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <h2 className="text-2xl font-semibold mb-5">CRM Internal Documentation</h2>
             <div className="flex gap-3 mb-6">
@@ -765,7 +736,6 @@ export default function LeadDetailsPage() {
             </div>
           </div>
 
-          {/* 💥 MOVED TIMELINES TO LEFT COLUMN FOR BALANCED HEIGHT 💥 */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <ActivityFeed leadId={lead.id} />
           </div>
@@ -783,10 +753,8 @@ export default function LeadDetailsPage() {
 
         </div>
 
-        {/* RIGHT COLUMN: ACTION RADAR + AI TOOLS (1/3 WIDTH) */}
         <div className="space-y-6 sticky top-6">
 
-          {/* ENRICHMENT PANEL */}
           {lead.email ? (
             <ContactEnrichmentPanel email={lead.email} />
           ) : (
@@ -796,7 +764,6 @@ export default function LeadDetailsPage() {
             </div>
           )}
 
-          {/* QUICK REACTION PANEL */}
           <div className="bg-[#111827] border border-white/10 rounded-3xl p-6">
             <h2 className="text-lg font-semibold mb-5">Command Console</h2>
             <div className="space-y-3">
@@ -861,7 +828,6 @@ export default function LeadDetailsPage() {
             )}
           </div>
 
-          {/* AI COACH ENGINE CARD */}
           <div className="bg-[#111827] border border-violet-500/20 rounded-3xl p-6 space-y-4">
             <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">🎯 AI Coach</h2>
             <div>
@@ -878,7 +844,7 @@ export default function LeadDetailsPage() {
 
         </div>
       </div>
-      {/* MODAL ARCHITECTURE CONTROLLERS */}
+      
       <AiMessageModal
         open={aiModalOpen}
         onClose={() => setAiModalOpen(false)}

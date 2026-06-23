@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Sparkles, Briefcase, Building2, Users, Target, Globe, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export function ContactEnrichmentPanel({ email }: { email: string }) {
+export default function ContactEnrichmentPanel({ email }: { email: string }) {
   const [enrichedData, setEnrichedData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -38,7 +38,6 @@ export function ContactEnrichmentPanel({ email }: { email: string }) {
           <Sparkles size={16} className="text-cyan-400" /> Auto-Enrichment
         </h3>
         
-        {/* Status Badge */}
         {!enrichedData && !loading && (
           <span className="px-2 py-1 rounded-md bg-white/5 text-white/40 text-[10px] font-bold uppercase tracking-wider border border-white/5">
             Pending
@@ -69,20 +68,17 @@ export function ContactEnrichmentPanel({ email }: { email: string }) {
         </div>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          {/* Company Info */}
           <div className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
-            {/* Using clearbit's free logo API based on domain */}
             <img src={enrichedData.company.logo} alt="Logo" className="w-12 h-12 rounded-lg bg-white" onError={(e) => e.currentTarget.style.display = 'none'} />
             <div>
               <h4 className="text-base font-bold text-white flex items-center gap-2">
                 {enrichedData.company.name}
-                <a href={`https://${enrichedData.company.domain}`} target="_blank" className="text-white/40 hover:text-cyan-400"><Globe size={12} /></a>
+                <a href={`https://${enrichedData.company.domain}`} target="_blank" rel="noreferrer" className="text-white/40 hover:text-cyan-400"><Globe size={12} /></a>
               </h4>
               <p className="text-xs text-white/50">{enrichedData.person.job_title}</p>
             </div>
           </div>
 
-          {/* Data Grid */}
           <div className="grid grid-cols-2 gap-3">
             <DataPoint icon={<Building2 size={14}/>} label="Industry" value={enrichedData.company.industry} />
             <DataPoint icon={<Users size={14}/>} label="Employees" value={enrichedData.company.employee_count} />
@@ -90,7 +86,6 @@ export function ContactEnrichmentPanel({ email }: { email: string }) {
             <DataPoint icon={<Briefcase size={14}/>} label="Tech Stack" value={enrichedData.company.tech_stack.join(", ")} />
           </div>
 
-          {/* News Alert */}
           <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
             <p className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1 flex items-center gap-1">News Alert</p>
             <p className="text-xs text-orange-200/80 leading-relaxed">{enrichedData.company.recent_news}</p>
@@ -101,7 +96,6 @@ export function ContactEnrichmentPanel({ email }: { email: string }) {
   );
 }
 
-// Small helper component for the grid
 function DataPoint({ icon, label, value }: { icon: any, label: string, value: string }) {
   return (
     <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
@@ -111,7 +105,6 @@ function DataPoint({ icon, label, value }: { icon: any, label: string, value: st
   );
 }
 
-// Missing icon import from above
 function Database(props: any) {
   return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>;
 }

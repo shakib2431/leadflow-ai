@@ -1,98 +1,113 @@
-import { supabaseAdmin } from "@/lib/supabase-admin";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams;
+// 1. Initialize Supabase Admin Client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-  const mode = searchParams.get("hub.mode");
-  const token = searchParams.get("hub.verify_token");
-  const challenge = searchParams.get("hub.challenge");
-
-  if (
-    mode === "subscribe" &&
-    token === process.env.WHATSAPP_VERIFY_TOKEN
-  ) {
-    return new Response(challenge, { status: 200 });
-  }
-
-  return NextResponse.json(
-    { error: "Verification failed" },
-    { status: 403 }
-  );
-}
-
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const change = body?.entry?.[0]?.changes?.[0];
-    const message = change?.value?.messages?.[0];
+    // 2. Parse Twilio's Form Data safely
+    const textBody = await req.text();
+    const formData = new URLSearchParams(textBody);
 
-    if (!message) return NextResponse.json({ received: true });
+    const from = formData.get("From");
+    const body = formData.get("Body");
 
-    const from = message.from;
-    const text = message.text?.body || "";
-    const waNumberId = change?.value?.metadata?.phone_number_id;
+    if (!from || !body) return NextResponse.json({ received: true });
 
-    // A. Find Business (Multi-tenant)
-    const { data: business } = await supabaseAdmin
-      .from("businesses")
-      .select("id")
-      .eq("whatsapp_number_id", waNumberId)
+    const cleanPhone = from.replace("whatsapp:", "");
+
+    // 3. Find or Create Contact 
+    let { data: contact } = await supabaseAdmin
+      .from("contacts")
+      .select("id, first_name, lead_score")
+      .eq("phone", cleanPhone)
       .single();
 
-    // B. Find or Create Lead
-    let { data: lead } = await supabaseAdmin
-      .from("leads")
-      .select("id, full_name, ai_score")
-      .eq("phone", from)
-      .single();
-
-    if (!lead) {
-      const { data: newLead } = await supabaseAdmin
-        .from("leads")
+    if (!contact) {
+      const { data: newContact, error: createError } = await supabaseAdmin
+        .from("contacts")
         .insert({ 
-          phone: from, 
-          full_name: "New Lead", 
-          business_id: business?.id,
+          phone: cleanPhone, 
+          first_name: "New Lead", 
           source: "WhatsApp" 
         })
         .select()
         .single();
-      lead = newLead;
-      // --- ADD THIS CHECK HERE ---
-      if (!lead) {
-        console.error("Failed to create new lead.");
-        return NextResponse.json({ error: "Lead creation failed" }, { status: 500 });
+        
+      if (createError || !newContact) {
+        console.error("Failed to create new contact:", createError);
+        return NextResponse.json({ error: "Contact creation failed" }, { status: 500 });
       }
-      // ---------------------------
+      contact = newContact;
     }
 
-    // C. Save Message
+    if (!contact) {
+      return NextResponse.json({ error: "Contact resolution failed" }, { status: 500 });
+    }
+
+    // 3.5 Find or Create Conversation (Crucial for Triage UI linkage)
+    let { data: conversation } = await supabaseAdmin
+      .from("conversations")
+      .select("id")
+      .eq("contact_id", contact.id)
+      .single();
+
+    if (!conversation) {
+      const { data: newConv } = await supabaseAdmin
+        .from("conversations")
+        .insert({ 
+          contact_id: contact.id, 
+          channel: "whatsapp",
+          unread_count: 1
+        })
+        .select()
+        .single();
+      conversation = newConv;
+    } else {
+      // Bump the conversation to the top of the Unified Inbox
+      await supabaseAdmin.from("conversations").update({
+        updated_at: new Date().toISOString(),
+        unread_count: 1
+      }).eq("id", conversation.id);
+    }
+
+    // 4. Log the Inbound Message
     await supabaseAdmin.from("messages").insert({
-      lead_id: lead.id,
-      business_id: business?.id,
-      sender: "client",
-      message: text,
+      contact_id: contact.id,
+      conversation_id: conversation?.id, // Linked!
+      channel: "whatsapp",
+      direction: "inbound",
+      sender_type: "contact",
+      content: body,
+      status: "received",
     });
 
-    // D. REAL-TIME AI RECALCULATION (The Brain)
-    console.log(`🧠 Recalculating AI Brain for: ${lead.full_name}`);
+    // 5. REAL-TIME AI RECALCULATION (The Brain)
+    console.log(`🧠 Recalculating AI Brain for Contact ID: ${contact.id}`);
     
     const { data: recentMessages } = await supabaseAdmin
       .from("messages")
-      .select("sender, message")
-      .eq("lead_id", lead.id)
+      .select("sender_type, content")
+      .eq("contact_id", contact.id)
       .order("created_at", { ascending: false })
       .limit(10);
       
-    const chatContext = recentMessages?.reverse().map(m => `${m.sender}: ${m.message}`).join("\n") || text;
+    const chatContext = recentMessages?.reverse().map((m: any) => `${m.sender_type}: ${m.content}`).join("\n") || body;
 
     const prompt = `
     Analyze this conversation for sales intent.
-    Customer: ${lead.full_name}
     Context: ${chatContext}
-    Return ONLY JSON: { "summary": "...", "intent": "...", "nextAction": "...", "score": 0-100 }
+    Return ONLY JSON: { 
+      "summary": "...", 
+      "tag": "BUYING_INTENT" | "SUPPORT_ISSUE" | "GENERAL_INQUIRY", 
+      "score": 85,
+      "draftedReply": "Write the exact WhatsApp message to send back to them. Be professional and concise.",
+      "dealValue": 1500
+    }
     `;
 
     // Direct AI call inside the webhook
@@ -110,17 +125,45 @@ export async function POST(req: NextRequest) {
     
     if (rawText) {
       const parsed = JSON.parse(rawText.replace(/```json/g, "").replace(/```/g, "").trim());
-      await supabaseAdmin.from("leads").update({
-        ai_score: parsed.score || lead.ai_score,
-        ai_summary: parsed.summary,
-        ai_next_action: parsed.nextAction
-      }).eq("id", lead.id);
+      
+      await supabaseAdmin.from("contacts").update({
+        lead_score: parsed.score || contact.lead_score,
+      }).eq("id", contact.id);
+      
+      console.log("✅ AI Score Updated:", parsed.score);
+
+      // --- THE MISSING TRIAGE QUEUE INSERT ---
+      if (conversation) {
+        await supabaseAdmin.from("triage_inbox").insert({
+          conversation_id: conversation.id,
+          ai_tag: parsed.tag || "GENERAL_INQUIRY",
+          suggested_reply: parsed.draftedReply || "Thank you for reaching out! Let me check on that and get right back to you.",
+          suggested_deal_value: parsed.dealValue || 0,
+          status: "pending"
+        });
+        console.log("📥 Added to Action Queue");
+      }
+
+      // --- TRIGGER THE TRIAGE ENGINE (Push Notifications / Scheduled Nurture) ---
+      try {
+        const { executeTriageWorkflow } = await import("@/lib/triage-engine");
+        await executeTriageWorkflow(contact.id, parsed.score, contact.first_name, cleanPhone);
+      } catch (err) {
+        console.error("Triage Engine workflow failed or is missing:", err);
+      }
     }
 
-    return NextResponse.json({ success: true });
+    // 6. Acknowledge Twilio
+    return new NextResponse("<Response></Response>", {
+      status: 200,
+      headers: { "Content-Type": "text/xml" },
+    });
 
   } catch (error) {
     console.error("Webhook Error:", error);
-    return NextResponse.json({ error: "Webhook failed" }, { status: 500 });
+    return new NextResponse("<Response></Response>", { 
+      status: 500, 
+      headers: { "Content-Type": "text/xml" } 
+    });
   }
 }

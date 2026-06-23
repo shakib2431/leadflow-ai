@@ -1,72 +1,49 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    console.log("VERIFY ROUTE HIT");
-   const {
-  whatsapp_id,
-  whatsapp_token,
-  business_name,
-  website,
-  industry,
-  timezone,
-  currency
-} = await req.json();
-   if (
-  !business_name ||
-  !whatsapp_id ||
-  !whatsapp_token
-){
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-    console.log("SKIPPING WHATSAPP VALIDATION");
+    const body = await request.json();
+    const {
+      business_name,
+      website,
+      industry,
+      timezone,
+      currency,
+      whatsapp_id,
+      whatsapp_token
+    } = body;
 
-    // 1. TEST THE KEYS: Validate against WhatsApp Graph API
-    // const res = await fetch(`https://graph.facebook.com/v20.0/${whatsapp_id}`, {
-    //   headers: { "Authorization": `Bearer ${whatsapp_token}` }
-    // });
+    // 1. Verify credentials with Meta's Graph API
+    const verifyUrl = `https://graph.facebook.com/v17.0/${whatsapp_id}?access_token=${whatsapp_token}`;
+    
+    const metaResponse = await fetch(verifyUrl);
+    const metaData = await metaResponse.json();
 
-    // const data = await res.json();
-
-    // if (!res.ok) {
-    //   console.error("WhatsApp Auth Failed:", data);
-    //   return NextResponse.json({ error: "Invalid WhatsApp Credentials. Please check your Token and ID." }, { status: 400 });
-    // }
-
-    // 2. SAVE TO DATABASE: Create the business record
-const { data: business, error } = await supabaseAdmin
-.from("businesses")
-.insert({
-  name: business_name,
-
-  slug: business_name
-    .toLowerCase()
-    .replaceAll(" ", "-"),
-
-  website,
-  industry,
-  timezone,
-  currency,
-
-  wa_phone_number_id: whatsapp_id,
-  wa_access_token: whatsapp_token,
-
-  setup_completed: true,
-})
-.select()
-.single();
-
-    if (error) {
-      console.error("Database Error:", error);
-      return NextResponse.json({ error: "Database setup failed" }, { status: 500 });
+    if (metaData.error) {
+      return NextResponse.json({ error: "Invalid WhatsApp ID or Access Token." }, { status: 401 });
     }
 
-    // 3. RETURN SUCCESS
-    return NextResponse.json({ success: true, businessId: business.id });
+    // 2. Save Business Configuration to Supabase
+    const { error: dbError } = await supabase
+      .from('businesses')
+      .upsert({
+        name: business_name,
+        website: website || null,
+        industry: industry,
+        timezone: timezone,
+        currency: currency,
+        whatsapp_phone_number_id: whatsapp_id,
+        whatsapp_access_token: whatsapp_token,
+        setup_completed: true,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'whatsapp_phone_number_id' }); 
 
-  } catch (error) {
-    console.error("Verification Route Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    if (dbError) throw dbError;
+
+    return NextResponse.json({ success: true, message: "Connected." });
+
+  } catch (error: any) {
+    return NextResponse.json({ error: "Failed to initialize." }, { status: 500 });
   }
 }

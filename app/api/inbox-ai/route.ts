@@ -11,6 +11,9 @@ export async function POST(req: Request) {
 
     let prompt = "";
 
+    // Added Fallbacks just in case the chat is empty
+    const safeContext = context || "No conversation history yet.";
+
     if (action === "summarize") {
       prompt = `
         You are the AI assistant for LeadFlow's premium CRM.
@@ -18,21 +21,24 @@ export async function POST(req: Request) {
         Highlight the core intent, any friction points, and the immediate next step required.
         
         Thread Context:
-        ${context}
+        ${safeContext}
       `;
-    } else if (action === "translate") {
+    } else if (action === "draft") {
       prompt = `
-        Translate the following message into professional, high-end English. 
-        Preserve the original tone but ensure it reads perfectly for an elite business context.
+        You are the AI assistant for LeadFlow's premium CRM.
+        Read the following conversation thread and draft a professional, polite, and conversion-focused response from the agent.
+        Keep it concise (2-3 sentences max). Do not include placeholders like [Your Name].
         
-        Original Message: "${text}"
+        Thread Context:
+        ${safeContext}
         
-        Return ONLY the translated text, nothing else.
+        Return ONLY the drafted response text, nothing else.
       `;
     }
 
+    // Switched to the universally stable gemini-1.5-flash
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,13 +49,18 @@ export async function POST(req: Request) {
     );
 
     const data = await response.json();
-    if (!response.ok) throw new Error("Gemini API Error");
+    
+    // Improved Error Logging so we can see exactly what Google is complaining about
+    if (!response.ok) {
+      console.error("Google API Details:", data);
+      throw new Error(data.error?.message || "Gemini API Error");
+    }
 
     const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     return NextResponse.json({ success: true, result: resultText.trim() });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Inbox AI Error:", error);
-    return NextResponse.json({ error: "Failed to process AI request" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to process AI request" }, { status: 500 });
   }
 }

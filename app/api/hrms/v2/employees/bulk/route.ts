@@ -39,8 +39,8 @@ export async function POST(req: Request) {
     }
 
     const eligibleIds = new Set((structures || []).map((row: any) => String(row.employee_id || '')));
-    const activatable = ids.filter((id) => eligibleIds.has(id));
-    const skipped = ids.filter((id) => !eligibleIds.has(id));
+   const activatable = ids.filter((id: any) => eligibleIds.has(id));
+const skipped = ids.filter((id: any) => !eligibleIds.has(id));
 
     if (activatable.length > 0) {
       const { error } = await supabaseAdmin

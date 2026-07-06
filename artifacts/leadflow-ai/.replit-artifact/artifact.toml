@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "LeadFlow AI"
+version = "1.0.0"
+id = "artifacts/leadflow-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18490
+
+[services.development]
+run = "pnpm --filter @workspace/leadflow-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/leadflow-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/leadflow-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18490"
+BASE_PATH = "/"

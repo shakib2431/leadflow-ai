@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "frequency": "daily",
+  "retention_days": 60,
+  "storage_target": "local_tmp",
+  "notes": "phase11 smoke",
+  "last_backup_at": "2026-06-26T06:34:08.454Z"
+}

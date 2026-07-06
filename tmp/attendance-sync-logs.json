@@ -1,0 +1,1206 @@
+[
+  {
+    "id": "1d6056bd-b954-4b43-b142-2cf9bcb72668",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-05",
+    "status": "success",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 1,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 643,
+      "entries": [
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-05",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 643,
+    "created_at": "2026-07-05T17:15:49.511Z"
+  },
+  {
+    "id": "7f9a430f-5e71-45f1-9397-3e63216e5d58",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-03",
+    "status": "success",
+    "total_records": 18,
+    "created_records": 16,
+    "updated_records": 2,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 1365,
+      "entries": [
+        {
+          "employee_id": "1c4308cb-e395-41e2-ac52-194b96303dce",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "f989247f-6f72-4a5e-856b-5db9c091614b",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "1824f094-451d-46ba-859f-ef31501f5174",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "4692319d-2457-48e6-b893-5dab902b8af3",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "256b08da-1d7d-4e16-a5fa-9d9eae7355d1",
+          "date": "2026-07-03",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-03",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 1365,
+    "created_at": "2026-07-03T16:44:31.710Z"
+  },
+  {
+    "id": "89e4fa5a-6703-4322-8f26-b1332ebb97fc",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-02",
+    "status": "success",
+    "total_records": 13,
+    "created_records": 0,
+    "updated_records": 13,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 554,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-02",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 554,
+    "created_at": "2026-07-01T19:14:58.554Z"
+  },
+  {
+    "id": "0233d552-f1b2-4c7d-9491-c5b5e8979fe8",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-02",
+    "status": "success",
+    "total_records": 13,
+    "created_records": 0,
+    "updated_records": 13,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 460,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-02",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 460,
+    "created_at": "2026-07-01T19:10:27.064Z"
+  },
+  {
+    "id": "6e12ab60-40e5-42c6-b653-fac296164014",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-02",
+    "status": "success",
+    "total_records": 13,
+    "created_records": 0,
+    "updated_records": 13,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 398,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-02",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 398,
+    "created_at": "2026-07-01T19:10:12.051Z"
+  },
+  {
+    "id": "cf6125c0-d923-4838-97b7-9f51466ea4d2",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-02",
+    "status": "success",
+    "total_records": 13,
+    "created_records": 13,
+    "updated_records": 0,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 513,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-02",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-02",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 513,
+    "created_at": "2026-07-01T19:08:20.780Z"
+  },
+  {
+    "id": "df7a2b41-79c7-4ba3-9102-bb9889a8c347",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-07-01",
+    "status": "success",
+    "total_records": 11,
+    "created_records": 10,
+    "updated_records": 1,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 877,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-07-01",
+          "status": "present"
+        },
+        {
+          "employee_id": "99e3608a-1c01-4d40-978b-3efbff334695",
+          "date": "2026-07-01",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 877,
+    "created_at": "2026-07-01T09:36:32.638Z"
+  },
+  {
+    "id": "f0d7bccd-ae9b-4d2f-8e6d-6d36cae1fcb2",
+    "source_id": "00dc909d-b609-4060-a936-da0c567e3e54",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "retry_of_log_id": "944f2f65-366f-49ff-ab8e-b93aba5399d4",
+      "retry_original_status": "failed",
+      "triggered_by": "dev-user:manual_retry",
+      "duration_ms": 471,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 471,
+    "created_at": "2026-06-30T14:19:42.552Z"
+  },
+  {
+    "id": "8f831c52-d6c7-4e34-be09-67a847748b4f",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-30",
+    "status": "success",
+    "total_records": 10,
+    "created_records": 0,
+    "updated_records": 10,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 1100,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-30",
+          "status": "absent"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-30",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 1100,
+    "created_at": "2026-06-30T13:41:21.231Z"
+  },
+  {
+    "id": "1078634e-9a1a-446f-a1ec-4fc6227401b5",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-30",
+    "status": "success",
+    "total_records": 10,
+    "created_records": 9,
+    "updated_records": 1,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 888,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-06-30",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-30",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 888,
+    "created_at": "2026-06-30T13:35:19.665Z"
+  },
+  {
+    "id": "2cf4f4ad-9fa8-4fe6-9e81-ecbc9e1ce522",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-29",
+    "status": "success",
+    "total_records": 10,
+    "created_records": 10,
+    "updated_records": 0,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 998,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-06-29",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-29",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 999,
+    "created_at": "2026-06-29T09:48:08.553Z"
+  },
+  {
+    "id": "d91a71d8-1352-464c-b446-e4755ce4f19c",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-28",
+    "status": "success",
+    "total_records": 11,
+    "created_records": 8,
+    "updated_records": 3,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 539,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "91243190-e912-4cc6-a217-203a9a9f35aa",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "523fb442-111c-4df8-99e7-69de93d4e095",
+          "date": "2026-06-28",
+          "status": "present"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-28",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 539,
+    "created_at": "2026-06-28T18:17:50.305Z"
+  },
+  {
+    "id": "46642d22-864c-45a1-8b1f-01d75af1e554",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-26",
+    "status": "success",
+    "total_records": 10,
+    "created_records": 1,
+    "updated_records": 9,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 1194,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-26",
+          "status": "absent"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "2dfdb39e-45d6-41cb-ab6e-8fb29e6eb5ae",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "6032a0a1-f8bc-489b-9c6a-d55c63413855",
+          "date": "2026-06-26",
+          "status": "absent"
+        },
+        {
+          "employee_id": "523fb442-111c-4df8-99e7-69de93d4e095",
+          "date": "2026-06-26",
+          "status": "half_day"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 1202,
+    "created_at": "2026-06-26T17:51:31.892Z"
+  },
+  {
+    "id": "3a17d2e4-0c3c-4493-ad45-c60065f4391e",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-26",
+    "status": "success",
+    "total_records": 9,
+    "created_records": 3,
+    "updated_records": 6,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Retry Test Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 565,
+      "entries": [
+        {
+          "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-26",
+          "status": "absent"
+        },
+        {
+          "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+          "date": "2026-06-26",
+          "status": "absent"
+        },
+        {
+          "employee_id": "49b1119e-07ab-4e4c-ad89-09ce12e472fb",
+          "date": "2026-06-26",
+          "status": "present"
+        },
+        {
+          "employee_id": "523fb442-111c-4df8-99e7-69de93d4e095",
+          "date": "2026-06-26",
+          "status": "half_day"
+        },
+        {
+          "employee_id": "93d37cad-fb5e-4463-8cc8-18c88aac624b",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 565,
+    "created_at": "2026-06-26T14:20:10.285Z"
+  },
+  {
+    "id": "aa971d78-ac8f-4c81-8942-07647a952011",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "retry_of_log_id": "41b0242c-f26f-44f7-bf61-794f0e68c5ee",
+      "retry_original_status": "failed",
+      "triggered_by": "dev-user:manual_retry",
+      "duration_ms": 1789,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 1789,
+    "created_at": "2026-06-26T05:50:29.146Z"
+  },
+  {
+    "id": "36a2ec03-a6d2-428e-9d00-4e80ae6a2208",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "retry_of_log_id": "41b0242c-f26f-44f7-bf61-794f0e68c5ee",
+      "retry_original_status": "failed",
+      "triggered_by": "dev-user:manual_retry",
+      "duration_ms": 2341,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 2341,
+    "created_at": "2026-06-26T05:50:16.722Z"
+  },
+  {
+    "id": "41b0242c-f26f-44f7-bf61-794f0e68c5ee",
+    "source_id": "9f3d45e1-8799-4d81-9360-24a372d8d61e",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "triggered_by": "dev-user",
+      "duration_ms": 3456,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 3456,
+    "created_at": "2026-06-26T05:49:57.470Z"
+  },
+  {
+    "id": "90f3d3a2-f3c9-47a5-9933-2bb465a905da",
+    "source_id": "00dc909d-b609-4060-a936-da0c567e3e54",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "retry_of_log_id": "944f2f65-366f-49ff-ab8e-b93aba5399d4",
+      "retry_original_status": "failed",
+      "triggered_by": "dev-user:manual_retry",
+      "duration_ms": 2661,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 2661,
+    "created_at": "2026-06-26T05:47:46.697Z"
+  },
+  {
+    "id": "944f2f65-366f-49ff-ab8e-b93aba5399d4",
+    "source_id": "00dc909d-b609-4060-a936-da0c567e3e54",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "retry_of_log_id": "e11ec7dd-830a-4845-875a-41deaa3663fb",
+      "retry_original_status": "failed",
+      "triggered_by": "dev-user:manual_retry",
+      "duration_ms": 2707,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 2707,
+    "created_at": "2026-06-26T05:47:33.677Z"
+  },
+  {
+    "id": "e11ec7dd-830a-4845-875a-41deaa3663fb",
+    "source_id": "00dc909d-b609-4060-a936-da0c567e3e54",
+    "sync_date": "2026-06-26",
+    "status": "failed",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 0,
+    "error_message": "insert or update on table \"attendance_records\" violates foreign key constraint \"attendance_records_employee_id_fkey\"",
+    "details": {
+      "triggered_by": "dev-user",
+      "duration_ms": 2918,
+      "entries": [
+        {
+          "employee_id": "11111111-1111-1111-1111-111111111111",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 2918,
+    "created_at": "2026-06-26T05:47:21.883Z"
+  },
+  {
+    "id": "3cfd08bb-fd11-4d3b-a9e3-ebe4a74f5516",
+    "source_id": "00dc909d-b609-4060-a936-da0c567e3e54",
+    "sync_date": "2026-06-26",
+    "status": "success",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 1,
+    "error_message": null,
+    "details": {
+      "ingest_mode": "json_csv_text",
+      "artifact_id": "202ff6b5-2b46-40f0-b0d0-fc57eb937119",
+      "artifact_file": "tmp/attendance-sync-artifacts/202ff6b5-2b46-40f0-b0d0-fc57eb937119.json",
+      "provider": "biometric_csv",
+      "source_name": "Hardening Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 5051,
+      "entries": [
+        {
+          "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+          "date": "2026-06-26",
+          "status": "present"
+        }
+      ]
+    },
+    "duration_ms": 5052,
+    "created_at": "2026-06-26T05:46:46.661Z"
+  },
+  {
+    "id": "ab3c7688-bc91-4148-a1e5-f7077bc820f7",
+    "source_id": "fa1b4707-ff06-4bd3-8e3b-e94e0afee580",
+    "sync_date": "2026-06-26",
+    "status": "success",
+    "total_records": 1,
+    "created_records": 0,
+    "updated_records": 1,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "CSV JSON Source",
+      "triggered_by": "dev-user",
+      "duration_ms": 3702
+    },
+    "duration_ms": 3702,
+    "created_at": "2026-06-26T05:39:14.249Z"
+  },
+  {
+    "id": "d14d7a7b-d82f-4038-8a4e-4380329ed0fb",
+    "source_id": "ecfd91b8-08b4-4cd5-a8f7-f9a53645c3a8",
+    "sync_date": "2026-06-26",
+    "status": "success",
+    "total_records": 1,
+    "created_records": 1,
+    "updated_records": 0,
+    "error_message": null,
+    "details": {
+      "provider": "biometric_csv",
+      "source_name": "Phase6 Test Source",
+      "triggered_by": "dev-user"
+    },
+    "duration_ms": 0,
+    "created_at": "2026-06-26T05:33:50.471Z"
+  }
+]

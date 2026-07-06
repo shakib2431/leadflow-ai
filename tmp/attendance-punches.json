@@ -1,0 +1,65 @@
+[
+  {
+    "employee_id": "dd8df63d-5d5a-4830-a56b-eb127c274b3a",
+    "date": "2026-06-28",
+    "check_in_at": "2026-06-28T15:59:35.344Z",
+    "check_out_at": "2026-06-28T15:59:58.749Z",
+    "updated_at": "2026-06-28T15:59:58.749Z"
+  },
+  {
+    "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+    "date": "2026-06-28",
+    "check_in_at": "2026-06-28T16:17:51.275Z",
+    "check_out_at": "2026-06-28T16:17:55.394Z",
+    "updated_at": "2026-06-28T16:17:55.394Z"
+  },
+  {
+    "employee_id": "6670cf46-1579-4357-821f-cde654a2166c",
+    "date": "2026-07-01",
+    "check_in_at": "2026-07-01T07:19:47.168Z",
+    "check_out_at": null,
+    "updated_at": "2026-07-01T07:19:47.168Z"
+  },
+  {
+    "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+    "date": "2026-07-01",
+    "check_in_at": "2026-07-01T16:52:08.096Z",
+    "check_out_at": null,
+    "updated_at": "2026-07-01T16:52:08.096Z"
+  },
+  {
+    "employee_id": "63e16254-e321-46f5-ae26-d9ba74178849",
+    "date": "2026-07-01",
+    "check_in_at": "2026-07-01T19:07:02.725Z",
+    "check_out_at": "2026-07-01T19:14:19.773Z",
+    "updated_at": "2026-07-01T19:14:19.773Z"
+  },
+  {
+    "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+    "date": "2026-07-03",
+    "check_in_at": "2026-07-03T12:13:44.530Z",
+    "check_out_at": null,
+    "updated_at": "2026-07-03T12:13:44.530Z"
+  },
+  {
+    "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+    "date": "2026-07-03",
+    "check_in_at": "2026-07-03T16:43:57.661Z",
+    "check_out_at": "2026-07-03T18:16:47.533Z",
+    "updated_at": "2026-07-03T18:16:47.533Z"
+  },
+  {
+    "employee_id": "bea1121c-4f8c-407f-a1bf-5274d2da8811",
+    "date": "2026-07-04",
+    "check_in_at": "2026-07-04T15:23:34.091Z",
+    "check_out_at": null,
+    "updated_at": "2026-07-04T15:23:34.091Z"
+  },
+  {
+    "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+    "date": "2026-07-05",
+    "check_in_at": "2026-07-05T17:14:46.656Z",
+    "check_out_at": "2026-07-05T17:16:13.148Z",
+    "updated_at": "2026-07-05T17:16:13.148Z"
+  }
+]

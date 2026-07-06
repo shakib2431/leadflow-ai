@@ -154,6 +154,25 @@ export default function Dashboard() {
 
   // --- INITIALIZATION ---
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const searchParams = new URLSearchParams(window.location.search);
+      const recoveryType = hashParams.get('type') || searchParams.get('type');
+      const tokenHash = hashParams.get('token_hash') || searchParams.get('token_hash');
+      const code = searchParams.get('code');
+      const hasRecoveryToken =
+        recoveryType === 'recovery' ||
+        Boolean(tokenHash) ||
+        Boolean(code) ||
+        hashParams.has('access_token') ||
+        searchParams.has('access_token');
+
+      if (hasRecoveryToken) {
+        window.location.replace(`/login/reset-password${window.location.search}${window.location.hash}`);
+        return;
+      }
+    }
+
     const getUser = async () => {
       const { data: { user } } = await supabaseAuth.auth.getUser();
       if (user?.email) setUserName(user.email.split("@")[0]);
@@ -213,7 +232,7 @@ export default function Dashboard() {
                 </Link>
               </div>
             </div>
-            {/* 💥 ADD THE WIDGET RIGHT HERE 💥 */}
+            {/* ≡ƒÆÑ ADD THE WIDGET RIGHT HERE ≡ƒÆÑ */}
             <div className="mb-12">
               <AutonomousAgentWidget />
             </div>
@@ -244,7 +263,7 @@ export default function Dashboard() {
                               <h3 className="text-lg font-bold text-white/90 tracking-tight">{item.leads?.full_name || "Unknown Lead"}</h3>
                               {isHot && <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">Score {item.leads.ai_score}</span>}
                             </div>
-                            <p className="text-sm text-white/60 mb-4 max-w-3xl leading-relaxed">{item.title} — {item.description}</p>
+                            <p className="text-sm text-white/60 mb-4 max-w-3xl leading-relaxed">{item.title} ΓÇö {item.description}</p>
                             {item.ai_message && (
                               <div className="bg-violet-950/20 border border-violet-500/10 rounded-xl p-4 max-w-2xl relative overflow-hidden">
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-violet-500/50"></div>

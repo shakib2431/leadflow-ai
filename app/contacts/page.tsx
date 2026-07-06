@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ContactEnrichmentPanel from "@/components/crm/contact-enrichment-panel";
 import AddContactModal from "@/components/crm/add-contact-modal";
@@ -327,9 +328,13 @@ export default function ContactsPage() {
                       {new Date(contact.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-4 text-right">
-                      <button className="p-2 hover:bg-white/10 rounded-lg text-white/40 opacity-0 group-hover:opacity-100 transition-all">
+                      <Link
+                        href={`/contacts/${contact.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 hover:bg-white/10 rounded-lg text-white/40 opacity-0 group-hover:opacity-100 transition-all"
+                      >
                         <ChevronRight size={16} />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))

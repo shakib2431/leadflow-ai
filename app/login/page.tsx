@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   Mail,
@@ -8,63 +9,149 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
-  const [loading, setLoading] =
-    useState(false);
-    const [email, setEmail] =
-  useState("");
+  const searchParams = useSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-const [password, setPassword] =
-  useState("");
+  async function getRoleBasedDestination(): Promise<string | null> {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) return null;
 
-async function handleLogin() {
-  try {
-    setLoading(true);
+    const res = await fetch("/api/hrms/v2/user-roles/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    const { error } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    if (!res.ok) return null;
+    const body = await res.json();
+    const role = String(body?.data?.role || "").trim();
 
-    if (error) {
-      alert(error.message);
+    if (role === "Employee") return "/hrms/v2/self-service";
+    if (role === "HR Admin" || role === "HR Executive") return "/hrms/v2/admin-dashboard";
+
+    return null;
+  }
+
+  async function getFallbackDestination() {
+    const { data: businesses } = await supabase
+      .from("businesses")
+      .select("*")
+      .limit(1);
+
+    if (!businesses || businesses.length === 0) return "/onboarding";
+    if (!businesses[0]?.setup_completed) return "/onboarding";
+
+    // Prefer HRMS entrypoint so users without explicit role mapping
+    // do not get dropped into the generic CRM shell.
+    return "/hrms/v2/admin-dashboard";
+  }
+
+  async function handlePostAuthRedirect() {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
+    const mustChangePassword =
+      Boolean(user?.user_metadata?.must_change_password) ||
+      Boolean((user as any)?.app_metadata?.must_change_password);
+
+    if (mustChangePassword) {
+      window.location.href = "/login/reset-password?firstLogin=1";
       return;
     }
-const { data: businesses } =
-  await supabase
-    .from("businesses")
-    .select("*")
-    .limit(1);
 
-if (
-  !businesses ||
-  businesses.length === 0
-) {
-  window.location.href =
-    "/onboarding";
+    const roleRoute = await getRoleBasedDestination();
+    const nextPath = searchParams.get("next") || "";
+    let safeNextPath: string | null = null;
 
-  return;
-}
+    if (/^\/(?!\/)/.test(nextPath)) {
+      safeNextPath = nextPath;
+    } else {
+      try {
+        const url = new URL(nextPath);
+        const sameOrigin = typeof window !== "undefined" && url.origin === window.location.origin;
+        if (sameOrigin && /^\/(?!\/)/.test(url.pathname)) {
+          safeNextPath = `${url.pathname}${url.search}${url.hash}`;
+        }
+      } catch {
+        safeNextPath = null;
+      }
+    }
 
-if (
-  !businesses[0]
-    .setup_completed
-) {
-  window.location.href =
-    "/onboarding";
+    if (roleRoute) {
+      if (roleRoute === "/hrms/v2/self-service" && safeNextPath) {
+        window.location.href = safeNextPath;
+        return;
+      }
+      window.location.href = roleRoute;
+      return;
+    }
 
-  return;
-}
-
-window.location.href = "/";
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setLoading(false);
+    const fallbackRoute = await getFallbackDestination();
+    window.location.href = fallbackRoute;
   }
-}
+
+  async function handleLogin() {
+    try {
+      setLoading(true);
+      setErrorMessage(null);
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      await handlePostAuthRedirect();
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Unable to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let active = true;
+
+    async function redirectIfAlreadyLoggedIn() {
+      if (typeof window !== "undefined") {
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        const searchParamsLocal = new URLSearchParams(window.location.search);
+        const recoveryType = hashParams.get("type") || searchParamsLocal.get("type");
+        const tokenHash = hashParams.get("token_hash") || searchParamsLocal.get("token_hash");
+        const code = searchParamsLocal.get("code");
+        const hasRecoveryToken =
+          recoveryType === "recovery" ||
+          Boolean(tokenHash) ||
+          Boolean(code) ||
+          hashParams.has("access_token") ||
+          searchParamsLocal.has("access_token");
+
+        if (hasRecoveryToken) {
+          const next = `/login/reset-password${window.location.search}${window.location.hash}`;
+          window.location.replace(next);
+          return;
+        }
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (!active || !data.session) return;
+      await handlePostAuthRedirect();
+    }
+
+    redirectIfAlreadyLoggedIn();
+
+    return () => {
+      active = false;
+    };
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-black text-white flex overflow-hidden">
@@ -136,6 +223,11 @@ window.location.href = "/";
           </div>
 
           <div className="space-y-5">
+            {errorMessage && (
+              <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+                {errorMessage}
+              </div>
+            )}
 
             {/* EMAIL */}
             <div className="relative">
@@ -188,6 +280,12 @@ window.location.href = "/";
                 </>
               )}
             </button>
+
+            <div className="text-right">
+              <Link href="/login/forgot-password" className="text-sm text-violet-300 hover:text-violet-200">
+                Forgot password?
+              </Link>
+            </div>
 
             <div className="text-center text-sm text-white/40 pt-2">
               Don’t have an account?{" "}

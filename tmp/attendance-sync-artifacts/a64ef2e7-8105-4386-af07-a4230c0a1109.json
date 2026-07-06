@@ -1,0 +1,16 @@
+{
+  "artifact_id": "a64ef2e7-8105-4386-af07-a4230c0a1109",
+  "created_at": "2026-06-26T05:39:12.486Z",
+  "source_id": "fa1b4707-ff06-4bd3-8e3b-e94e0afee580",
+  "sync_date": "2026-06-26",
+  "total_rows": 2,
+  "valid_rows": 1,
+  "invalid_rows": 1,
+  "errors": [
+    {
+      "row": 3,
+      "reason": "Invalid status",
+      "value": "oops"
+    }
+  ]
+}

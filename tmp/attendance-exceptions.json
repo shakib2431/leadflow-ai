@@ -1,0 +1,128 @@
+[
+  {
+    "id": "d6761899-8b31-4212-a07f-005ec3f33a07",
+    "employee_id": "91dad032-24e4-4020-b74f-dc6bff185997",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "in_review",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.042Z"
+    },
+    "resolution_note": "Investigating exception workflow",
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-06-26T05:57:26.304Z"
+  },
+  {
+    "id": "d65b626d-8a2a-43eb-b8ca-bdb75bf0d13a",
+    "employee_id": "cbe913c3-af8f-4371-a6dc-861b15251046",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "in_review",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.042Z"
+    },
+    "resolution_note": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-07-01T16:49:18.121Z"
+  },
+  {
+    "id": "ad9f8850-b493-4edd-b01e-b253d197c768",
+    "employee_id": "b8adb657-4f3b-4f1b-ac60-46bd95b8e052",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "in_review",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.043Z"
+    },
+    "resolution_note": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-07-01T16:51:12.829Z"
+  },
+  {
+    "id": "17209e7d-6d1b-4970-8a3b-1fad125f42b4",
+    "employee_id": "fd906579-d088-4ca2-b623-c4feff94dbd4",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "open",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.043Z"
+    },
+    "resolution_note": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-06-26T05:57:18.043Z"
+  },
+  {
+    "id": "0de3f6ca-eaec-4610-a1c1-6dc3ec0de929",
+    "employee_id": "49b1119e-07ab-4e4c-ad89-09ce12e472fb",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "open",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.043Z"
+    },
+    "resolution_note": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-06-26T05:57:18.043Z"
+  },
+  {
+    "id": "3ad08e39-d7ca-4c1d-9d9f-1f0c3f065417",
+    "employee_id": "523fb442-111c-4df8-99e7-69de93d4e095",
+    "date": "2026-06-26",
+    "exception_type": "missing_attendance",
+    "severity": "high",
+    "status": "open",
+    "title": "Attendance not marked",
+    "description": "No attendance status found for employee for this date.",
+    "detected_from": {
+      "rule": "missing_attendance",
+      "date": "2026-06-26",
+      "detected_by": "dev-user",
+      "detected_at": "2026-06-26T05:57:18.043Z"
+    },
+    "resolution_note": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "created_at": "2026-06-26T05:57:17.434Z",
+    "updated_at": "2026-06-26T05:57:18.043Z"
+  }
+]

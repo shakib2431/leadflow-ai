@@ -1,0 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Clock, Calendar, CheckCircle, XCircle, Users, X, Palmtree, Tent, CheckCircle2, AlertCircle } from "lucide-react";
+
+const UPCOMING_HOLIDAYS = [
+  { id: 1, name: "Independence Day", date: "15 Aug 2026", days: 1 },
+  { id: 2, name: "Diwali", date: "08 Nov 2026", days: 1 }
+];
+
+export default function AttendancePage() {
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [attendanceToday, setAttendanceToday] = useState<Record<string, string>>({});
+  const [pendingPTO, setPendingPTO] = useState<any[]>([]);
+  const [approvedPTO, setApprovedPTO] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  const [showOutTodayModal, setShowOutTodayModal] = useState(false);
+
+  const todayDate = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local time
+
+  useEffect(() => {
+    fetchAttendanceData();
+  }, []);
+
+  // File backed up on 2026-06-24

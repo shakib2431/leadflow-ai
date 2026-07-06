@@ -4,6 +4,17 @@ import { validateWageFloor } from '@/lib/compliance/validateWageFloor';
 import { calculatePF } from '@/lib/compliance/calculatePF';
 import { calculateESI } from '@/lib/compliance/calculateESI';
 import { calculateProfessionalTax } from '@/lib/compliance/calculateProfessionalTax';
+import { calculateTDS } from '@/lib/compliance/calculateTDS';
+import { getTaxDeclarationsMap } from '@/lib/hrms/taxDeclarations';
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function monthsRemainingInIndianFY(month: number) {
+  return month <= 3 ? 4 - month : 16 - month;
+}
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +47,7 @@ export async function POST(request: Request) {
 
     // 2. Fetch Global Compliance Rules
     const { data: rules } = await supabase.from('compliance_rules').select('*');
-    const getRule = (type: string) => Number(rules?.find(r => r.rule_type === type)?.value_numeric || 0);
+    const getRule = (type: string) => toFiniteNumber(rules?.find(r => r.rule_type === type)?.value_numeric || 0, 0);
     
     const WAGE_FLOOR_PERCENT = getRule('WAGE_FLOOR_PERCENT') || 0.50;
     const PF_RATE = getRule('PF_RATE') || 0.12;
@@ -50,14 +61,16 @@ export async function POST(request: Request) {
     const { data: employees } = await supabase
       .from('employees')
       .select(`
-        id, work_state,
-        salary_structures ( id, ctc_annual, salary_components ( component_name, component_type, amount_monthly ) ),
+        id, first_name, last_name, email, employee_code, work_state,
+        salary_structures ( id, effective_from, effective_to, ctc_annual, salary_components ( component_name, component_type, amount_monthly ) ),
         statutory_registrations ( registration_type, is_applicable )
       `)
-      .eq('status', 'active')
-      .is('salary_structures.effective_to', null); // Only current structure
+      .eq('status', 'active');
 
     if (!employees || employees.length === 0) throw new Error("No active employees found.");
+
+    const employeeIds = employees.map((emp: any) => String(emp.id));
+    const taxDeclarations = await getTaxDeclarationsMap(employeeIds);
 
     // 4. Fetch Attendance for LOP (Loss of Pay) Calculation
     const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -72,29 +85,49 @@ export async function POST(request: Request) {
       .eq('status', 'absent'); // Only count absences for LOP
 
     // 5. The Core Calculation Loop
-    const lineItemsToInsert = [];
+    const lineItemsToInsert: any[] = [];
+    const skippedEmployees: Array<{ employee_id: string; employee_name: string; employee_code: string | null; reason: string }> = [];
 
     for (const emp of employees) {
-      const structure = emp.salary_structures[0];
-      if (!structure) continue; // Skip if no salary structure is defined
+      const allStructures = Array.isArray(emp.salary_structures) ? emp.salary_structures : [];
+      const activeStructures = allStructures
+        .filter((s: any) => !s?.effective_to)
+        .sort((a: any, b: any) => {
+          const aTime = new Date(String(a?.effective_from || 0)).getTime();
+          const bTime = new Date(String(b?.effective_from || 0)).getTime();
+          return bTime - aTime;
+        });
+
+      const structure = activeStructures[0];
+      if (!structure) {
+        skippedEmployees.push({
+          employee_id: String(emp.id),
+          employee_name: `${String(emp.first_name || '').trim()} ${String(emp.last_name || '').trim()}`.trim() || `Employee ${String(emp.id).slice(0, 8)}`,
+          employee_code: emp.employee_code || null,
+          reason: 'Missing active salary structure',
+        });
+        continue;
+      }
 
       // A. LOP (Loss of Pay) calculation
       const lopDays = attendance?.filter(a => a.employee_id === emp.id).length || 0;
       const lopMultiplier = Math.max(0, (lastDay - lopDays) / lastDay);
 
       // B. Pro-rate Components & Validate Wage Floor
-      const proRatedComponents = structure.salary_components.map((c: any) => ({
+      const sourceComponents = Array.isArray(structure.salary_components) ? structure.salary_components : [];
+      const proRatedComponents = sourceComponents.map((c: any) => ({
         ...c,
-        amount_monthly: Math.round(c.amount_monthly * lopMultiplier)
+        amount_monthly: Math.round(toFiniteNumber(c.amount_monthly, 0) * lopMultiplier)
       }));
 
       const wageFloorResult = validateWageFloor(proRatedComponents, structure.ctc_annual, WAGE_FLOOR_PERCENT);
       
-      const grossEarnings = proRatedComponents.reduce((sum: number, c: any) => sum + c.amount_monthly, 0);
-      const adjustedWageBase = wageFloorResult.adjustedWageBase;
+      const grossEarnings = toFiniteNumber(proRatedComponents.reduce((sum: number, c: any) => sum + toFiniteNumber(c.amount_monthly, 0), 0), 0);
+      const adjustedWageBase = toFiniteNumber(wageFloorResult.adjustedWageBase, 0);
 
       // C. Statutory Flags
-      const checkReg = (type: string) => emp.statutory_registrations.some((r: any) => r.registration_type === type && r.is_applicable);
+      const registrations = Array.isArray(emp.statutory_registrations) ? emp.statutory_registrations : [];
+      const checkReg = (type: string) => registrations.some((r: any) => r.registration_type === type && r.is_applicable);
       const isPfApplicable = checkReg('PF');
       const isEsiApplicable = checkReg('ESI');
       const isPtApplicable = checkReg('PT');
@@ -102,25 +135,33 @@ export async function POST(request: Request) {
       // D. Execute Deterministic Math Engines
       const pfResult = calculatePF(adjustedWageBase, isPfApplicable, PF_RATE, PF_CEILING);
       const esiResult = calculateESI(adjustedWageBase, isEsiApplicable, ESI_THRESHOLD, ESI_EMP_RATE, ESI_EMPR_RATE);
-      const ptAmount = calculateProfessionalTax(grossEarnings, isPtApplicable, PT_SLABS as any);
-      
-      // TDS is bypassed for this monthly run demo to keep the loop fast, 
-      // but in production, you'd feed calculateTDS() here.
-      const tdsAmount = 0; 
+      const ptAmount = toFiniteNumber(calculateProfessionalTax(grossEarnings, isPtApplicable, PT_SLABS as any), 0);
+
+      const taxDeclaration = taxDeclarations.get(String(emp.id));
+      const regime = taxDeclaration?.regime || 'NEW';
+      const declaredDeductions = toFiniteNumber(taxDeclaration?.declared_80c, 0) + toFiniteNumber(taxDeclaration?.declared_80d, 0);
+
+      const annualGross = grossEarnings * 12;
+      const tdsResult = calculateTDS(0, annualGross, regime, declaredDeductions, monthsRemainingInIndianFY(month));
+      const tdsAmount = toFiniteNumber(tdsResult.monthlyTDS, 0);
 
       // E. Final Net Pay Calculation
-      const totalDeductions = pfResult.employeeContribution + esiResult.employeeContribution + ptAmount + tdsAmount;
-      const netPay = grossEarnings - totalDeductions;
+      const pfEmployee = toFiniteNumber(pfResult.employeeContribution, 0);
+      const pfEmployer = toFiniteNumber(pfResult.employerContribution, 0);
+      const esiEmployee = toFiniteNumber(esiResult.employeeContribution, 0);
+      const esiEmployer = toFiniteNumber(esiResult.employerContribution, 0);
+      const totalDeductions = pfEmployee + esiEmployee + ptAmount + tdsAmount;
+      const netPay = Math.max(0, toFiniteNumber(grossEarnings - totalDeductions, 0));
 
       lineItemsToInsert.push({
         payroll_run_id: run.id,
         employee_id: emp.id,
         gross_earnings: grossEarnings,
         wage_base: adjustedWageBase,
-        pf_employee: pfResult.employeeContribution,
-        pf_employer: pfResult.employerContribution,
-        esi_employee: esiResult.employeeContribution,
-        esi_employer: esiResult.employerContribution,
+        pf_employee: pfEmployee,
+        pf_employer: pfEmployer,
+        esi_employee: esiEmployee,
+        esi_employer: esiEmployer,
         professional_tax: ptAmount,
         tds: tdsAmount,
         lwf_employee: 0, // Placeholder
@@ -130,7 +171,13 @@ export async function POST(request: Request) {
         calculation_breakdown: {
           components: proRatedComponents,
           wage_floor_compliant: wageFloorResult.isCompliant,
-          deductions: { pf: pfResult.employeeContribution, esi: esiResult.employeeContribution, pt: ptAmount }
+          deductions: { pf: pfEmployee, esi: esiEmployee, pt: ptAmount, tds: tdsAmount },
+          tax: {
+            regime,
+            declared_deductions: declaredDeductions,
+            annual_taxable_income: tdsResult.taxableIncome,
+            annual_tax: tdsResult.annualTax,
+          },
         }
       });
     }
@@ -144,7 +191,19 @@ export async function POST(request: Request) {
     // 7. Update status to draft for HR review
     await supabase.from('payroll_runs').update({ status: 'draft' }).eq('id', run.id);
 
-    return NextResponse.json({ success: true, message: `Processed payroll for ${lineItemsToInsert.length} employees.` });
+    const activeEmployeeCount = employees.length;
+    const skippedCount = skippedEmployees.length;
+
+    return NextResponse.json({
+      success: true,
+      message: `Processed payroll for ${lineItemsToInsert.length} of ${activeEmployeeCount} active employees.`,
+      data: {
+        active_employee_count: activeEmployeeCount,
+        processed_employee_count: lineItemsToInsert.length,
+        skipped_employee_count: skippedCount,
+        skipped_employees: skippedEmployees,
+      },
+    });
 
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

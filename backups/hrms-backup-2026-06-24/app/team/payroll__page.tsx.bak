@@ -1,0 +1,15 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { IndianRupee, Play, CheckCircle2, FileText, AlertCircle, Clock, ChevronDown, ChevronUp } from "lucide-react";
+
+export default function PayrollPage() {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [payrollRun, setPayrollRun] = useState<any>(null);
+  const [lineItems, setLineItems] = useState<any[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+
+  // File backed up on 2026-06-24

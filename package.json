@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:phase11-admin": "node scripts/test_phase11_admin_smoke.js",
+    "verify:phase12-deployment": "node scripts/verify_phase12_deployment.js",
+    "seed:hrms-staging": "node scripts/seed_hrms_staging_data.js"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",

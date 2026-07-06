@@ -1,0 +1,12 @@
+{
+  "id": "dbf13d9a-3764-4cb3-81de-9b5b63b206fa",
+  "generated_at": "2026-06-26T06:26:36.268Z",
+  "summary": {
+    "employees": 8,
+    "attendance_records": 9,
+    "leave_requests": 2,
+    "payroll_runs": 2,
+    "payroll_line_items": 5
+  },
+  "note": "Metadata backup snapshot only. Use infra-level DB backups for full recovery."
+}

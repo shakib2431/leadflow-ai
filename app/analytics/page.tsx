@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import PageShell from "@/components/page-shell";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, LineChart, Line, CartesianGrid,
@@ -11,6 +12,8 @@ import {
   TrendingUp, Users, DollarSign, Target, 
   BrainCircuit, ArrowRight, Sparkles, Building2, User
 } from "lucide-react";
+import MetricCard from "@/components/metric-card";
+import PanelCard from "@/components/panel-card";
 
 // --- TYPES ---
 interface Contact {
@@ -125,69 +128,34 @@ export default function AnalyticsPage() {
       </div>
     );
   }
-
   return (
-    <div className="min-h-screen p-8 space-y-8 bg-[#07070a] text-white font-sans overflow-x-hidden">
-      
-      {/* HEADER */}
-      <div className="flex justify-between items-end mb-4">
-        <div>
-          <h1 className="text-4xl font-bold mb-2 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60">
-            Command Center
-          </h1>
-          <p className="text-white/40">Real-time revenue intelligence and AI pipeline analytics.</p>
-        </div>
-      </div>
-
+    <PageShell title="Command Center" subtitle="Real-time revenue intelligence and AI pipeline analytics.">
       {/* METRICS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-[#0d0e12] p-6 rounded-3xl border border-white/5 shadow-xl hover:border-violet-500/30 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-              <DollarSign size={24} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40">Active Pipeline</span>
-          </div>
-          <h2 className="text-3xl font-bold">₹{metrics.totalPipelineValue.toLocaleString('en-IN')}</h2>
-          <p className="text-xs text-white/40 mt-2 flex items-center gap-1">
-            Across {metrics.activeDeals.length} active opportunities
-          </p>
-        </div>
-
-        <div className="bg-[#0d0e12] p-6 rounded-3xl border border-white/5 shadow-xl hover:border-violet-500/30 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:scale-110 transition-transform">
-              <Target size={24} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40">Weighted Forecast</span>
-          </div>
-          <h2 className="text-3xl font-bold text-violet-400">₹{metrics.weightedValue.toLocaleString('en-IN')}</h2>
-          <p className="text-xs text-white/40 mt-2">Adjusted for stage probability</p>
-        </div>
-
-        <div className="bg-[#0d0e12] p-6 rounded-3xl border border-white/5 shadow-xl hover:border-violet-500/30 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-              <TrendingUp size={24} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40">Total Revenue Won</span>
-          </div>
-          <h2 className="text-3xl font-bold text-emerald-400">₹{metrics.totalWonValue.toLocaleString('en-IN')}</h2>
-          <p className="text-xs text-white/40 mt-2">Historical win rate: {metrics.winRate}%</p>
-        </div>
-
-        <div className="bg-[#0d0e12] p-6 rounded-3xl border border-white/5 shadow-xl hover:border-violet-500/30 transition-all group">
-          <div className="flex justify-between items-start mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-              <Users size={24} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-white/40">Network Health</span>
-          </div>
-          <h2 className="text-3xl font-bold">{contacts.length} <span className="text-lg text-white/40 font-normal">Contacts</span></h2>
-          <p className="text-xs text-white/40 mt-2">
-            <span className="text-amber-400 font-bold">{metrics.hotContacts.length} Hot Leads</span> (Avg Score: {metrics.avgScore})
-          </p>
-        </div>
+        <MetricCard
+          title="Active Pipeline"
+          value={`₹${metrics.totalPipelineValue.toLocaleString('en-IN')}`}
+          subtitle={`Across ${metrics.activeDeals.length} active opportunities`}
+          icon={<DollarSign size={20} />}
+        />
+        <MetricCard
+          title="Weighted Forecast"
+          value={`₹${metrics.weightedValue.toLocaleString('en-IN')}`}
+          subtitle="Adjusted for stage probability"
+          icon={<Target size={20} />}
+        />
+        <MetricCard
+          title="Total Revenue Won"
+          value={`₹${metrics.totalWonValue.toLocaleString('en-IN')}`}
+          subtitle={`Historical win rate: ${metrics.winRate}%`}
+          icon={<TrendingUp size={20} />}
+        />
+        <MetricCard
+          title="Network Health"
+          value={`${contacts.length} Contacts`}
+          subtitle={`${metrics.hotContacts.length} Hot Leads (Avg Score: ${metrics.avgScore})`}
+          icon={<Users size={20} />}
+        />
       </div>
 
       {/* BIG AI EXECUTIVE SUMMARY */}
@@ -326,10 +294,10 @@ export default function AnalyticsPage() {
                     {deal.probability}%
                   </div>
                   <div>
-                    <h3 className="font-bold text-white group-hover:text-violet-300 transition-colors">{deal.title}</h3>
+                    <h3 className="text-sm font-bold text-white">{deal.title}</h3>
                     <p className="text-xs text-white/40 mt-1 flex items-center gap-2">
-                      <User size={12}/> {deal.contacts?.first_name} {deal.contacts?.last_name} 
-                      <span className="text-white/20">•</span> 
+                      <User size={12}/> {deal.contacts?.first_name} {deal.contacts?.last_name}
+                      <span className="text-white/20">•</span>
                       <span className="text-amber-400">{deal.stage}</span>
                     </p>
                   </div>
@@ -343,7 +311,6 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
-
-    </div>
+    </PageShell>
   );
 }

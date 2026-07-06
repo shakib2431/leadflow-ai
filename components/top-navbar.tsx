@@ -4,7 +4,8 @@ import {
 } from "@/lib/notification-context";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 import { Search, Bell, ChevronDown, Menu, MessageCircle } from "lucide-react";
 
@@ -32,6 +33,10 @@ const [
   notifications,
   setNotifications,
 ] = useState<any[]>([]);
+const notificationShellRef = useRef<HTMLDivElement | null>(null);
+const notificationButtonRef = useRef<HTMLButtonElement | null>(null);
+const notificationPanelRef = useRef<HTMLDivElement | null>(null);
+const [panelPosition, setPanelPosition] = useState({ top: 64, left: 16 });
 
 function getFollowupStatus(
   scheduledAt: string
@@ -136,6 +141,53 @@ function getFollowupStatus(
   };
 
 }, []);
+
+useEffect(() => {
+  function computePanelPosition() {
+    const anchor = notificationButtonRef.current;
+    if (!anchor) return;
+
+    const rect = anchor.getBoundingClientRect();
+    const panelWidth = 352;
+    const left = Math.min(
+      Math.max(8, rect.right - panelWidth),
+      Math.max(8, window.innerWidth - panelWidth - 8)
+    );
+    const top = rect.bottom + 8;
+    setPanelPosition({ top, left });
+  }
+
+  function handleOutsideClick(event: MouseEvent) {
+    if (!notificationOpen) return;
+    const target = event.target as Node;
+    const clickedBell = notificationButtonRef.current?.contains(target);
+    const clickedPanel = notificationPanelRef.current?.contains(target);
+    if (!clickedBell && !clickedPanel) {
+      setNotificationOpen(false);
+    }
+  }
+
+  function handleEscape(event: KeyboardEvent) {
+    if (event.key === "Escape") setNotificationOpen(false);
+  }
+
+  document.addEventListener("mousedown", handleOutsideClick);
+  document.addEventListener("keydown", handleEscape);
+  window.addEventListener("resize", computePanelPosition);
+  window.addEventListener("scroll", computePanelPosition, true);
+
+  if (notificationOpen) {
+    computePanelPosition();
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleOutsideClick);
+    document.removeEventListener("keydown", handleEscape);
+    window.removeEventListener("resize", computePanelPosition);
+    window.removeEventListener("scroll", computePanelPosition, true);
+  };
+}, [notificationOpen]);
+
 async function handleLogout() {
   await supabase.auth.signOut();
 
@@ -169,9 +221,10 @@ async function handleLogout() {
       <div className="flex items-center gap-1.5 ml-auto">
        {/* Notifications */}
 
-<div className="relative">
+<div ref={notificationShellRef} className="relative">
 
   <button
+  ref={notificationButtonRef}
   onClick={() =>
     setNotificationOpen(
       !notificationOpen
@@ -195,10 +248,15 @@ async function handleLogout() {
 
   </div>
 
-</div>
+
 {notificationOpen && (
 
-  <div className="absolute top-14 right-0 w-80 rounded-2xl border border-white/10 bg-[#111827] shadow-2xl shadow-black/40 p-4 z-50">
+  createPortal(
+  <div
+    ref={notificationPanelRef}
+    className="fixed z-[999] w-[22rem] max-w-[calc(100vw-1rem)] rounded-2xl border border-white/10 bg-[#111827] shadow-2xl shadow-black/40 p-4"
+    style={{ top: `${panelPosition.top}px`, left: `${panelPosition.left}px` }}
+  >
 
     <div className="flex items-center justify-between mb-4">
 
@@ -212,7 +270,13 @@ async function handleLogout() {
 
     </div>
 
- <div className="space-y-3">
+ <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+
+  {notifications.length === 0 && (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/60">
+      No pending notifications.
+    </div>
+  )}
 
   {notifications.map((item) => (
 
@@ -276,7 +340,9 @@ router.push(
 
   </div>
 
+  , document.body)
 )}
+</div>
        {/* User Profile */}
 <button className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg glass glass-hover border border-white/[0.07] transition-all">
   <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">

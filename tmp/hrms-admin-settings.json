@@ -1,7 +1,0 @@
-{
-  "default_currency": "INR",
-  "timezone": "Asia/Kolkata",
-  "attendance_cutoff_day": 24,
-  "leave_auto_approval": false,
-  "payroll_approval_required": true
-}

@@ -8,7 +8,7 @@ import {
   ReportFilters,
   ReportFilterState,
   ExportBar,
-} from "../components";
+} from "./components";
 import { useState } from "react";
 
 export default function PayrollReportsPage() {

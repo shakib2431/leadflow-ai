@@ -12,7 +12,7 @@ import {
   AIInsights,
   AIInsight,
   ExportBar,
-} from "../components";
+} from "./components";
 
 interface WorkforceData {
   totalEmployees: number;

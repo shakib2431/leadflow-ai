@@ -8,7 +8,7 @@ import {
   ReportFilters,
   ReportFilterState,
   ExportBar,
-} from "../components";
+} from "./components";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 

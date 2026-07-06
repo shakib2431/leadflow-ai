@@ -10,7 +10,7 @@ import {
   ReportFilters,
   ReportFilterState,
   ExportBar,
-} from "../components";
+} from "./components";
 
 interface LeaveData {
   totalLeaveRequests: number;

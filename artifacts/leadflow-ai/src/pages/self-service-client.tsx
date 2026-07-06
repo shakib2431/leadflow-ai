@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
-import { usePathname } from 'wouter';
+import { useLocation } from "wouter";
 import { supabase } from '@/lib/supabase';
 import { type HolidayRow } from '@/lib/hrms/companyHolidays';
 

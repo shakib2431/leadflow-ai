@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import HRMSSidebarNav from "@/components/hrms/hrms-sidebar-nav";
 import HRMSTopHeader from "@/components/hrms/hrms-top-header";
-import { ReportCategories } from "../components/report-categories";
+import { ReportCategories } from "./components/report-categories";
 import { CalendarClock, Filter, Layers, Trash2 } from "lucide-react";
 
 type ReportModule = "workforce" | "recruitment" | "attendance" | "leave" | "payroll" | "compliance";

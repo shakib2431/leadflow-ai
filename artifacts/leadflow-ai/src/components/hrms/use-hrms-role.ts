@@ -22,7 +22,7 @@ function normalizeRoleFromTitle(value: string): Exclude<HRMSRole, null> | null {
 }
 
 export function useHRMSRole() {
-  usePathname();
+  const [pathname] = useLocation();
   const [role, setRole] = useState<HRMSRole>(null);
   const [loading, setLoading] = useState(true);
   const [serverResolved, setServerResolved] = useState(false);

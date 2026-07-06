@@ -1,6 +1,8 @@
-import { redirect } from "wouter";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
-export default function HRMSV2Page() {
-  // Redirect to admin dashboard
-  redirect("/hrms/v2/admin-dashboard");
+export default function HRMSv2Page() {
+  const [, navigate] = useLocation();
+  useEffect(() => { navigate("/hrms/v2/admin-dashboard"); }, []);
+  return null;
 }

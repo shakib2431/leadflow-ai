@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "wouter";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 import { 
   User, Mail, Phone, Calendar, Activity, CheckCircle, 
   AlertCircle, Clock, Sparkles, BrainCircuit, ShieldAlert,
@@ -16,9 +16,6 @@ import { RelationshipIntelligenceData } from "@/types/relationship-intelligence"
 import DealIntelligenceCard from "@/components/deal-intelligence";
 import { DealIntelligenceData } from "@/types/deal-intelligence";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // --- TypeScript Types ---
 interface Lead { id: string; name: string; email: string; phone: string; status: string; source: string; ai_score: number; created_at: string; }

@@ -14,6 +14,9 @@ import { DocumentCenter } from "@/components/portal/document-center";
 import { ProjectStats } from "@/components/portal/project-stats";
 import { SupportCenter } from "@/components/portal/ticket-system";
 import { MeetingScheduler } from "@/components/portal/meeting-booker";
+
+export default function ClientWorkspace() {
+  const { token } = useParams<{ token: string }>();
   const [client, setClient] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
 

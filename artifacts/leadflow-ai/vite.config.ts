@@ -27,8 +27,17 @@ if (!basePath) {
   );
 }
 
+// Expose VITE_* secrets from process.env into import.meta.env at dev time
+const envDefines: Record<string, string> = {};
+for (const [key, value] of Object.entries(process.env)) {
+  if (key.startsWith('VITE_') && value !== undefined) {
+    envDefines[`import.meta.env.${key}`] = JSON.stringify(value);
+  }
+}
+
 export default defineConfig({
   base: basePath,
+  define: envDefines,
   plugins: [
     react(),
     tailwindcss(),

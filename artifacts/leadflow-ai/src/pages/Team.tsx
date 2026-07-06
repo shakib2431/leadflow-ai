@@ -1,5 +1,8 @@
-import { redirect } from 'wouter';
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
-export default function TeamLegacyPage() {
-  redirect('/team/employees');
+export default function TeamPage() {
+  const [, navigate] = useLocation();
+  useEffect(() => { navigate("/team/employees"); }, []);
+  return null;
 }

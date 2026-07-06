@@ -31,7 +31,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         date: normalizeDate(row?.date) || syncDate,
         status: String(row?.status || '').trim().toLowerCase(),
       }))
-      .filter((row) => row.employee_id && row.date && VALID_STATUSES.has(row.status));
+      
+      .filter((row: any) => row.employee_id && row.date && VALID_STATUSES.has(row.status));
 
     const data = await runAttendanceSync({
       sourceId,

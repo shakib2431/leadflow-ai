@@ -386,7 +386,7 @@ export default function HRAdminDashboardPage() {
                       {[1, 2, 3].map((i) => <div key={i} style={{ height: 62, borderRadius: 12, background: "#F1F5F9" }} className="animate-pulse" />)}
                     </div>
                   ) : totalPending === 0 ? (
-                    <div style={{ borderRadius: 14, border: `1px solid ${C.emerald}33`, background: C.emeraldLt, padding: 32, textAlign: "center" }}>
+                    <div style={{ flex: 1, minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", borderRadius: 14, border: `1px solid ${C.emerald}33`, background: C.emeraldLt, padding: 32, textAlign: "center" }}>
                       <CheckCircle2 style={{ margin: "0 auto 8px" }} color={C.emerald} size={32} />
                       <p style={{ fontWeight: 700, color: "#065F46", margin: 0 }}>All caught up!</p>
                       <p style={{ fontSize: 12.5, color: C.emerald, marginTop: 4 }}>No pending approvals at this time.</p>

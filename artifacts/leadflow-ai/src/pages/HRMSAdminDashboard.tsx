@@ -177,6 +177,18 @@ export default function HRAdminDashboardPage() {
     { label: "Active",       count: stats.activeEmployees,        color: "#059669" },
   ];
 
+  // ── Derived analytics (all real data) ──
+  const maxStage = Math.max(1, ...pipelineStages.map((s) => s.count));
+  const totalWorkforce = stats.activeEmployees + stats.onboardingEmployees + stats.totalCandidates;
+  const composition = [
+    { label: "Active Employees", value: stats.activeEmployees,     color: C.emerald },
+    { label: "In Onboarding",    value: stats.onboardingEmployees, color: C.violet },
+    { label: "In Pipeline",      value: stats.totalCandidates,     color: C.amber },
+  ];
+  const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 100) : 0);
+  const offerAcceptRate = pct(stats.candidateHired, stats.candidateOffered + stats.candidateHired);
+  const pipelineConversion = pct(stats.candidateHired, stats.totalCandidates);
+
   const quickActions = [
     { label: "Add Candidate",     href: "/team/recruitment",     icon: UserPlus,     color: C.primary },
     { label: "Employee Directory",href: "/team/employees",       icon: Users,        color: C.emerald },
@@ -272,9 +284,51 @@ export default function HRAdminDashboardPage() {
                 })}
               </section>
 
-              {/* ── Hiring Pipeline ── */}
-              <section className="hrms-animate-in" style={{ ...cardStyle, padding: 24, animationDelay: "120ms" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, flexWrap: "wrap", gap: 8 }}>
+              {/* ── Composition + Recruitment Health ── */}
+              <div className="hrms-feature-grid hrms-animate-in" style={{ animationDelay: "120ms" }}>
+                {/* Workforce composition donut */}
+                <section style={{ ...cardStyle, padding: 24 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>Workforce Composition</h2>
+                  <p style={{ fontSize: 12.5, color: C.textMute, margin: "3px 0 20px" }}>Live headcount across every stage</p>
+                  <div style={{ display: "flex", gap: 26, alignItems: "center", flexWrap: "wrap" }}>
+                    <div style={{ position: "relative", width: 176, height: 176, flexShrink: 0, margin: "0 auto" }}>
+                      <Donut segments={composition} size={176} thickness={22} />
+                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontSize: 30, fontWeight: 800, color: C.text, lineHeight: 1 }}>{loading ? "—" : totalWorkforce}</span>
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 5 }}>Total People</span>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 170, display: "flex", flexDirection: "column", gap: 15 }}>
+                      {composition.map((c) => (
+                        <div key={c.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 9, minWidth: 0 }}>
+                            <span style={{ width: 10, height: 10, borderRadius: 3, background: c.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: 13, fontWeight: 500, color: C.textSec, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.label}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexShrink: 0 }}>
+                            <span style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{loading ? "—" : c.value}</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 600, color: C.textMute, minWidth: 34, textAlign: "right" }}>{loading ? "" : `${pct(c.value, totalWorkforce)}%`}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* Recruitment health rings */}
+                <section style={{ ...cardStyle, padding: 24 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>Recruitment Health</h2>
+                  <p style={{ fontSize: 12.5, color: C.textMute, margin: "3px 0 22px" }}>Conversion through your funnel</p>
+                  <div style={{ display: "flex", gap: 18, flexWrap: "wrap", justifyContent: "space-around", alignItems: "center" }}>
+                    <Ring value={offerAcceptRate} color={C.primary} label="Offer Acceptance" loading={loading} />
+                    <Ring value={pipelineConversion} color={C.emerald} label="Pipeline → Hire" loading={loading} />
+                  </div>
+                </section>
+              </div>
+
+              {/* ── Hiring Pipeline (funnel) ── */}
+              <section className="hrms-animate-in" style={{ ...cardStyle, padding: 24, animationDelay: "150ms" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 8 }}>
                   <div>
                     <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>Hiring-to-Activation Pipeline</h2>
                     <p style={{ fontSize: 12.5, color: C.textMute, marginTop: 3 }}>From first application to active employee</p>
@@ -284,15 +338,15 @@ export default function HRAdminDashboardPage() {
                   </Link>
                 </div>
 
-                {/* rail */}
-                <div style={{ position: "relative", display: "flex", alignItems: "flex-start", marginBottom: 20 }}>
-                  <div style={{ position: "absolute", top: 29, left: "8%", right: "8%", height: 3, borderRadius: 3, background: "linear-gradient(90deg,#3B82F6,#8B5CF6,#5B4CF5,#F59E0B,#10B981,#059669)", opacity: 0.35, zIndex: 0 }} />
+                {/* proportional funnel bars */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 18 }}>
                   {pipelineStages.map((s) => (
-                    <div key={s.label} style={{ flex: 1, textAlign: "center", position: "relative", zIndex: 1 }}>
-                      <div className="hrms-pipe-node" style={{ width: 58, height: 58, borderRadius: "50%", background: "#fff", border: `2.5px solid ${s.color}`, boxShadow: `0 6px 16px ${s.color}2e`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", fontSize: 20, fontWeight: 800, color: s.color }}>
-                        {loading ? "—" : s.count}
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                      <span style={{ width: 92, flexShrink: 0, fontSize: 11, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.03em" }}>{s.label}</span>
+                      <div style={{ flex: 1, height: 30, borderRadius: 8, background: C.pageBg, overflow: "hidden", position: "relative" }}>
+                        <div className="hrms-funnel-bar" style={{ height: "100%", width: loading ? "0%" : `${s.count > 0 ? Math.max(8, (s.count / maxStage) * 100) : 0}%`, borderRadius: 8, background: grad(s.color) }} />
                       </div>
-                      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</div>
+                      <span style={{ width: 34, flexShrink: 0, textAlign: "right", fontSize: 15, fontWeight: 800, color: C.text }}>{loading ? "—" : s.count}</span>
                     </div>
                   ))}
                 </div>
@@ -405,5 +459,59 @@ function Pill({ label, color, dot }: { label: string; color: string; dot?: boole
       {dot && <span style={{ width: 6, height: 6, borderRadius: "50%", background: color }} />}
       {label}
     </span>
+  );
+}
+
+// ─── Donut chart (multi-segment SVG) ─────────────────────────────────────────
+function Donut({ segments, size, thickness }: { segments: { value: number; color: string }[]; size: number; thickness: number }) {
+  const total = segments.reduce((s, x) => s + x.value, 0);
+  const r = (size - thickness) / 2;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  return (
+    <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EDF0F7" strokeWidth={thickness} />
+      {total > 0 && segments.map((seg, i) => {
+        const len = (seg.value / total) * circ;
+        const el = (
+          <circle
+            key={i} cx={size / 2} cy={size / 2} r={r} fill="none"
+            stroke={seg.color} strokeWidth={thickness}
+            strokeDasharray={`${len} ${circ - len}`} strokeDashoffset={-offset}
+            style={{ transition: "stroke-dasharray 0.8s ease" }}
+          />
+        );
+        offset += len;
+        return el;
+      })}
+    </svg>
+  );
+}
+
+// ─── Progress ring (single-value SVG) ────────────────────────────────────────
+function Ring({ value, color, label, loading }: { value: number; color: string; label: string; loading?: boolean }) {
+  const size = 118, thickness = 11;
+  const r = (size - thickness) / 2;
+  const circ = 2 * Math.PI * r;
+  const pctVal = Math.min(100, Math.max(0, value));
+  const len = (pctVal / 100) * circ;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 11 }}>
+      <div style={{ position: "relative", width: size, height: size }}>
+        <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#EDF0F7" strokeWidth={thickness} />
+          <circle
+            cx={size / 2} cy={size / 2} r={r} fill="none"
+            stroke={color} strokeWidth={thickness} strokeLinecap="round"
+            strokeDasharray={`${len} ${circ - len}`}
+            style={{ transition: "stroke-dasharray 0.8s ease" }}
+          />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "#111827" }}>
+          {loading ? "—" : `${pctVal}%`}
+        </div>
+      </div>
+      <span style={{ fontSize: 12.5, fontWeight: 600, color: "#6B7280" }}>{label}</span>
+    </div>
   );
 }

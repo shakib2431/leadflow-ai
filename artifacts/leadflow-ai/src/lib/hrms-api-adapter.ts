@@ -172,6 +172,7 @@ async function handle(ctx: Ctx): Promise<Response> {
       .select()
       .maybeSingle();
     if (error) return json({ error: error.message }, 400);
+    if (!data) return json({ error: "Update failed or not permitted (no matching row)" }, 403);
     return json({ data });
   }
 
@@ -246,48 +247,88 @@ async function handle(ctx: Ctx): Promise<Response> {
     const { data, count } = await q;
     return json({ data: data ?? [], total: count ?? (data ?? []).length });
   }
-  if (path === "/payroll/dashboard") {
-    const { data: items } = await supabase.from("payroll_line_items").select("*");
+  if (path === "/payroll/dashboard" || path === "/payroll/reports") {
+    const month = Number(params.get("month")) || undefined;
+    const year = Number(params.get("year")) || undefined;
+    const [{ data: runs }, { data: items }] = await Promise.all([
+      supabase.from("payroll_runs").select("*"),
+      supabase.from("payroll_line_items").select("*"),
+    ]);
+    const runsArr = runs ?? [];
     const li = items ?? [];
-    const sum = (k: string) => li.reduce((a: number, r: any) => a + Number(r[k] ?? 0), 0);
-    const gross = sum("gross_earnings");
-    const pfEmp = sum("pf_employee");
-    const pfEr = sum("pf_employer");
-    const esiEmp = sum("esi_employee");
-    const esiEr = sum("esi_employer");
-    const pt = sum("professional_tax");
-    const tds = sum("tds");
-    const lwf = sum("lwf_employee") + sum("lwf_employer");
-    const net = sum("net_pay");
-    const deductions = pfEmp + esiEmp + pt + tds + sum("lwf_employee");
+    const aggOf = (rows: any[]) => {
+      const s = (k: string) => rows.reduce((a, r) => a + Number(r[k] ?? 0), 0);
+      return {
+        gross: s("gross_earnings"),
+        net: s("net_pay"),
+        deductions: s("pf_employee") + s("esi_employee") + s("professional_tax") + s("tds") + s("lwf_employee"),
+        pf: s("pf_employee") + s("pf_employer"),
+        esi: s("esi_employee") + s("esi_employer"),
+        pt: s("professional_tax"),
+        tds: s("tds"),
+        lwf: s("lwf_employee") + s("lwf_employer"),
+        employeeCount: new Set(rows.map((r) => r.employee_id)).size,
+      };
+    };
+    const byRun = new Map<string, ReturnType<typeof aggOf>>();
+    for (const r of runsArr) byRun.set(r.id, aggOf(li.filter((x: any) => x.payroll_run_id === r.id)));
+    const sortedRuns = [...runsArr].sort(
+      (a: any, b: any) => b.period_year - a.period_year || b.period_month - a.period_month,
+    );
+
+    if (path === "/payroll/reports") {
+      return json({
+        data: {
+          runs: sortedRuns.map((r: any) => ({ id: r.id, period_month: r.period_month, period_year: r.period_year, status: r.status })),
+          monthlySummary: sortedRuns.map((r: any) => {
+            const a = byRun.get(r.id)!;
+            return {
+              period_key: `${r.period_year}-${String(r.period_month).padStart(2, "0")}`,
+              month: r.period_month,
+              year: r.period_year,
+              gross: a.gross,
+              net: a.net,
+              deductions: a.deductions,
+              employee_count: a.employeeCount,
+            };
+          }),
+        },
+      });
+    }
+
+    const periodRun =
+      runsArr.find((r: any) => (!month || r.period_month === month) && (!year || r.period_year === year)) ??
+      sortedRuns[0] ??
+      null;
+    const totals = periodRun ? byRun.get(periodRun.id)! : aggOf(li);
+    const statusCounts = runsArr.reduce((m: Record<string, number>, r: any) => ((m[r.status] = (m[r.status] || 0) + 1), m), {});
+    const trend = sortedRuns
+      .slice(0, 6)
+      .reverse()
+      .map((r: any) => {
+        const a = byRun.get(r.id)!;
+        return { month: r.period_month, year: r.period_year, gross: a.gross, net: a.net };
+      });
     return json({
       data: {
-        totals: {
-          gross_earnings: gross,
-          net_pay: net,
-          total_deductions: deductions,
-          pf: pfEmp + pfEr,
-          pf_employee: pfEmp,
-          pf_employer: pfEr,
-          esi: esiEmp + esiEr,
-          professional_tax: pt,
-          tds,
-          lwf,
-          employee_count: li.length,
-        },
-        components: [
-          { name: "PF", value: pfEmp + pfEr },
-          { name: "ESI", value: esiEmp + esiEr },
-          { name: "Professional Tax", value: pt },
-          { name: "TDS", value: tds },
-          { name: "LWF", value: lwf },
-        ],
+        period: { month: month ?? periodRun?.period_month, year: year ?? periodRun?.period_year },
+        run: periodRun ? { id: periodRun.id, status: periodRun.status, period_month: periodRun.period_month, period_year: periodRun.period_year } : null,
+        totals: { gross: totals.gross, net: totals.net, deductions: totals.deductions, pf: totals.pf, esi: totals.esi, pt: totals.pt, tds: totals.tds, lwf: totals.lwf },
+        employeeCount: totals.employeeCount,
+        statusCounts,
+        trend,
       },
     });
   }
   if (path === "/payroll/runs/preview" && method === "POST") {
+    const now = new Date();
+    const month = body?.month ?? now.getMonth() + 1;
+    const year = body?.year ?? now.getFullYear();
     const { data: emps } = await supabase.from("employees").select("*").eq("status", "active");
-    const items = (emps ?? []).map((e: any) => ({
+    const empArr = emps ?? [];
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    const endDate = `${year}-${String(month).padStart(2, "0")}-${String(new Date(year, month, 0).getDate()).padStart(2, "0")}`;
+    const items = empArr.map((e: any) => ({
       employee_id: e.id,
       employee_name: `${e.first_name ?? ""} ${e.last_name ?? ""}`.trim(),
       lop_days: 0,
@@ -296,8 +337,9 @@ async function handle(ctx: Ctx): Promise<Response> {
     }));
     return json({
       data: {
-        period: { month: body?.month ?? new Date().getMonth() + 1, year: body?.year ?? new Date().getFullYear() },
-        totals: { employees: items.length, gross_earnings: 0, net_pay: 0 },
+        period: { month, year, startDate, endDate },
+        totals: { gross: 0, deductions: 0, net: 0 },
+        employeeCount: empArr.length,
         items,
       },
     });
@@ -402,10 +444,16 @@ export function installHrmsApiAdapter() {
     else if (input instanceof URL) url = input.toString();
     else url = (input as Request).url;
 
-    if (!url.includes(API_MARKER)) return originalFetch(input as any, init);
+    let u: URL;
+    try {
+      u = new URL(url, window.location.origin);
+    } catch {
+      return originalFetch(input as any, init);
+    }
+    // Match on pathname only, so the marker in a query string or hash never triggers us.
+    if (!u.pathname.includes(API_MARKER)) return originalFetch(input as any, init);
 
     try {
-      const u = new URL(url, window.location.origin);
       const idx = u.pathname.indexOf(API_MARKER);
       const path = u.pathname.slice(idx + API_MARKER.length) || "/";
       const method = (
@@ -413,7 +461,14 @@ export function installHrmsApiAdapter() {
       ).toUpperCase();
 
       let body: any = undefined;
-      const rawBody = init?.body ?? (input instanceof Request ? undefined : undefined);
+      let rawBody: any = init?.body;
+      if (rawBody == null && input instanceof Request) {
+        try {
+          rawBody = await input.clone().text();
+        } catch {
+          rawBody = undefined;
+        }
+      }
       if (rawBody && typeof rawBody === "string") {
         try {
           body = JSON.parse(rawBody);

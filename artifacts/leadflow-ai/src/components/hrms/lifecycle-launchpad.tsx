@@ -34,7 +34,7 @@ export default function LifecycleLaunchpad({
             title="Employee Access"
             subtitle="This workspace is for HR operations. Employee accounts can use self-service modules only."
           />
-            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
               <p className="text-sm text-slate-600">Continue in your self-service hub to manage profile, attendance, leave, payroll, and onboarding details.</p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Link to="/hrms/v2/self-service" className="hrms-btn hrms-btn-primary px-4 py-2 text-sm">Open Self-Service Hub</Link>
@@ -68,7 +68,7 @@ export default function LifecycleLaunchpad({
         </section>
 
         <section className="hrms-lifecycle-shell">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
             {items[0]?.href ? (
               <Link to={items[0].href} className="hrms-btn hrms-btn-primary px-4 py-2 text-sm">
                 {items[0].cta || 'Start Workflow'}

@@ -28,7 +28,7 @@ export function ReportLayout({
               <React.Fragment key={idx}>
                 {idx > 0 && <span className="text-slate-400">/</span>}
                 {item.href ? (
-                  <a href={item.href} className="text-blue-600 hover:text-blue-700">
+                  <a href={item.href} className="text-indigo-600 hover:text-indigo-700">
                     {item.label}
                   </a>
                 ) : (
@@ -40,7 +40,7 @@ export function ReportLayout({
         )}
 
         <div className="flex items-start gap-3">
-          {Icon && <Icon size={28} className="text-blue-600 mt-1" />}
+          {Icon && <Icon size={28} className="text-indigo-600 mt-1" />}
           <div>
             <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
             {subtitle && <p className="text-sm text-slate-600 mt-1">{subtitle}</p>}

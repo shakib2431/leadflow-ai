@@ -65,7 +65,7 @@ export function ReportFilters({
         <div className="flex items-center gap-2">
           <span className="font-semibold text-slate-900">Filters</span>
           {activeFilterCount > 0 && (
-            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-600 rounded-full">
+            <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-indigo-600 rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -94,7 +94,7 @@ export function ReportFilters({
                     start: e.target.value,
                   })
                 }
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
@@ -111,7 +111,7 @@ export function ReportFilters({
                     end: e.target.value,
                   })
                 }
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
@@ -126,7 +126,7 @@ export function ReportFilters({
                   onChange={(e) =>
                     handleFilterChange("businessEntity", e.target.value || undefined)
                   }
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
                   <option value="">All Entities</option>
                   {options.businessEntities.map((entity) => (
@@ -149,7 +149,7 @@ export function ReportFilters({
                   onChange={(e) =>
                     handleFilterChange("department", e.target.value || undefined)
                   }
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
                   <option value="">All Departments</option>
                   {options.departments.map((dept) => (
@@ -172,7 +172,7 @@ export function ReportFilters({
                   onChange={(e) =>
                     handleFilterChange("designation", e.target.value || undefined)
                   }
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                 >
                   <option value="">All Designations</option>
                   {options.designations.map((des) => (
@@ -194,7 +194,7 @@ export function ReportFilters({
                 onChange={(e) =>
                   handleFilterChange("employeeStatus", e.target.value || undefined)
                 }
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
               >
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
@@ -215,7 +215,7 @@ export function ReportFilters({
                 onChange={(e) =>
                   handleFilterChange("workMode", e.target.value || undefined)
                 }
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
               >
                 <option value="">All Modes</option>
                 <option value="office">Office</option>

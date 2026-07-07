@@ -251,7 +251,7 @@ export default function LeaveReportsPage() {
             </div>
 
             {/* Leave by Type */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Leave Balance by Type
               </h3>
@@ -269,7 +269,7 @@ export default function LeaveReportsPage() {
                     <div className="flex gap-2">
                       <div className="h-3 bg-slate-200 rounded-full overflow-hidden flex-1">
                         <div
-                          className="h-full bg-red-500 rounded-full"
+                          className="h-full bg-indigo-600 rounded-full"
                           style={{
                             width:
                               leave.total > 0
@@ -291,7 +291,7 @@ export default function LeaveReportsPage() {
             </div>
 
             {/* Department Leave Analysis */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Leave Requests by Department
               </h3>
@@ -299,19 +299,19 @@ export default function LeaveReportsPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Department
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Total Quota
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Used
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Pending
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Available
                       </th>
                     </tr>
@@ -320,7 +320,7 @@ export default function LeaveReportsPage() {
                     {data?.byDepartment.map((dept) => (
                       <tr
                         key={dept.department}
-                        className="border-b border-slate-200 hover:bg-slate-50 transition"
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
                       >
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">
                           {dept.department}
@@ -328,10 +328,10 @@ export default function LeaveReportsPage() {
                         <td className="px-4 py-3 text-sm text-slate-700">
                           {dept.total}
                         </td>
-                        <td className="px-4 py-3 text-sm text-blue-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-indigo-600 font-medium">
                           {dept.used}
                         </td>
-                        <td className="px-4 py-3 text-sm text-orange-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-amber-600 font-medium">
                           {dept.pending}
                         </td>
                         <td className="px-4 py-3 text-sm text-emerald-600 font-medium">
@@ -345,7 +345,7 @@ export default function LeaveReportsPage() {
             </div>
 
             {/* Employee-wise Leave History */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Employee-wise Leave History
               </h3>
@@ -353,13 +353,13 @@ export default function LeaveReportsPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">Employee</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">Code</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">Leave Type</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">From</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">To</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">Days</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">Status</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Employee</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Code</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Leave Type</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">From</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">To</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Days</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -369,20 +369,20 @@ export default function LeaveReportsPage() {
                       </tr>
                     )}
                     {!loading && (data?.leaveHistory || []).map((row) => (
-                      <tr key={row.id} className="border-b border-slate-200 hover:bg-slate-50 transition">
+                      <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50 transition">
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">{row.employeeName}</td>
                         <td className="px-4 py-3 text-sm text-slate-700">{row.employeeCode}</td>
                         <td className="px-4 py-3 text-sm text-slate-700 capitalize">{row.leaveType}</td>
                         <td className="px-4 py-3 text-sm text-slate-700">{row.startDate}</td>
                         <td className="px-4 py-3 text-sm text-slate-700">{row.endDate}</td>
-                        <td className="px-4 py-3 text-sm text-slate-900 font-medium">{row.daysCount}</td>
+                        <td className="px-4 py-3 text-sm text-slate-900 font-medium tabular-nums">{row.daysCount}</td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                             row.status === "approved"
-                              ? "bg-emerald-100 text-emerald-700"
+                              ? "bg-emerald-50 text-emerald-700"
                               : row.status === "rejected"
-                              ? "bg-rose-100 text-rose-700"
-                              : "bg-amber-100 text-amber-700"
+                              ? "bg-rose-50 text-rose-700"
+                              : "bg-amber-50 text-amber-700"
                           }`}>
                             {row.status}
                           </span>
@@ -403,30 +403,30 @@ export default function LeaveReportsPage() {
 
             {/* Leave Trends */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
                 <p className="text-sm font-semibold text-emerald-900 mb-2">
                   Approval Rate
                 </p>
-                <p className="text-3xl font-bold text-emerald-700">94%</p>
+                <p className="text-3xl font-bold text-emerald-700 tabular-nums">94%</p>
                 <p className="text-xs text-emerald-600 mt-3">
                   ↑ 3% from last month
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <p className="text-sm font-semibold text-blue-900 mb-2">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+                <p className="text-sm font-semibold text-indigo-900 mb-2">
                   Avg Processing Time
                 </p>
-                <p className="text-3xl font-bold text-blue-700">1.2 days</p>
-                <p className="text-xs text-blue-600 mt-3">↓ Faster than target</p>
+                <p className="text-3xl font-bold text-indigo-700 tabular-nums">1.2 days</p>
+                <p className="text-xs text-indigo-600 mt-3">↓ Faster than target</p>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
-                <p className="text-sm font-semibold text-orange-900 mb-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+                <p className="text-sm font-semibold text-amber-900 mb-2">
                   High Usage Departments
                 </p>
-                <p className="text-sm font-bold text-orange-700 mt-2">Engineering</p>
-                <p className="text-xs text-orange-600">72% leave utilization</p>
+                <p className="text-sm font-bold text-amber-700 mt-2">Engineering</p>
+                <p className="text-xs text-amber-600">72% leave utilization</p>
               </div>
             </div>
           </div>

@@ -193,7 +193,7 @@ export default function OfferAcceptancePage() {
                   Request Changes
                 </button>
               </div>
-              <p className="mt-4 text-center text-xs text-slate-400">
+              <p className="mt-4 text-center text-xs text-slate-500">
                 If you have questions, contact your HR team before responding.
               </p>
             </>
@@ -273,7 +273,7 @@ export default function OfferAcceptancePage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="mt-6 text-center text-xs text-slate-500">
           Powered by LeadFlow AI HRMS · Secure employee portal
         </p>
       </div>

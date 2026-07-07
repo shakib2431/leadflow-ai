@@ -196,7 +196,7 @@ export default function WorkforceReportsPage() {
             {/* Department & Designation Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Department Breakdown */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">
                   Department Strength
                 </h3>
@@ -213,7 +213,7 @@ export default function WorkforceReportsPage() {
                       </div>
                       <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 rounded-full transition-all"
+                          className="h-full bg-indigo-600 rounded-full transition-all"
                           style={{
                             width: `${
                               ((dept.count || 0) / (data?.totalEmployees || 1)) * 100
@@ -227,7 +227,7 @@ export default function WorkforceReportsPage() {
               </div>
 
               {/* Designation Distribution */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">
                   Designation Distribution
                 </h3>
@@ -257,7 +257,7 @@ export default function WorkforceReportsPage() {
             </div>
 
             {/* Employee Status */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Employee Status Breakdown
               </h3>
@@ -267,10 +267,10 @@ export default function WorkforceReportsPage() {
                     key={status.status}
                     className="bg-slate-50 rounded-lg p-4 text-center"
                   >
-                    <p className="text-xs font-semibold text-slate-600 uppercase mb-1">
+                    <p className="text-xs font-semibold text-slate-500 uppercase mb-1">
                       {status.status}
                     </p>
-                    <p className="text-2xl font-bold text-slate-900">
+                    <p className="text-2xl font-bold text-slate-900 tabular-nums">
                       {status.count}
                     </p>
                     <p className="text-xs text-slate-600 mt-2">

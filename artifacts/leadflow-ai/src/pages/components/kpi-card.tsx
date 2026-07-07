@@ -17,10 +17,10 @@ interface KPICardProps {
 
 const colorClasses = {
   blue: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    icon: "text-blue-600",
-    dot: "bg-blue-500",
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    icon: "text-indigo-600",
+    dot: "bg-indigo-500",
   },
   green: {
     bg: "bg-emerald-50",
@@ -76,13 +76,13 @@ export function KPICard({
     <div
       onClick={onClick}
       className={`${colors.bg} border ${colors.border} rounded-lg p-5 cursor-pointer transition hover:shadow-md ${
-        onClick ? "hover:border-blue-400" : ""
+        onClick ? "hover:border-indigo-400" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-slate-600 mb-2 break-words">{label}</p>
-          <p className="text-3xl font-bold text-slate-900 break-words">{value}</p>
+          <p className="text-3xl font-bold text-slate-900 break-words tabular-nums">{value}</p>
 
           {trend && (
             <div className="flex items-center gap-1 mt-3 flex-wrap">

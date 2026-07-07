@@ -26,10 +26,10 @@ const iconMap = {
 
 const colorMap = {
   observation: {
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    text: "text-blue-700",
-    icon: "text-blue-600",
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    text: "text-indigo-700",
+    icon: "text-indigo-600",
   },
   alert: {
     bg: "bg-red-50",
@@ -54,7 +54,7 @@ const colorMap = {
 export function AIInsights({ insights, loading = false }: AIInsightsProps) {
   if (loading) {
     return (
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
           <Sparkles size={20} className="text-purple-600 animate-pulse" />
           <h3 className="font-semibold text-slate-900">AI Insights</h3>
@@ -73,7 +73,7 @@ export function AIInsights({ insights, loading = false }: AIInsightsProps) {
   }
 
   return (
-    <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-6">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles size={20} className="text-purple-600" />
         <h3 className="font-semibold text-slate-900">AI Insights</h3>

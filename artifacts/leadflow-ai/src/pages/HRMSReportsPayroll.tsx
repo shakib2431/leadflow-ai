@@ -81,7 +81,7 @@ export default function PayrollReportsPage() {
             {/* Payroll Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Salary Components */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">
                   Salary Components
                 </h3>
@@ -104,7 +104,7 @@ export default function PayrollReportsPage() {
                       </div>
                       <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 rounded-full"
+                          className="h-full bg-indigo-600 rounded-full"
                           style={{ width: `${comp.percentage}%` }}
                         />
                       </div>
@@ -114,7 +114,7 @@ export default function PayrollReportsPage() {
               </div>
 
               {/* Deductions */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">
                   Deductions Breakdown
                 </h3>
@@ -147,7 +147,7 @@ export default function PayrollReportsPage() {
             </div>
 
             {/* Department Cost */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Department-wise Payroll Cost
               </h3>
@@ -155,19 +155,19 @@ export default function PayrollReportsPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Department
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Headcount
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Gross Salary
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Deductions
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Net Salary
                       </th>
                     </tr>
@@ -205,12 +205,12 @@ export default function PayrollReportsPage() {
                     ].map((row) => (
                       <tr
                         key={row.dept}
-                        className="border-b border-slate-200 hover:bg-slate-50 transition"
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
                       >
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">
                           {row.dept}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">
+                        <td className="px-4 py-3 text-sm text-slate-700 tabular-nums">
                           {row.headcount}
                         </td>
                         <td className="px-4 py-3 text-sm text-slate-700">

@@ -833,7 +833,7 @@ export default function EmployeeV2ProfilePage() {
         actions={
           <>
             <button onClick={() => setEditing(true)} className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-slate-700">Edit</button>
-            <button onClick={() => resumeFileRef.current?.click()} className="rounded-lg bg-blue-600 px-4 py-2 text-white">{isParsing ? 'Parsing...' : 'Parse Resume'}</button>
+            <button onClick={() => resumeFileRef.current?.click()} className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white hover:bg-indigo-700">{isParsing ? 'Parsing...' : 'Parse Resume'}</button>
             <input ref={resumeFileRef} type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={onFileChange} />
           </>
         }
@@ -846,7 +846,7 @@ export default function EmployeeV2ProfilePage() {
       )}
 
       {parsedMapped && (
-        <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <h4 className="font-bold mb-2">Parsed Preview</h4>
           <div className="space-y-1 text-sm text-slate-700">
             <div><strong>Name:</strong> {parsedMapped.first_name || ''} {parsedMapped.last_name || ''}</div>
@@ -864,7 +864,7 @@ export default function EmployeeV2ProfilePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900"><CheckCircle2 className="text-indigo-500" size={18} /> Onboarding Progress</h3>
               <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${preOnboardingBadgeClass}`}>{preOnboardingLabel}</span>
@@ -905,7 +905,7 @@ export default function EmployeeV2ProfilePage() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Profile</h3>
           <div className="grid grid-cols-1 gap-3 text-sm text-slate-700 md:grid-cols-2">
             <div><strong>Email:</strong> {employee.email || '—'}</div>
@@ -927,7 +927,7 @@ export default function EmployeeV2ProfilePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Service History Timeline</h3>
 
           <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
@@ -980,7 +980,7 @@ export default function EmployeeV2ProfilePage() {
         </div>
 
         <div className="space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Actions</h3>
           <div className="flex flex-col gap-3">
             {contractDone ? (
@@ -1020,7 +1020,7 @@ export default function EmployeeV2ProfilePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <h3 className="mb-4 text-lg font-semibold text-slate-900">Letter History & Comparison</h3>
 
           {lettersLoading ? (
@@ -1110,7 +1110,7 @@ export default function EmployeeV2ProfilePage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900"><FileText size={16} /> Documents Vault</h3>
           </div>

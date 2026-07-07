@@ -317,7 +317,7 @@ export default function TemplatesPage() {
                       </span>
                       <button onClick={() => editTemplate(t)} className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-700">Edit</button>
                       {!t.is_active ? (
-                        <button onClick={() => setActiveTemplate(t)} disabled={saving} className="rounded-lg border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 disabled:opacity-50">
+                        <button onClick={() => setActiveTemplate(t)} disabled={saving} className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 disabled:opacity-50">
                           Set Active
                         </button>
                       ) : null}

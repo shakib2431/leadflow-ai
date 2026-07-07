@@ -243,7 +243,7 @@ export default function ComplianceReportsPage() {
             </div>
 
             {/* Compliance Calendar */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Compliance Calendar
               </h3>
@@ -286,12 +286,12 @@ export default function ComplianceReportsPage() {
                       ? "bg-emerald-50 text-emerald-700"
                       : comp.status === "Due Soon"
                       ? "bg-amber-50 text-amber-700"
-                      : "bg-red-50 text-red-700";
+                      : "bg-rose-50 text-rose-700";
 
                   return (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition"
+                      className="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition"
                     >
                       <div className="flex items-center gap-3">
                         <Icon
@@ -300,7 +300,7 @@ export default function ComplianceReportsPage() {
                               ? "text-emerald-600"
                               : comp.status === "Due Soon"
                               ? "text-amber-600"
-                              : "text-red-600"
+                              : "text-rose-600"
                           }
                           size={20}
                         />
@@ -323,27 +323,27 @@ export default function ComplianceReportsPage() {
             </div>
 
             {/* PF Register */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 PF Register Summary
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
+                  <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Month
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Employee Contribution
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Employer Contribution
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Total
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Status
                       </th>
                     </tr>
@@ -360,28 +360,28 @@ export default function ComplianceReportsPage() {
                       return (
                       <tr
                         key={key}
-                        className="border-b border-slate-200 hover:bg-slate-50 transition"
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
                       >
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">
                           {monthName(row.month)} {row.year}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">
+                        <td className="px-4 py-3 text-sm text-slate-700 tabular-nums">
                           {formatINR(row.employee_contribution)}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">
+                        <td className="px-4 py-3 text-sm text-slate-700 tabular-nums">
                           {formatINR(row.employer_contribution)}
                         </td>
-                        <td className="px-4 py-3 text-sm font-semibold text-slate-900">
+                        <td className="px-4 py-3 text-sm font-semibold text-slate-900 tabular-nums">
                           {formatINR(row.total_contribution)}
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className={`px-2 py-1 rounded text-xs font-semibold ${
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
                               status === "Filed"
-                                ? "bg-emerald-100 text-emerald-700"
+                                ? "bg-emerald-50 text-emerald-700"
                                 : status === "Submitted"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-orange-100 text-orange-700"
+                                ? "bg-indigo-50 text-indigo-700"
+                                : "bg-amber-50 text-amber-700"
                             }`}
                           >
                             {status}
@@ -404,11 +404,11 @@ export default function ComplianceReportsPage() {
 
             {/* Compliance Health */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6">
                 <p className="text-sm font-semibold text-emerald-900 mb-2">
                   Documents Compliant
                 </p>
-                <p className="text-3xl font-bold text-emerald-700">
+                <p className="text-3xl font-bold text-emerald-700 tabular-nums">
                   {loading
                     ? "..."
                     : `${pfSummary?.coverage?.pf_applicable_employees || 0}/${pfSummary?.coverage?.payroll_employees || 0}`}
@@ -418,21 +418,21 @@ export default function ComplianceReportsPage() {
                 </p>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <p className="text-sm font-semibold text-blue-900 mb-2">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-6">
+                <p className="text-sm font-semibold text-indigo-900 mb-2">
                   Government Returns
                 </p>
-                <p className="text-3xl font-bold text-blue-700">{loading ? "..." : `${completedRunCount}/${Math.max(runs.length, 1)}`}</p>
-                <p className="text-xs text-blue-600 mt-3">
+                <p className="text-3xl font-bold text-indigo-700 tabular-nums">{loading ? "..." : `${completedRunCount}/${Math.max(runs.length, 1)}`}</p>
+                <p className="text-xs text-indigo-600 mt-3">
                   Payroll cycles finalized/paid
                 </p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
                 <p className="text-sm font-semibold text-amber-900 mb-2">
                   Audit Ready
                 </p>
-                <p className="text-3xl font-bold text-amber-700">{loading ? "..." : `${compliancePercent}%`}</p>
+                <p className="text-3xl font-bold text-amber-700 tabular-nums">{loading ? "..." : `${compliancePercent}%`}</p>
                 <p className="text-xs text-amber-600 mt-3">
                   Based on PF coverage and filing completion
                 </p>

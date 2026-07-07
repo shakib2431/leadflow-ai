@@ -271,7 +271,7 @@ export default function RecruitmentReportsPage() {
             </div>
 
             {showInterviewFunnel && (
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-6">Hiring Funnel</h3>
                 <div className="space-y-4">
                   {(data?.candidates || []).map((stage, idx) => {
@@ -289,7 +289,7 @@ export default function RecruitmentReportsPage() {
                         </div>
                         <div className="relative h-10 bg-slate-100 rounded-lg overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg transition-all flex items-center justify-center"
+                            className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg transition-all flex items-center justify-center"
                             style={{ width: `${width}%` }}
                           >
                             <span className="text-xs font-semibold text-white">{stage.count}</span>
@@ -308,7 +308,7 @@ export default function RecruitmentReportsPage() {
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Top Candidate Sources</h3>
                 <div className="space-y-3">
                   {(data?.sourceBreakdown || []).map((item) => {
@@ -336,20 +336,20 @@ export default function RecruitmentReportsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Stage Metrics</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                    <span className="text-sm font-medium text-blue-900">Avg Days in Applied</span>
-                    <span className="text-lg font-bold text-blue-700">{loading ? "..." : `${data?.avgAppliedDays || 0} days`}</span>
+                  <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+                    <span className="text-sm font-medium text-indigo-900">Avg Days in Applied</span>
+                    <span className="text-lg font-bold text-indigo-700 tabular-nums">{loading ? "..." : `${data?.avgAppliedDays || 0} days`}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                     <span className="text-sm font-medium text-purple-900">Avg Days in Interview</span>
-                    <span className="text-lg font-bold text-purple-700">{loading ? "..." : `${data?.avgInterviewDays || 0} days`}</span>
+                    <span className="text-lg font-bold text-purple-700 tabular-nums">{loading ? "..." : `${data?.avgInterviewDays || 0} days`}</span>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
                     <span className="text-sm font-medium text-emerald-900">Offer Acceptance Rate</span>
-                    <span className="text-lg font-bold text-emerald-700">{loading ? "..." : `${data?.offerAcceptanceRate || 0}%`}</span>
+                    <span className="text-lg font-bold text-emerald-700 tabular-nums">{loading ? "..." : `${data?.offerAcceptanceRate || 0}%`}</span>
                   </div>
                 </div>
               </div>

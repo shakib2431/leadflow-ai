@@ -222,7 +222,7 @@ export default function CustomReportsPage() {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-5">
               <ReportCategories showAll={true} />
             </div>
 
@@ -233,7 +233,7 @@ export default function CustomReportsPage() {
             )}
 
             <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
+              <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-5">
                 <div className="flex items-center gap-2">
                   <Layers size={16} className="text-indigo-600" />
                   <h2 className="text-base font-semibold text-slate-900">Template Builder</h2>
@@ -328,7 +328,7 @@ export default function CustomReportsPage() {
                 </button>
               </article>
 
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
+              <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-5">
                 <div className="flex items-center gap-2">
                   <CalendarClock size={16} className="text-emerald-600" />
                   <h2 className="text-base font-semibold text-slate-900">Scheduled Delivery</h2>
@@ -387,7 +387,7 @@ export default function CustomReportsPage() {
             </section>
 
             <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
+              <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-5">
                 <h3 className="text-base font-semibold text-slate-900">Saved Templates</h3>
                 <div className="mt-3 space-y-2">
                   {templates.length === 0 && (
@@ -425,7 +425,7 @@ export default function CustomReportsPage() {
                 </div>
               </article>
 
-              <article className="rounded-xl border border-slate-200 bg-white p-5">
+              <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-5">
                 <h3 className="text-base font-semibold text-slate-900">Saved Schedules</h3>
                 <div className="mt-3 space-y-2">
                   {schedules.length === 0 && (

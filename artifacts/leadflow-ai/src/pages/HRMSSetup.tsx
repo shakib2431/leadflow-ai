@@ -55,7 +55,7 @@ export default function HRMSSetupPage() {
           title="HRMS Setup"
           subtitle="Initializing secure HRMS access and workspace role context."
         />
-        <section className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)]">
           <p className={`text-lg ${success ? 'text-emerald-600' : 'text-slate-600'}`}>{status}</p>
           {success && <p className="mt-4 text-sm text-slate-500">Redirecting to HRMS v2...</p>}
         </section>

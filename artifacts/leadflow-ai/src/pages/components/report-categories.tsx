@@ -117,7 +117,7 @@ export function ReportCategories({
               href={category.href}
               className={`flex-shrink-0 p-3 rounded-lg transition ${
                 isActive
-                  ? "bg-blue-100 border border-blue-300 text-blue-700"
+                  ? "bg-indigo-100 border border-indigo-300 text-indigo-700"
                   : "bg-white border border-slate-200 text-slate-700 hover:border-slate-300"
               }`}
             >
@@ -141,14 +141,14 @@ export function ReportCategories({
             href={category.href}
             className={`p-4 rounded-lg border transition ${
               isActive
-                ? "bg-blue-50 border-blue-300 shadow-md"
+                ? "bg-indigo-50 border-indigo-300 shadow-md"
                 : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
             }`}
           >
             <div className="flex items-start justify-between mb-2">
               <Icon
                 size={20}
-                className={isActive ? "text-blue-600" : "text-slate-600"}
+                className={isActive ? "text-indigo-600" : "text-slate-600"}
               />
               {category.badge && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
@@ -158,7 +158,7 @@ export function ReportCategories({
             </div>
             <p
               className={`font-semibold ${
-                isActive ? "text-blue-700" : "text-slate-900"
+                isActive ? "text-indigo-700" : "text-slate-900"
               }`}
             >
               {category.name}

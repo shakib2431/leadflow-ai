@@ -195,27 +195,27 @@ export default function AttendanceReportsPage() {
             </div>
 
             {/* Department Attendance */}
-            <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
               <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Department-wise Attendance
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
+                  <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Department
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Present
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Absent
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Late
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-slate-700">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Attendance %
                       </th>
                     </tr>
@@ -224,18 +224,18 @@ export default function AttendanceReportsPage() {
                     {data?.departmentAttendance.map((dept) => (
                       <tr
                         key={dept.department}
-                        className="border-b border-slate-200 hover:bg-slate-50 transition"
+                        className="border-b border-slate-100 hover:bg-slate-50 transition"
                       >
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">
                           {dept.department}
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">
+                        <td className="px-4 py-3 text-sm text-slate-700 tabular-nums">
                           {dept.present}
                         </td>
-                        <td className="px-4 py-3 text-sm text-red-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-rose-600 font-medium tabular-nums">
                           {dept.absent}
                         </td>
-                        <td className="px-4 py-3 text-sm text-orange-600 font-medium">
+                        <td className="px-4 py-3 text-sm text-amber-600 font-medium tabular-nums">
                           {dept.late}
                         </td>
                         <td className="px-4 py-3">
@@ -246,7 +246,7 @@ export default function AttendanceReportsPage() {
                                 style={{ width: `${dept.percentage}%` }}
                               />
                             </div>
-                            <span className="text-sm font-semibold text-slate-900 w-10 text-right">
+                            <span className="text-sm font-semibold text-slate-900 w-10 text-right tabular-nums">
                               {dept.percentage}%
                             </span>
                           </div>
@@ -261,42 +261,42 @@ export default function AttendanceReportsPage() {
             {/* Trends & Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Late Arrivals Trend */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-slate-900">Late Arrivals</h3>
-                  <Clock className="text-orange-600" size={20} />
+                  <Clock className="text-amber-600" size={20} />
                 </div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-slate-900 tabular-nums">
                   {data?.lateArrivals || 0}
                 </p>
-                <p className="text-xs text-slate-600 mt-2">This month</p>
-                <p className="text-sm text-orange-600 font-semibold mt-3">
+                <p className="text-xs text-slate-500 mt-2">This month</p>
+                <p className="text-sm text-amber-600 font-semibold mt-3">
                   ↑ 15% from last month
                 </p>
               </div>
 
               {/* Early Departures */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-slate-900">Early Departures</h3>
-                  <TrendingDown className="text-blue-600" size={20} />
+                  <TrendingDown className="text-indigo-600" size={20} />
                 </div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-slate-900 tabular-nums">
                   {data?.earlyDepartures || 0}
                 </p>
-                <p className="text-xs text-slate-600 mt-2">This month</p>
+                <p className="text-xs text-slate-500 mt-2">This month</p>
                 <p className="text-sm text-emerald-600 font-semibold mt-3">
                   ↓ 8% from last month
                 </p>
               </div>
 
               {/* Absenteeism */}
-              <div className="bg-white rounded-lg border border-slate-200 p-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-slate-900">Absenteeism Rate</h3>
-                  <AlertCircle className="text-red-600" size={20} />
+                  <AlertCircle className="text-rose-600" size={20} />
                 </div>
-                <p className="text-3xl font-bold text-slate-900">
+                <p className="text-3xl font-bold text-slate-900 tabular-nums">
                   {(data?.totalRecords ?? 0) > 0
                     ? (
                         ((data?.absentCount || 0) / (data?.totalRecords || 1)) *
@@ -305,7 +305,7 @@ export default function AttendanceReportsPage() {
                     : 0}
                   %
                 </p>
-                <p className="text-xs text-slate-600 mt-2">This month</p>
+                <p className="text-xs text-slate-500 mt-2">This month</p>
                 <p className="text-sm text-emerald-600 font-semibold mt-3">
                   ↓ 0.5% from last month
                 </p>

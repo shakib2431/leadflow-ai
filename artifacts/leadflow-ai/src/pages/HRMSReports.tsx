@@ -544,7 +544,7 @@ export default function ExecutiveDashboard() {
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-lg border border-slate-200 p-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                       <h3 className="text-lg font-semibold text-slate-900 mb-4">Department Strength</h3>
                       <div className="space-y-3">
                         {(data?.departmentStrength || []).map((dept) => {
@@ -552,9 +552,9 @@ export default function ExecutiveDashboard() {
                             <div key={dept.name} className="flex items-center justify-between">
                               <span className="text-sm font-medium text-slate-700">{dept.name}</span>
                               <div className="flex-1 mx-4 h-2 bg-slate-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-600 rounded-full" style={{ width: `${dept.percentage}%` }} />
+                                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${dept.percentage}%` }} />
                               </div>
-                              <span className="text-sm font-semibold text-slate-900">{dept.percentage}%</span>
+                              <span className="text-sm font-semibold text-slate-900 tabular-nums">{dept.percentage}%</span>
                             </div>
                           );
                         })}
@@ -564,7 +564,7 @@ export default function ExecutiveDashboard() {
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-slate-200 p-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(16,24,40,0.03),0_12px_30px_rgba(16,24,40,0.05)] p-6">
                       <h3 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h3>
                       <div className="space-y-2">
                         <button

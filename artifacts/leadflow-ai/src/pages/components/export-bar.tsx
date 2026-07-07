@@ -41,7 +41,7 @@ export function ExportBar({
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition"
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 transition"
           >
             <Download size={16} />
             Export

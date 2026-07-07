@@ -653,7 +653,7 @@ body {
 .hrms-nav-shell {
   position: fixed;
   left: 16px;
-  top: 16px;
+  top: 76px;
   bottom: 16px;
   width: 220px;
   z-index: 25;

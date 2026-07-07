@@ -1,0 +1,69 @@
+Microsoft Windows [Version 10.0.26200.8655]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>git pull
+remote: Enumerating objects: 36, done.
+remote: Counting objects: 100% (36/36), done.
+remote: Compressing objects: 100% (11/11), done.
+remote: Total 25 (delta 14), reused 25 (delta 14), pack-reused 0 (from 0)
+Unpacking objects: 100% (25/25), 464.86 KiB | 1.33 MiB/s, done.
+From https://github.com/shakib2431/leadflow-ai
+   3d14133..e5cb0e9  master     -> origin/master
+Updating 4526159..e5cb0e9
+error: Your local changes to the following files would be overwritten by merge:
+        pnpm-workspace.yaml
+Please commit your changes or stash them before you merge.
+Aborting
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>git checkout -- pnpm-workspace.yaml
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>git pull
+Updating 4526159..e5cb0e9
+Fast-forward
+ .agents/memory/MEMORY.md                           |   1 +
+ .agents/memory/windows-local-dev.md                |  36 ++++
+ .npmrc                                             |   1 +
+ artifacts/leadflow-ai/src/index.css                |  96 +++++++++
+ .../leadflow-ai/src/pages/HRMSAdminDashboard.tsx   | 233 ++++++++++++---------
+ ...ktop-leadflow-replit-git-pull_1783441712316.txt |  53 +++++
+ ...aapr-OneDrive-Desktop-leadflo_1783441277339.txt |  74 +++++++
+ ...-pick-which-dependencies-shou_1783441937280.txt |  27 +++
+ attached_assets/image_1783441408956.png            | Bin 0 -> 16322 bytes
+ attached_assets/image_1783441519593.png            | Bin 0 -> 269368 bytes
+ attached_assets/image_1783441628705.png            | Bin 0 -> 21742 bytes
+ attached_assets/image_1783442122450.png            | Bin 0 -> 18481 bytes
+ attached_assets/image_1783442173227.png            | Bin 0 -> 465744 bytes
+ pnpm-workspace.yaml                                |   1 +
+ 14 files changed, 423 insertions(+), 99 deletions(-)
+ create mode 100644 .agents/memory/windows-local-dev.md
+ create mode 100644 attached_assets/Pasted-C-Users-paapr-OneDrive-Desktop-leadflow-replit-git-pull_1783441712316.txt
+ create mode 100644 attached_assets/Pasted-Node-js-v20-11-1-C-Users-paapr-OneDrive-Desktop-leadflo_1783441277339.txt
+ create mode 100644 attached_assets/Pasted-Run-pnpm-approve-builds-to-pick-which-dependencies-shou_1783441937280.txt
+ create mode 100644 attached_assets/image_1783441408956.png
+ create mode 100644 attached_assets/image_1783441519593.png
+ create mode 100644 attached_assets/image_1783441628705.png
+ create mode 100644 attached_assets/image_1783442122450.png
+ create mode 100644 attached_assets/image_1783442173227.png
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm --filter @workspace/leadflow-ai run dev
+Scope: all 9 workspace projects
+✓ Lockfile passes supply-chain policies (verified 29m ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+. preinstall$ node -e "const fs=require('fs');for(const f of ['package-lock.json','yarn.lock']){try{fs.unlinkSync(f)}catch{}}if(!String(process.…
+└─ Done in 254ms
+Done in 4.1s using pnpm v11.10.0
+$ vite --config vite.config.ts --host 0.0.0.0
+error when starting dev server:
+Error: Port 3000 is already in use
+    at Server.onError$1 (file:///C:/Users/paapr/OneDrive/Desktop/leadflow-replit/node_modules/.pnpm/vite@7.3.5_@types+node@25.9_9fd212c37a75cb66ba3e15514cba1f93/node_modules/vite/dist/node/chunks/config.js:15006:28)
+    at Server.emit (node:events:519:28)
+    at emitErrorNT (node:net:1977:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit\artifacts\leadflow-ai:
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @workspace/leadflow-ai@0.0.0 dev: `vite --config vite.config.ts --host 0.0.0.0`
+Exit status 1

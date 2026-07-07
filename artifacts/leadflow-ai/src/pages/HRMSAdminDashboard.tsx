@@ -199,9 +199,9 @@ export default function HRAdminDashboardPage() {
   return (
     <>
       <HRMSMainNav />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden w-full">
         <HRMSSidebarNav />
-        <main className="hrms-enterprise flex-1 overflow-y-auto" style={{ background: C.pageBg }}>
+        <main className="hrms-enterprise flex-1 min-w-0 overflow-y-auto" style={{ background: C.pageBg }}>
           <div className="w-full px-4 py-6 md:px-8 md:py-7">
             <div className="w-full hrms-main-with-nav" style={{ fontFamily: "'Inter', sans-serif", gap: 18 }}>
 
@@ -254,16 +254,19 @@ export default function HRAdminDashboardPage() {
                 {kpis.map((k) => {
                   const Icon = k.icon;
                   return (
-                    <div key={k.label} className="hrms-card-hover" style={{ ...cardStyle, padding: 18, position: "relative", overflow: "hidden" }}>
+                    <div key={k.label} className="hrms-card-hover" style={{ ...cardStyle, padding: 20, position: "relative", overflow: "hidden" }}>
                       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: grad(k.accent) }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 11, background: grad(k.accent), display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 6px 14px ${k.accent}33` }}>
-                          <Icon size={19} color="#fff" />
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.label}</span>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: `${k.accent}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={17} color={k.accent} />
                         </div>
                       </div>
-                      <div style={{ fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 14, letterSpacing: "-0.02em" }}>{k.value}</div>
-                      <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginTop: 8 }}>{k.label}</div>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: C.textMute, marginTop: 2 }}>{k.sub}</div>
+                      <div style={{ fontSize: 34, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 16, letterSpacing: "-0.02em" }}>{k.value}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: k.accent, flexShrink: 0 }} />
+                        <span style={{ fontSize: 11.5, fontWeight: 500, color: C.textMute, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.sub}</span>
+                      </div>
                     </div>
                   );
                 })}

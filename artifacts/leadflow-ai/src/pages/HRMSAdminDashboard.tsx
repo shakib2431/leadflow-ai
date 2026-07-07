@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   AlertCircle, ArrowRight, Briefcase, CheckCircle2, Clock, DollarSign,
   FileText, LogOut, TrendingUp, UserCheck, Users, UserPlus,
-  Activity, ChevronRight, CalendarCheck, PlayCircle, Settings,
+  Activity, ChevronRight, RefreshCw, Sparkles,
 } from "lucide-react";
 import { Link } from "wouter";
 import { supabase } from "@/lib/supabase";
@@ -33,12 +33,15 @@ const C = {
   textMute:  "#9CA3AF",
 };
 
+// gradient pair for icon chips / accents
+const grad = (hex: string) => `linear-gradient(135deg, ${hex} 0%, ${hex}cc 100%)`;
+
 type PendingTask = {
   type: "leave" | "attendance" | "onboarding" | "payroll" | "exit" | "offer";
   count: number;
   label: string;
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number; className?: string; color?: string }>;
   urgency: "high" | "medium" | "low";
 };
 
@@ -149,43 +152,48 @@ export default function HRAdminDashboardPage() {
   const totalPending = tasks.reduce((sum, t) => sum + t.count, 0);
   const V = (n: number) => (loading ? "—" : String(n));
 
+  // greeting + date
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const today = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
   // ── KPI cards (real data) ──
   const kpis = [
-    { label: "Active Employees", value: V(stats.activeEmployees),    sub: "Currently on payroll",    subColor: C.emerald, accent: C.emerald, icon: Users },
-    { label: "In Onboarding",    value: V(stats.onboardingEmployees), sub: "Being activated",         subColor: C.violet,  accent: C.violet,  icon: UserCheck },
-    { label: "Open Pipeline",    value: V(stats.totalCandidates),     sub: "Candidates in process",   subColor: C.amber,   accent: C.amber,   icon: Briefcase },
-    { label: "Offer Accepted",   value: V(stats.candidateHired),      sub: "This cycle",              subColor: C.emerald, accent: C.primary, icon: CheckCircle2 },
-    { label: "Pending Actions",  value: V(totalPending),              sub: "Requires attention",      subColor: C.rose,    accent: C.rose,    icon: AlertCircle },
-    { label: "Offered",          value: V(stats.candidateOffered),    sub: "Awaiting response",       subColor: C.blue,    accent: C.blue,    icon: TrendingUp },
+    { label: "Active Employees", value: V(stats.activeEmployees),    sub: "Currently on payroll",  accent: C.emerald, icon: Users },
+    { label: "In Onboarding",    value: V(stats.onboardingEmployees), sub: "Being activated",       accent: C.violet,  icon: UserCheck },
+    { label: "Open Pipeline",    value: V(stats.totalCandidates),     sub: "Candidates in process", accent: C.amber,   icon: Briefcase },
+    { label: "Offer Accepted",   value: V(stats.candidateHired),      sub: "This cycle",            accent: C.primary, icon: CheckCircle2 },
+    { label: "Pending Actions",  value: V(totalPending),              sub: "Requires attention",    accent: C.rose,    icon: AlertCircle },
+    { label: "Offered",          value: V(stats.candidateOffered),    sub: "Awaiting response",     accent: C.blue,    icon: TrendingUp },
   ];
 
   // ── Hiring pipeline (real data) ──
   const pipelineStages = [
-    { label: "Applied",      count: stats.candidateApplied,       color: C.blue,    bg: C.blueLt },
-    { label: "Interviewing", count: stats.candidateInterviewing,  color: C.violet,  bg: C.violetLt },
-    { label: "Offered",      count: stats.candidateOffered,       color: C.primary, bg: C.primaryLt },
-    { label: "Accepted",     count: stats.candidateHired,         color: C.amber,   bg: C.amberLt },
-    { label: "Onboarding",   count: stats.onboardingEmployees,    color: C.emerald, bg: C.emeraldLt },
-    { label: "Active",       count: stats.activeEmployees,        color: "#059669", bg: "#D1FAE5" },
+    { label: "Applied",      count: stats.candidateApplied,       color: C.blue },
+    { label: "Interviewing", count: stats.candidateInterviewing,  color: C.violet },
+    { label: "Offered",      count: stats.candidateOffered,       color: C.primary },
+    { label: "Accepted",     count: stats.candidateHired,         color: C.amber },
+    { label: "Onboarding",   count: stats.onboardingEmployees,    color: C.emerald },
+    { label: "Active",       count: stats.activeEmployees,        color: "#059669" },
   ];
 
   const quickActions = [
-    { label: "Add Candidate",     href: "/team/recruitment",     icon: UserPlus,     color: C.primary, bg: C.primaryLt },
-    { label: "Employee Directory",href: "/team/employees",       icon: Users,        color: C.emerald, bg: C.emeraldLt },
-    { label: "Process Payroll",   href: "/team/payroll",         icon: DollarSign,   color: "#059669", bg: "#D1FAE5" },
-    { label: "Attendance",        href: "/team/attendance",      icon: Activity,     color: C.blue,    bg: C.blueLt },
-    { label: "Leave Management",  href: "/team/leave",           icon: Clock,        color: C.amber,   bg: C.amberLt },
-    { label: "Reports",           href: "/hrms/v2/reports",      icon: TrendingUp,   color: C.violet,  bg: C.violetLt },
-    { label: "Organization",      href: "/hrms/v2/organization", icon: Briefcase,    color: C.textSec, bg: "#F3F4F6" },
-    { label: "Templates",         href: "/hrms/v2/templates",    icon: FileText,     color: C.rose,    bg: C.roseLt },
+    { label: "Add Candidate",     href: "/team/recruitment",     icon: UserPlus,     color: C.primary },
+    { label: "Employee Directory",href: "/team/employees",       icon: Users,        color: C.emerald },
+    { label: "Process Payroll",   href: "/team/payroll",         icon: DollarSign,   color: "#059669" },
+    { label: "Attendance",        href: "/team/attendance",      icon: Activity,     color: C.blue },
+    { label: "Leave Management",  href: "/team/leave",           icon: Clock,        color: C.amber },
+    { label: "Reports",           href: "/hrms/v2/reports",      icon: TrendingUp,   color: C.violet },
+    { label: "Organization",      href: "/hrms/v2/organization", icon: Briefcase,    color: C.textSec },
+    { label: "Templates",         href: "/hrms/v2/templates",    icon: FileText,     color: C.rose },
   ];
 
   const taskColor = (u: PendingTask["urgency"]) =>
     u === "high" ? { c: C.rose, bg: C.roseLt } : u === "medium" ? { c: C.amber, bg: C.amberLt } : { c: C.emerald, bg: C.emeraldLt };
 
   const cardStyle: React.CSSProperties = {
-    background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    background: C.card, borderRadius: 16, border: `1px solid ${C.border}`,
+    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.04)",
   };
 
   return (
@@ -194,74 +202,99 @@ export default function HRAdminDashboardPage() {
       <div className="flex h-screen overflow-hidden">
         <HRMSSidebarNav />
         <main className="hrms-enterprise flex-1 overflow-y-auto" style={{ background: C.pageBg }}>
-          <div className="w-full px-4 py-6 md:px-8 md:py-6">
-            <div className="w-full hrms-main-with-nav" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <div className="w-full px-4 py-6 md:px-8 md:py-7">
+            <div className="w-full hrms-main-with-nav" style={{ fontFamily: "'Inter', sans-serif", gap: 18 }}>
 
-              {/* ── Greeting ── */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-                <div>
-                  <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0 }}>HR Command Center</h1>
-                  <p style={{ fontSize: 13, color: C.textMute, marginTop: 2 }}>
-                    {loading ? "Loading workforce overview…" : (
-                      <>You have <span style={{ color: C.amber, fontWeight: 600 }}>{totalPending} pending action{totalPending !== 1 ? "s" : ""}</span> waiting today.</>
+              {/* ── Hero header ── */}
+              <div
+                className="hrms-animate-in"
+                style={{
+                  position: "relative", overflow: "hidden", borderRadius: 20,
+                  border: `1px solid ${C.border}`,
+                  background: "linear-gradient(120deg, #ffffff 0%, #f6f5ff 46%, #eef2ff 100%)",
+                  boxShadow: "0 10px 30px rgba(91,76,245,0.07)",
+                  padding: "22px 24px",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  flexWrap: "wrap", gap: 16,
+                }}
+              >
+                {/* decorative glow */}
+                <div style={{ position: "absolute", top: -60, right: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.16), transparent 68%)", pointerEvents: "none" }} />
+                <div style={{ position: "relative" }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 20, background: "rgba(91,76,245,0.10)", color: C.primary, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                    <Sparkles size={12} /> HR Command Center
+                  </div>
+                  <h1 style={{ fontSize: 26, fontWeight: 800, color: C.text, margin: "10px 0 0", letterSpacing: "-0.02em" }}>
+                    {greeting}, Admin
+                  </h1>
+                  <p style={{ fontSize: 13, color: C.textSec, marginTop: 4 }}>
+                    {today} · {loading ? "Loading workforce overview…" : (
+                      <>You have <span style={{ color: C.rose, fontWeight: 700 }}>{totalPending} pending action{totalPending !== 1 ? "s" : ""}</span> waiting today.</>
                     )}
                   </p>
                 </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <Badge label={`● ${V(stats.activeEmployees)} Active`} color={C.emerald} bg={C.emeraldLt} />
-                  <Badge label={`${V(stats.onboardingEmployees)} Onboarding`} color={C.primary} bg={C.primaryLt} />
-                  <Badge label={`${V(totalPending)} Actions`} color={C.amber} bg={C.amberLt} />
+                <div style={{ position: "relative", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <Pill label={`${V(stats.activeEmployees)} Active`} color={C.emerald} dot />
+                  <Pill label={`${V(stats.onboardingEmployees)} Onboarding`} color={C.primary} dot />
+                  <Pill label={`${V(totalPending)} Actions`} color={C.amber} dot />
+                  <button
+                    onClick={() => loadDashboard()}
+                    disabled={loading}
+                    className="hrms-icon-btn"
+                    title="Refresh"
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.7)", color: C.textSec, fontSize: 12, fontWeight: 600, cursor: loading ? "default" : "pointer" }}
+                  >
+                    <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
+                  </button>
                 </div>
               </div>
 
               {/* ── KPI Row ── */}
-              <section style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="hrms-kpi-grid">
+              <section className="hrms-kpi-grid hrms-animate-in" style={{ animationDelay: "60ms" }}>
                 {kpis.map((k) => {
                   const Icon = k.icon;
                   return (
-                    <div key={k.label} style={{ ...cardStyle, padding: "16px 18px", borderLeft: `3px solid ${k.accent}` }}>
+                    <div key={k.label} className="hrms-card-hover" style={{ ...cardStyle, padding: 18, position: "relative", overflow: "hidden" }}>
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: grad(k.accent) }} />
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.04em" }}>{k.label}</div>
-                        <div style={{ width: 32, height: 32, borderRadius: 9, background: k.accent + "18", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Icon size={16} color={k.accent} />
+                        <div style={{ width: 40, height: 40, borderRadius: 11, background: grad(k.accent), display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 6px 14px ${k.accent}33` }}>
+                          <Icon size={19} color="#fff" />
                         </div>
                       </div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 8 }}>{k.value}</div>
-                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 500, color: k.subColor }}>{k.sub}</div>
+                      <div style={{ fontSize: 32, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 14, letterSpacing: "-0.02em" }}>{k.value}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginTop: 8 }}>{k.label}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: C.textMute, marginTop: 2 }}>{k.sub}</div>
                     </div>
                   );
                 })}
               </section>
 
               {/* ── Hiring Pipeline ── */}
-              <section style={{ ...cardStyle, padding: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <section className="hrms-animate-in" style={{ ...cardStyle, padding: 24, animationDelay: "120ms" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22, flexWrap: "wrap", gap: 8 }}>
                   <div>
-                    <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Hiring-to-Activation Pipeline</h2>
-                    <p style={{ fontSize: 12, color: C.textMute, marginTop: 2 }}>From first application to active employee</p>
+                    <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>Hiring-to-Activation Pipeline</h2>
+                    <p style={{ fontSize: 12.5, color: C.textMute, marginTop: 3 }}>From first application to active employee</p>
                   </div>
-                  <Link to="/team/recruitment" style={{ fontSize: 12, color: C.primary, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-                    Open Recruitment <ChevronRight size={13} />
+                  <Link to="/team/recruitment" className="hrms-pill-btn" style={{ fontSize: 12.5, color: C.primary, fontWeight: 600, display: "flex", alignItems: "center", gap: 4, padding: "7px 12px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.pageBg }}>
+                    Open Recruitment <ChevronRight size={14} />
                   </Link>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
-                  {pipelineStages.map((s, i) => (
-                    <div key={s.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-                      <div style={{ flex: 1, textAlign: "center" }}>
-                        <div style={{ width: 52, height: 52, borderRadius: "50%", background: s.bg, border: `2px solid ${s.color}22`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 6px", fontSize: 18, fontWeight: 800, color: s.color }}>
-                          {loading ? "—" : s.count}
-                        </div>
-                        <div style={{ fontSize: 10, fontWeight: 600, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</div>
+
+                {/* rail */}
+                <div style={{ position: "relative", display: "flex", alignItems: "flex-start", marginBottom: 20 }}>
+                  <div style={{ position: "absolute", top: 29, left: "8%", right: "8%", height: 3, borderRadius: 3, background: "linear-gradient(90deg,#3B82F6,#8B5CF6,#5B4CF5,#F59E0B,#10B981,#059669)", opacity: 0.35, zIndex: 0 }} />
+                  {pipelineStages.map((s) => (
+                    <div key={s.label} style={{ flex: 1, textAlign: "center", position: "relative", zIndex: 1 }}>
+                      <div className="hrms-pipe-node" style={{ width: 58, height: 58, borderRadius: "50%", background: "#fff", border: `2.5px solid ${s.color}`, boxShadow: `0 6px 16px ${s.color}2e`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 10px", fontSize: 20, fontWeight: 800, color: s.color }}>
+                        {loading ? "—" : s.count}
                       </div>
-                      {i < pipelineStages.length - 1 && (
-                        <div style={{ width: 24, flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                          <ArrowRight size={15} color={C.textMute} />
-                        </div>
-                      )}
+                      <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textSec, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${C.border}`, paddingTop: 14, flexWrap: "wrap" }}>
+
+                <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${C.border}`, paddingTop: 16, flexWrap: "wrap" }}>
                   {[
                     { label: "Recruitment Board", href: "/team/recruitment", icon: Briefcase },
                     { label: "Offer Management", href: "/team/offer-management", icon: FileText },
@@ -270,8 +303,8 @@ export default function HRAdminDashboardPage() {
                   ].map((b) => {
                     const Icon = b.icon;
                     return (
-                      <Link key={b.label} to={b.href} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.pageBg, fontSize: 12, fontWeight: 500, color: C.textSec }}>
-                        <Icon size={13} /> {b.label}
+                      <Link key={b.label} to={b.href} className="hrms-pill-btn" style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 13px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.pageBg, fontSize: 12.5, fontWeight: 600, color: C.textSec }}>
+                        <Icon size={14} /> {b.label}
                       </Link>
                     );
                   })}
@@ -279,50 +312,50 @@ export default function HRAdminDashboardPage() {
               </section>
 
               {/* ── Pending Approvals + Quick Actions ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="hrms-lower-grid">
+              <div className="hrms-lower-grid hrms-animate-in" style={{ animationDelay: "180ms" }}>
 
                 {/* Pending Approvals */}
-                <section style={{ ...cardStyle, padding: 20 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <section style={{ ...cardStyle, padding: 24 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
                     <div>
-                      <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Pending Approvals</h2>
-                      <p style={{ fontSize: 12, color: C.textMute, marginTop: 2 }}>Items awaiting your review and action</p>
+                      <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>Pending Approvals</h2>
+                      <p style={{ fontSize: 12.5, color: C.textMute, marginTop: 3 }}>Items awaiting your review and action</p>
                     </div>
-                    {totalPending > 0 && <Badge label={`${totalPending} pending`} color={C.rose} bg={C.roseLt} />}
+                    {totalPending > 0 && <Pill label={`${totalPending} pending`} color={C.rose} />}
                   </div>
 
                   {loading ? (
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {[1, 2, 3].map((i) => <div key={i} style={{ height: 60, borderRadius: 10, background: "#F1F5F9" }} className="animate-pulse" />)}
+                      {[1, 2, 3].map((i) => <div key={i} style={{ height: 62, borderRadius: 12, background: "#F1F5F9" }} className="animate-pulse" />)}
                     </div>
                   ) : totalPending === 0 ? (
-                    <div style={{ borderRadius: 12, border: `1px solid ${C.emerald}33`, background: C.emeraldLt, padding: 28, textAlign: "center" }}>
-                      <CheckCircle2 style={{ margin: "0 auto 8px" }} color={C.emerald} size={30} />
-                      <p style={{ fontWeight: 600, color: "#065F46", margin: 0 }}>All caught up!</p>
-                      <p style={{ fontSize: 12, color: C.emerald, marginTop: 4 }}>No pending approvals at this time.</p>
+                    <div style={{ borderRadius: 14, border: `1px solid ${C.emerald}33`, background: C.emeraldLt, padding: 32, textAlign: "center" }}>
+                      <CheckCircle2 style={{ margin: "0 auto 8px" }} color={C.emerald} size={32} />
+                      <p style={{ fontWeight: 700, color: "#065F46", margin: 0 }}>All caught up!</p>
+                      <p style={{ fontSize: 12.5, color: C.emerald, marginTop: 4 }}>No pending approvals at this time.</p>
                     </div>
                   ) : (
-                    <div>
-                      {tasks.map((task, idx) => {
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      {tasks.map((task) => {
                         const tc = taskColor(task.urgency);
                         const Icon = task.icon;
                         return (
                           <Link key={task.type} href={task.href}>
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0", borderBottom: idx < tasks.length - 1 ? `1px solid ${C.border}` : "none", cursor: "pointer" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                <div style={{ width: 36, height: 36, borderRadius: 9, background: tc.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                  <Icon size={16} className="" />
+                            <div className="hrms-approval-row" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", ["--row-accent" as string]: tc.c }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+                                <div style={{ width: 40, height: 40, borderRadius: 11, background: tc.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <Icon size={18} color={tc.c} />
                                 </div>
                                 <div>
-                                  <p style={{ fontSize: 13, fontWeight: 600, color: C.text, margin: 0 }}>{task.label}</p>
-                                  <p style={{ fontSize: 11, color: C.textMute, margin: 0 }}>
+                                  <p style={{ fontSize: 13.5, fontWeight: 600, color: C.text, margin: 0 }}>{task.label}</p>
+                                  <p style={{ fontSize: 11.5, color: C.textMute, margin: 0 }}>
                                     {task.count === 0 ? "No pending items" : `${task.count} item${task.count !== 1 ? "s" : ""} pending`}
                                   </p>
                                 </div>
                               </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <span style={{ borderRadius: 20, padding: "2px 9px", fontSize: 12, fontWeight: 700, background: task.count > 0 ? tc.bg : "#F1F5F9", color: task.count > 0 ? tc.c : C.textSec }}>{task.count}</span>
-                                <ChevronRight size={14} color={C.textMute} />
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <span style={{ borderRadius: 20, padding: "3px 11px", fontSize: 12.5, fontWeight: 800, background: task.count > 0 ? tc.bg : "#F1F5F9", color: task.count > 0 ? tc.c : C.textSec, minWidth: 26, textAlign: "center" }}>{task.count}</span>
+                                <ChevronRight size={15} color={C.textMute} />
                               </div>
                             </div>
                           </Link>
@@ -333,18 +366,19 @@ export default function HRAdminDashboardPage() {
                 </section>
 
                 {/* Quick Actions */}
-                <section style={{ ...cardStyle, padding: 20 }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: "0 0 14px" }}>Quick Actions</h2>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <section style={{ ...cardStyle, padding: 24 }}>
+                  <h2 style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Quick Actions</h2>
+                  <p style={{ fontSize: 12.5, color: C.textMute, margin: "0 0 16px" }}>Jump to any module instantly</p>
+                  <div className="hrms-quick-grid">
                     {quickActions.map((a) => {
                       const Icon = a.icon;
                       return (
                         <Link key={a.label} href={a.href}>
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "14px 8px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.pageBg, cursor: "pointer", textAlign: "center" }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 9, background: a.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Icon size={16} color={a.color} />
+                          <div className="hrms-quick-action" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "16px 8px", borderRadius: 13, border: `1px solid ${C.border}`, background: C.pageBg, cursor: "pointer", textAlign: "center" }}>
+                            <div style={{ width: 38, height: 38, borderRadius: 11, background: grad(a.color), display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 5px 12px ${a.color}30` }}>
+                              <Icon size={17} color="#fff" />
                             </div>
-                            <span style={{ fontSize: 11, fontWeight: 500, color: C.text, lineHeight: 1.3 }}>{a.label}</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 600, color: C.text, lineHeight: 1.3 }}>{a.label}</span>
                           </div>
                         </Link>
                       );
@@ -361,10 +395,11 @@ export default function HRAdminDashboardPage() {
   );
 }
 
-// ─── Small badge helper ───────────────────────────────────────────────────────
-function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
+// ─── Pill helper ──────────────────────────────────────────────────────────────
+function Pill({ label, color, dot }: { label: string; color: string; dot?: boolean }) {
   return (
-    <span style={{ background: bg, color, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.75)", border: `1px solid ${color}33`, color, fontSize: 11.5, fontWeight: 700, padding: "5px 11px", borderRadius: 20 }}>
+      {dot && <span style={{ width: 6, height: 6, borderRadius: "50%", background: color }} />}
       {label}
     </span>
   );

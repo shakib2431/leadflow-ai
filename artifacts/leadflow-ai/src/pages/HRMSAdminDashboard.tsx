@@ -14,23 +14,23 @@ import HRMSMainNav from "@/components/hrms/hrms-main-nav";
 // ─── Palette (matches approved light-theme mockup) ────────────────────────────
 const C = {
   card:      "#FFFFFF",
-  primary:   "#5B4CF5",
-  primaryLt: "#EEF2FF",
-  emerald:   "#10B981",
-  emeraldLt: "#ECFDF5",
+  primary:   "#4F46E5",
+  primaryLt: "#EEF0FF",
+  emerald:   "#059669",
+  emeraldLt: "#E7F8F1",
   amber:     "#F59E0B",
-  amberLt:   "#FFFBEB",
-  rose:      "#EF4444",
-  roseLt:    "#FFF1F2",
-  blue:      "#3B82F6",
-  blueLt:    "#EFF6FF",
-  violet:    "#8B5CF6",
-  violetLt:  "#F5F3FF",
-  border:    "#E8ECF4",
-  pageBg:    "#F4F6FB",
-  text:      "#111827",
-  textSec:   "#6B7280",
-  textMute:  "#9CA3AF",
+  amberLt:   "#FEF6E7",
+  rose:      "#F43F5E",
+  roseLt:    "#FEEEF1",
+  blue:      "#2563EB",
+  blueLt:    "#EAF1FE",
+  violet:    "#7C3AED",
+  violetLt:  "#F2EDFE",
+  border:    "#E9ECF5",
+  pageBg:    "#F5F6FB",
+  text:      "#0F172A",
+  textSec:   "#475569",
+  textMute:  "#94A3B8",
 };
 
 // gradient pair for icon chips / accents
@@ -204,8 +204,8 @@ export default function HRAdminDashboardPage() {
     u === "high" ? { c: C.rose, bg: C.roseLt } : u === "medium" ? { c: C.amber, bg: C.amberLt } : { c: C.emerald, bg: C.emeraldLt };
 
   const cardStyle: React.CSSProperties = {
-    background: C.card, borderRadius: 16, border: `1px solid ${C.border}`,
-    boxShadow: "0 1px 2px rgba(16,24,40,0.04), 0 8px 24px rgba(16,24,40,0.04)",
+    background: C.card, borderRadius: 18, border: `1px solid ${C.border}`,
+    boxShadow: "0 1px 2px rgba(16,24,40,0.03), 0 12px 30px rgba(16,24,40,0.05)",
   };
 
   return (
@@ -213,7 +213,7 @@ export default function HRAdminDashboardPage() {
       <HRMSMainNav />
       <div className="flex h-screen overflow-hidden w-full">
         <HRMSSidebarNav />
-        <main className="hrms-enterprise flex-1 min-w-0 overflow-y-auto" style={{ background: C.pageBg }}>
+        <main className="hrms-enterprise flex-1 min-w-0 overflow-y-auto" style={{ background: "linear-gradient(180deg, #F7F8FC 0%, #F1F2F9 100%)" }}>
           <div className="w-full px-4 py-6 md:px-8 md:py-7">
             <div className="w-full hrms-main-with-nav" style={{ fontFamily: "'Inter', sans-serif", gap: 18 }}>
 
@@ -221,29 +221,35 @@ export default function HRAdminDashboardPage() {
               <div
                 className="hrms-animate-in"
                 style={{
-                  position: "relative", overflow: "hidden", borderRadius: 20,
+                  position: "relative", overflow: "hidden", borderRadius: 22,
                   border: `1px solid ${C.border}`,
-                  background: "linear-gradient(120deg, #ffffff 0%, #f6f5ff 46%, #eef2ff 100%)",
-                  boxShadow: "0 10px 30px rgba(91,76,245,0.07)",
-                  padding: "22px 24px",
+                  background: "linear-gradient(115deg, #ffffff 0%, #f3f2ff 42%, #e9f0ff 100%)",
+                  boxShadow: "0 14px 40px rgba(79,70,229,0.09)",
+                  padding: "26px 28px",
                   display: "flex", justifyContent: "space-between", alignItems: "center",
-                  flexWrap: "wrap", gap: 16,
+                  flexWrap: "wrap", gap: 18,
                 }}
               >
-                {/* decorative glow */}
-                <div style={{ position: "absolute", top: -60, right: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.16), transparent 68%)", pointerEvents: "none" }} />
-                <div style={{ position: "relative" }}>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 10px", borderRadius: 20, background: "rgba(91,76,245,0.10)", color: C.primary, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    <Sparkles size={12} /> HR Command Center
+                {/* decorative glows */}
+                <div style={{ position: "absolute", top: -90, right: 90, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.16), transparent 68%)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: -130, right: -70, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, rgba(37,99,235,0.12), transparent 70%)", pointerEvents: "none" }} />
+                <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 18 }}>
+                  <div style={{ width: 58, height: 58, borderRadius: 17, background: "linear-gradient(135deg, #6366F1, #4F46E5)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 12px 24px rgba(79,70,229,0.35)", flexShrink: 0 }}>
+                    <Sparkles size={27} color="#fff" />
                   </div>
-                  <h1 style={{ fontSize: 26, fontWeight: 800, color: C.text, margin: "10px 0 0", letterSpacing: "-0.02em" }}>
-                    {greeting}, Admin
-                  </h1>
-                  <p style={{ fontSize: 13, color: C.textSec, marginTop: 4 }}>
-                    {today} · {loading ? "Loading workforce overview…" : (
-                      <>You have <span style={{ color: C.rose, fontWeight: 700 }}>{totalPending} pending action{totalPending !== 1 ? "s" : ""}</span> waiting today.</>
-                    )}
-                  </p>
+                  <div>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 11px", borderRadius: 20, background: "rgba(79,70,229,0.10)", color: C.primary, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.09em", textTransform: "uppercase" }}>
+                      HR Command Center
+                    </div>
+                    <h1 style={{ fontSize: 28, fontWeight: 800, color: C.text, margin: "9px 0 0", letterSpacing: "-0.03em" }}>
+                      {greeting}, Admin
+                    </h1>
+                    <p style={{ fontSize: 13, color: C.textSec, marginTop: 5 }}>
+                      {today} · {loading ? "Loading workforce overview…" : (
+                        <>You have <span style={{ color: C.rose, fontWeight: 700 }}>{totalPending} pending action{totalPending !== 1 ? "s" : ""}</span> waiting today.</>
+                      )}
+                    </p>
+                  </div>
                 </div>
                 <div style={{ position: "relative", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                   <Pill label={`${V(stats.activeEmployees)} Active`} color={C.emerald} dot />
@@ -254,7 +260,7 @@ export default function HRAdminDashboardPage() {
                     disabled={loading}
                     className="hrms-icon-btn"
                     title="Refresh"
-                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.7)", color: C.textSec, fontSize: 12, fontWeight: 600, cursor: loading ? "default" : "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 11, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.85)", color: C.textSec, fontSize: 12, fontWeight: 600, cursor: loading ? "default" : "pointer", boxShadow: "0 2px 6px rgba(16,24,40,0.05)" }}
                   >
                     <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Refresh
                   </button>
@@ -266,16 +272,17 @@ export default function HRAdminDashboardPage() {
                 {kpis.map((k) => {
                   const Icon = k.icon;
                   return (
-                    <div key={k.label} className="hrms-card-hover" style={{ ...cardStyle, padding: 20, position: "relative", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: grad(k.accent) }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.label}</span>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: `${k.accent}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <Icon size={17} color={k.accent} />
+                    <div key={k.label} className="hrms-card-hover" style={{ ...cardStyle, padding: 22, position: "relative", overflow: "hidden" }}>
+                      {/* soft accent corner glow */}
+                      <div style={{ position: "absolute", top: -34, right: -34, width: 118, height: 118, borderRadius: "50%", background: `radial-gradient(circle, ${k.accent}22, transparent 70%)`, pointerEvents: "none" }} />
+                      <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", paddingTop: 3 }}>{k.label}</span>
+                        <div style={{ width: 42, height: 42, borderRadius: 13, background: `${k.accent}16`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <Icon size={19} color={k.accent} />
                         </div>
                       </div>
-                      <div style={{ fontSize: 34, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 16, letterSpacing: "-0.02em" }}>{k.value}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+                      <div style={{ position: "relative", fontSize: 38, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 18, letterSpacing: "-0.03em" }}>{k.value}</div>
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 6, marginTop: 12 }}>
                         <span style={{ width: 7, height: 7, borderRadius: "50%", background: k.accent, flexShrink: 0 }} />
                         <span style={{ fontSize: 11.5, fontWeight: 500, color: C.textMute, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{k.sub}</span>
                       </div>

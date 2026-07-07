@@ -990,6 +990,10 @@ body {
 
 .hrms-funnel-bar { transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1); }
 
+/* premium typography: aligned, tabular figures across the dashboard */
+.hrms-enterprise { font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
+.hrms-enterprise h1, .hrms-enterprise h2 { font-feature-settings: "cv11"; }
+
 .hrms-lower-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
@@ -1037,10 +1041,15 @@ body {
               transform .18s ease, box-shadow .18s ease;
 }
 .hrms-quick-action:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   background: #ffffff !important;
   border-color: #d3d9ea !important;
-  box-shadow: 0 10px 20px rgba(15, 23, 42, .08);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, .10);
+}
+.hrms-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 42px rgba(15, 23, 42, .12);
+  border-color: #dde3f2;
 }
 
 .hrms-approval-row {

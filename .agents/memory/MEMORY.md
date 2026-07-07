@@ -1,3 +1,5 @@
 - [Next.js → Vite migration patterns](nextjs-vite-migration.md) — key transforms needed when porting a Next.js App Router project to React+Vite+Wouter
 - [VITE_ secrets in Replit](vite-secrets-replit.md) — Replit secrets with VITE_ prefix ARE in process.env; add define block in vite.config.ts to inject them into import.meta.env
 - [Windows local dev](windows-local-dev.md) — 4 fixes so this Replit pnpm monorepo installs/runs on a user's Windows machine (platform binaries, sh preinstall, pnpm11 builds, Node 22)
+- [gitPush commit-first](gitpush-commit-first.md) — gitPush ships committed HEAD only; commit before pushing and verify origin advanced, or user's pull silently gets nothing
+- [OneDrive breaks Vite watcher](onedrive-vite-hmr.md) — project in a OneDrive folder breaks HMR/file-watching on Windows; use CHOKIDAR_USEPOLLING=true or move out of OneDrive

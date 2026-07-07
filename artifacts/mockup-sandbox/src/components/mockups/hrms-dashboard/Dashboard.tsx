@@ -1,358 +1,502 @@
-import React from 'react';
 import {
-  LayoutDashboard,
-  Users,
-  Briefcase,
-  UserPlus,
-  CalendarCheck,
-  CalendarDays,
-  CircleDollarSign,
-  FileBarChart,
-  ChevronRight,
-  TrendingUp,
-  Download,
-  Plus,
-  ArrowRight,
-  UserCheck,
-  ClipboardList,
-  Calendar,
-  FileText,
-  Mail,
-  Video
-} from 'lucide-react';
+  LayoutDashboard, Users, Briefcase, ClipboardCheck, Clock, Calendar,
+  DollarSign, BarChart2, Settings, Bell, Search, ChevronDown,
+  TrendingUp, TrendingDown, ArrowUpRight, Plus, Download,
+  UserCheck, AlertCircle, CheckCircle2, Circle, ArrowRight,
+  UserPlus, FileText, CalendarCheck, PlayCircle
+} from "lucide-react";
 
-export default function Dashboard() {
+// ─── Palette ────────────────────────────────────────────────────────────────
+const C = {
+  pageBg:   "#F4F6FB",
+  sidebar:  "#FFFFFF",
+  card:     "#FFFFFF",
+  primary:  "#5B4CF5",
+  primaryLt:"#EEF2FF",
+  emerald:  "#10B981",
+  emeraldLt:"#ECFDF5",
+  amber:    "#F59E0B",
+  amberLt:  "#FFFBEB",
+  rose:     "#EF4444",
+  roseLt:   "#FFF1F2",
+  blue:     "#3B82F6",
+  blueLt:   "#EFF6FF",
+  border:   "#E8ECF4",
+  text:     "#111827",
+  textSec:  "#6B7280",
+  textMute: "#9CA3AF",
+};
+
+// ─── Tiny helpers ────────────────────────────────────────────────────────────
+function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
   return (
-    <div 
-      className="flex text-white font-sans selection:bg-indigo-500/30"
-      style={{ width: 1600, height: 900, overflow: 'hidden', backgroundColor: '#080d1a', fontFamily: "'Inter', sans-serif" }}
-    >
-      {/* SIDEBAR - 180px */}
-      <div className="w-[180px] h-full flex flex-col border-r border-white/[0.04]" style={{ backgroundColor: '#0f1629' }}>
-        {/* Logo */}
-        <div className="h-16 flex items-center px-4 gap-2 border-b border-white/[0.04]">
-          <div className="w-6 h-6 rounded bg-indigo-500 flex items-center justify-center">
-            <LayoutDashboard size={14} className="text-white" />
-          </div>
-          <div className="font-bold text-sm tracking-wide flex items-center gap-1.5">
-            LeadFlow <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-400">HRMS</span>
-          </div>
-        </div>
-
-        {/* Nav Sections */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-6 hide-scrollbar">
-          
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-semibold text-slate-500 px-2 mb-1 tracking-wider uppercase">Overview</div>
-            <NavItem icon={<LayoutDashboard size={16} />} label="Dashboard" active />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-semibold text-slate-500 px-2 mb-1 tracking-wider uppercase">Workforce</div>
-            <NavItem icon={<Users size={16} />} label="Employees" />
-            <NavItem icon={<Briefcase size={16} />} label="Recruitment" />
-            <NavItem icon={<UserPlus size={16} />} label="Onboarding" />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-semibold text-slate-500 px-2 mb-1 tracking-wider uppercase">Employee</div>
-            <NavItem icon={<CalendarCheck size={16} />} label="Attendance" />
-            <NavItem icon={<CalendarDays size={16} />} label="Leave" />
-            <NavItem icon={<CircleDollarSign size={16} />} label="Payroll" />
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <div className="text-[10px] font-semibold text-slate-500 px-2 mb-1 tracking-wider uppercase">Admin</div>
-            <NavItem icon={<FileBarChart size={16} />} label="Reports" />
-          </div>
-
-        </div>
-
-        {/* User Card */}
-        <div className="p-3 border-t border-white/[0.04] mt-auto">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.02] cursor-pointer transition-colors">
-            <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-xs">
-              HR
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-white">HR Admin</span>
-              <span className="text-[10px] text-slate-500">Super Admin</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
-        
-        {/* TOP HEADER - 48px */}
-        <div 
-          className="h-12 w-full flex items-center justify-between px-6 border-b border-white/[0.04] shrink-0"
-          style={{ backgroundColor: '#111827' }}
-        >
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-sm font-bold text-white tracking-wide">HR Command Center</h1>
-            <span className="text-xs text-slate-400">Real-time workforce overview</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="px-3 py-1.5 rounded-md bg-white/[0.03] border border-white/[0.05] text-[11px] text-slate-300 font-medium">
-              Oct 24, 2024
-            </div>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-white/[0.04] text-[11px] text-slate-300 font-medium transition-colors border border-transparent hover:border-white/[0.05]">
-              <Download size={12} />
-              Export Report
-            </button>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-indigo-500 hover:bg-indigo-600 text-[11px] text-white font-medium transition-colors shadow-[0_0_10px_rgba(99,102,241,0.2)]">
-              <Plus size={12} />
-              Add Employee
-            </button>
-          </div>
-        </div>
-
-        {/* SCROLLABLE DASHBOARD CONTENT */}
-        <div className="flex-1 p-6 overflow-hidden flex flex-col gap-6">
-          
-          {/* Row 1: KPI Stat Cards */}
-          <div className="grid grid-cols-6 gap-4 shrink-0">
-            <StatCard 
-              label="Active Employees" 
-              value="147" 
-              borderColor="#10b981" 
-              pillColor="bg-emerald-500/10 text-emerald-400"
-              pillText="↑ +3 this month"
-            />
-            <StatCard 
-              label="In Onboarding" 
-              value="12" 
-              borderColor="#8b5cf6" 
-              pillColor="bg-amber-500/10 text-amber-400"
-              pillText="4 pending activation"
-            />
-            <StatCard 
-              label="Open Positions" 
-              value="18" 
-              borderColor="#6366f1" 
-              pillColor="bg-rose-500/10 text-rose-400"
-              pillText="6 urgent"
-            />
-            <StatCard 
-              label="Offer Accepted" 
-              value="15" 
-              borderColor="#10b981" 
-              pillColor="bg-emerald-500/10 text-emerald-400"
-              pillText="this cycle"
-            />
-            <StatCard 
-              label="Pending Actions" 
-              value="7" 
-              borderColor="#f59e0b" 
-              pillColor="bg-amber-500/10 text-amber-400"
-              pillText="requires attention"
-            />
-            <StatCard 
-              label="Avg Attendance" 
-              value="94.2%" 
-              borderColor="#10b981" 
-              pillColor="bg-emerald-500/10 text-emerald-400"
-              pillText="↑ +1.3% vs last month"
-            />
-          </div>
-
-          {/* Row 2: Pipeline & Activity */}
-          <div className="flex gap-4 shrink-0 h-[220px]">
-            {/* Left: Hiring Pipeline */}
-            <div className="w-[55%] rounded-xl border border-white/[0.06] p-5 flex flex-col" style={{ backgroundColor: '#111827' }}>
-              <div className="flex justify-between items-end mb-6">
-                <div>
-                  <h2 className="text-sm font-bold text-white">Hiring Pipeline</h2>
-                  <p className="text-[11px] text-slate-400 mt-0.5">End-to-end recruitment funnel</p>
-                </div>
-              </div>
-
-              {/* Funnel */}
-              <div className="flex items-center justify-between mb-6 px-2">
-                <PipelineStage label="Applied" count={42} color="slate" />
-                <ArrowRight size={14} className="text-slate-600" />
-                <PipelineStage label="Screening" count={28} color="indigo" />
-                <ArrowRight size={14} className="text-slate-600" />
-                <PipelineStage label="Interview" count={18} color="violet" />
-                <ArrowRight size={14} className="text-slate-600" />
-                <PipelineStage label="Offered" count={15} color="amber" />
-                <ArrowRight size={14} className="text-slate-600" />
-                <PipelineStage label="Accepted" count={15} color="emerald" />
-                <ArrowRight size={14} className="text-slate-600" />
-                <PipelineStage label="Active" count={12} color="emerald" active />
-              </div>
-
-              {/* Quick Links */}
-              <div className="flex gap-3 mt-auto">
-                <button className="px-4 py-2 rounded-lg border border-white/[0.06] hover:bg-white/[0.02] text-xs font-medium text-slate-300 transition-colors">
-                  Recruitment Board
-                </button>
-                <button className="px-4 py-2 rounded-lg border border-white/[0.06] hover:bg-white/[0.02] text-xs font-medium text-slate-300 transition-colors">
-                  Offer Management
-                </button>
-                <button className="px-4 py-2 rounded-lg border border-white/[0.06] hover:bg-white/[0.02] text-xs font-medium text-slate-300 transition-colors">
-                  Pre-Onboarding
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Recent Activity */}
-            <div className="w-[45%] rounded-xl border border-white/[0.06] p-5 flex flex-col" style={{ backgroundColor: '#111827' }}>
-              <div className="flex justify-between items-end mb-4">
-                <h2 className="text-sm font-bold text-white">Recent Activity</h2>
-                <button className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
-                  View All <ChevronRight size={12} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-3 flex-1 overflow-y-auto hide-scrollbar">
-                <ActivityItem name="Ananya Sharma" action="Joined as Senior Designer" time="2h ago" dotColor="bg-emerald-500" />
-                <ActivityItem name="Rahul Mehta" action="Offer letter sent" time="4h ago" dotColor="bg-amber-500" />
-                <ActivityItem name="Priya Nair" action="Interview scheduled" time="6h ago" dotColor="bg-indigo-500" />
-                <ActivityItem name="Vikram Singh" action="Onboarding started" time="1d ago" dotColor="bg-orange-500" />
-                <ActivityItem name="Leave request" action="Pending approval (3)" time="1d ago" dotColor="bg-rose-500" />
-              </div>
-            </div>
-          </div>
-
-          {/* Row 3: Attendance & Actions */}
-          <div className="flex gap-4 flex-1">
-            {/* Left: Attendance Overview */}
-            <div className="w-[55%] rounded-xl border border-white/[0.06] p-5 flex flex-col" style={{ backgroundColor: '#111827' }}>
-              <div className="flex justify-between items-end mb-6">
-                <h2 className="text-sm font-bold text-white">Attendance This Week</h2>
-                <div className="flex gap-3">
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500"></div><span className="text-[10px] text-slate-400">Present</span></div>
-                  <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-700"></div><span className="text-[10px] text-slate-400">Absent</span></div>
-                </div>
-              </div>
-
-              <div className="flex-1 flex items-end justify-between px-8 gap-4">
-                <AttendanceBar day="Mon" percent={96} height="96%" />
-                <AttendanceBar day="Tue" percent={94} height="94%" />
-                <AttendanceBar day="Wed" percent={92} height="92%" />
-                <AttendanceBar day="Thu" percent={95} height="95%" />
-                <AttendanceBar day="Fri" percent={91} height="91%" />
-                <AttendanceBar day="Sat" percent={78} height="78%" warning />
-              </div>
-            </div>
-
-            {/* Right: Quick Actions */}
-            <div className="w-[45%] rounded-xl border border-white/[0.06] p-5 flex flex-col" style={{ backgroundColor: '#111827' }}>
-              <h2 className="text-sm font-bold text-white mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-2 grid-rows-3 gap-3 flex-1">
-                <QuickAction icon={<UserCheck size={14} />} label="Add Employee" />
-                <QuickAction icon={<CircleDollarSign size={14} />} label="Run Payroll" />
-                <QuickAction icon={<Calendar size={14} />} label="Approve Leaves" />
-                <QuickAction icon={<FileText size={14} />} label="Generate Report" />
-                <QuickAction icon={<Mail size={14} />} label="Send Offer" />
-                <QuickAction icon={<Video size={14} />} label="Schedule Interview" />
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- Subcomponents ---
-
-function NavItem({ icon, label, active = false }: { icon: React.ReactNode; label: string; active?: boolean }) {
-  return (
-    <button 
-      className={`
-        w-full flex items-center gap-3 px-3 h-9 rounded-lg text-xs font-medium transition-all
-        ${active 
-          ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' 
-          : 'text-slate-400 hover:text-white hover:bg-white/[0.02] border border-transparent'
-        }
-      `}
-    >
-      <span className={active ? 'text-indigo-400' : 'text-slate-500'}>{icon}</span>
+    <span style={{ background: bg, color, fontSize: 11, fontWeight: 600,
+      padding: "2px 8px", borderRadius: 20 }}>
       {label}
-    </button>
+    </span>
   );
 }
 
-function StatCard({ label, value, borderColor, pillColor, pillText }: { label: string, value: string, borderColor: string, pillColor: string, pillText: string }) {
+function Dot({ color }: { color: string }) {
+  return <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }} />;
+}
+
+// ─── KPI Card ────────────────────────────────────────────────────────────────
+function KpiCard({ label, value, sub, subColor, accent, icon: Icon }:
+  { label: string; value: string; sub: string; subColor: string; accent: string; icon: any }) {
   return (
-    <div 
-      className="h-24 rounded-xl border border-white/[0.06] p-4 flex flex-col justify-between relative overflow-hidden group hover:bg-white/[0.02] transition-colors"
-      style={{ backgroundColor: '#111827' }}
-    >
-      <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: borderColor }} />
-      <div className="text-[11px] font-medium text-slate-400 ml-1">{label}</div>
-      <div className="flex items-end justify-between ml-1">
-        <div className="text-[26px] font-bold text-white leading-none tracking-tight tabular-nums">{value}</div>
-        <div className={`px-2 py-0.5 rounded text-[10px] font-medium ${pillColor} tabular-nums whitespace-nowrap`}>
-          {pillText}
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: "18px 20px", flex: 1, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 500, color: C.textMute, textTransform: "uppercase",
+            letterSpacing: "0.05em", marginBottom: 8 }}>{label}</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: C.text, lineHeight: 1 }}>{value}</div>
+        </div>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: accent + "18",
+          display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon size={18} color={accent} />
+        </div>
+      </div>
+      <div style={{ marginTop: 10, fontSize: 12, fontWeight: 500, color: subColor }}>{sub}</div>
+    </div>
+  );
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+function Sidebar() {
+  const sections = [
+    {
+      items: [
+        { icon: LayoutDashboard, label: "Dashboard", active: true },
+      ]
+    },
+    {
+      title: "WORKFORCE",
+      items: [
+        { icon: Users,         label: "Employees" },
+        { icon: Briefcase,     label: "Recruitment" },
+        { icon: ClipboardCheck,label: "Onboarding" },
+        { icon: Clock,         label: "Attendance" },
+        { icon: Calendar,      label: "Leave" },
+        { icon: DollarSign,    label: "Payroll" },
+      ]
+    },
+    {
+      title: "ANALYTICS",
+      items: [
+        { icon: BarChart2,  label: "Reports" },
+        { icon: Settings,   label: "Settings" },
+      ]
+    },
+  ];
+
+  return (
+    <div style={{ width: 220, background: C.sidebar, borderRight: `1px solid ${C.border}`,
+      display: "flex", flexDirection: "column", flexShrink: 0, height: "100%" }}>
+      {/* Logo */}
+      <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: C.primary,
+            display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ color: "#fff", fontWeight: 800, fontSize: 14 }}>L</span>
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.text }}>LeadFlow</div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: C.primary, letterSpacing: "0.08em" }}>HRMS</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div style={{ flex: 1, padding: "12px 12px", overflowY: "auto" }}>
+        {sections.map((sec, si) => (
+          <div key={si} style={{ marginBottom: 4 }}>
+            {sec.title && (
+              <div style={{ fontSize: 10, fontWeight: 700, color: C.textMute, letterSpacing: "0.08em",
+                padding: "8px 8px 4px" }}>
+                {sec.title}
+              </div>
+            )}
+            {sec.items.map((item, ii) => {
+              const Icon = item.icon;
+              return (
+                <div key={ii} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+                  borderRadius: 8, marginBottom: 1, cursor: "pointer",
+                  background: item.active ? C.primary : "transparent",
+                  color: item.active ? "#fff" : C.textSec,
+                  fontWeight: item.active ? 600 : 500, fontSize: 13,
+                }}>
+                  <Icon size={16} />
+                  {item.label}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* User */}
+      <div style={{ padding: 12, borderTop: `1px solid ${C.border}` }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px",
+          borderRadius: 8, background: C.pageBg }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.primary,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>HR</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>HR Admin</div>
+            <div style={{ fontSize: 10, color: C.textMute }}>Super Admin</div>
+          </div>
+          <ChevronDown size={14} color={C.textMute} />
         </div>
       </div>
     </div>
   );
 }
 
-function PipelineStage({ label, count, color, active = false }: { label: string, count: number, color: 'slate' | 'indigo' | 'violet' | 'amber' | 'emerald', active?: boolean }) {
-  const colorMap = {
-    slate: 'bg-slate-800 text-slate-300 border-slate-700',
-    indigo: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-    violet: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
-    amber: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    emerald: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  };
-
+// ─── Top Bar ──────────────────────────────────────────────────────────────────
+function TopBar() {
+  const now = new Date("2025-07-07T10:30:00");
+  const dateStr = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   return (
-    <div className="flex flex-col items-center gap-2 group relative">
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold border ${colorMap[color]} ${active ? 'shadow-[0_0_15px_rgba(16,185,129,0.2)]' : ''}`}>
-        {count}
+    <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`,
+      padding: "0 24px", height: 56, display: "flex", alignItems: "center",
+      justifyContent: "space-between", flexShrink: 0 }}>
+      <div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>HR Command Center</div>
+        <div style={{ fontSize: 11, color: C.textMute }}>{dateStr}</div>
       </div>
-      <span className="text-[10px] font-semibold text-slate-400 tracking-wide uppercase">{label}</span>
-    </div>
-  );
-}
 
-function ActivityItem({ name, action, time, dotColor }: { name: string, action: string, time: string, dotColor: string }) {
-  return (
-    <div className="flex items-start gap-3 py-1.5">
-      <div className={`w-2 h-2 rounded-full mt-1.5 ${dotColor} shadow-[0_0_8px_currentColor]`} />
-      <div className="flex-1 flex flex-col">
-        <div className="text-xs">
-          <span className="font-bold text-slate-200">{name}</span>
-          <span className="text-slate-400 ml-1.5">{action}</span>
+      {/* Search */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.pageBg,
+        border: `1px solid ${C.border}`, borderRadius: 8, padding: "6px 12px", width: 220 }}>
+        <Search size={14} color={C.textMute} />
+        <span style={{ fontSize: 13, color: C.textMute }}>Search anything…</span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {/* Notif */}
+        <div style={{ position: "relative", width: 36, height: 36, borderRadius: 8,
+          background: C.pageBg, border: `1px solid ${C.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+          <Bell size={16} color={C.textSec} />
+          <div style={{ position: "absolute", top: 6, right: 6, width: 7, height: 7,
+            borderRadius: "50%", background: C.rose, border: "1.5px solid #fff" }} />
         </div>
-        <span className="text-[10px] text-slate-500 mt-0.5">{time}</span>
+        {/* Export */}
+        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
+          borderRadius: 8, border: `1px solid ${C.border}`, background: C.card,
+          fontSize: 13, fontWeight: 500, color: C.textSec, cursor: "pointer" }}>
+          <Download size={14} /> Export
+        </button>
+        {/* Add */}
+        <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px",
+          borderRadius: 8, border: "none", background: C.primary,
+          fontSize: 13, fontWeight: 600, color: "#fff", cursor: "pointer" }}>
+          <Plus size={14} /> Add Employee
+        </button>
       </div>
     </div>
   );
 }
 
-function AttendanceBar({ day, percent, height, warning = false }: { day: string, percent: number, height: string, warning?: boolean }) {
+// ─── Hiring Pipeline ─────────────────────────────────────────────────────────
+function HiringPipeline() {
+  const stages = [
+    { label: "Applied",   count: 42, color: C.blue,    bg: C.blueLt },
+    { label: "Screening", count: 28, color: "#8B5CF6", bg: "#F5F3FF" },
+    { label: "Interview", count: 18, color: C.primary, bg: C.primaryLt },
+    { label: "Offered",   count: 15, color: C.amber,   bg: C.amberLt },
+    { label: "Accepted",  count: 15, color: C.emerald, bg: C.emeraldLt },
+    { label: "Active",    count: 12, color: "#059669", bg: "#D1FAE5" },
+  ];
   return (
-    <div className="flex flex-col items-center gap-2 w-10">
-      <span className="text-[10px] font-bold text-slate-300 tabular-nums">{percent}%</span>
-      <div className="w-6 h-[80px] bg-slate-800 rounded-sm relative overflow-hidden group">
-        <div 
-          className={`absolute bottom-0 left-0 right-0 rounded-sm transition-all duration-500 ${warning ? 'bg-amber-500/80' : 'bg-emerald-500/80'} group-hover:brightness-125`}
-          style={{ height }}
-        />
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Hiring Pipeline</div>
+          <div style={{ fontSize: 12, color: C.textMute }}>End-to-end recruitment funnel</div>
+        </div>
+        <span style={{ fontSize: 12, color: C.primary, fontWeight: 600, cursor: "pointer",
+          display: "flex", alignItems: "center", gap: 4 }}>
+          View All <ArrowRight size={13} />
+        </span>
       </div>
-      <span className="text-[10px] font-medium text-slate-500 uppercase">{day}</span>
+
+      {/* Funnel stages */}
+      <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 16 }}>
+        {stages.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+            <div style={{ flex: 1, textAlign: "center" }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: s.bg,
+                border: `2px solid ${s.color}20`, display: "flex", alignItems: "center",
+                justifyContent: "center", margin: "0 auto 6px",
+                fontSize: 16, fontWeight: 700, color: s.color }}>
+                {s.count}
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: C.textMute,
+                textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</div>
+            </div>
+            {i < stages.length - 1 && (
+              <div style={{ width: 20, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                <ArrowRight size={14} color={C.textMute} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Quick links */}
+      <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${C.border}`, paddingTop: 14 }}>
+        {["Recruitment Board", "Offer Management", "Pre-Onboarding"].map((btn, i) => (
+          <button key={i} style={{ flex: 1, padding: "6px 0", borderRadius: 7,
+            border: `1px solid ${C.border}`, background: C.pageBg,
+            fontSize: 12, fontWeight: 500, color: C.textSec, cursor: "pointer" }}>
+            {btn}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-function QuickAction({ icon, label }: { icon: React.ReactNode, label: string }) {
+// ─── Activity Feed ────────────────────────────────────────────────────────────
+function ActivityFeed() {
+  const items = [
+    { name: "Ananya Sharma",  action: "Joined as Senior Designer",   time: "2h ago",  color: C.emerald },
+    { name: "Rahul Mehta",    action: "Offer letter sent",            time: "4h ago",  color: C.amber },
+    { name: "Priya Nair",     action: "Interview scheduled",          time: "6h ago",  color: C.blue },
+    { name: "Vikram Singh",   action: "Onboarding started",           time: "1d ago",  color: C.primary },
+    { name: "3 Leave Requests",action:"Pending approval",             time: "1d ago",  color: C.rose },
+  ];
   return (
-    <button className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-white/[0.04] bg-white/[0.01] hover:bg-violet-500/10 hover:border-violet-500/20 hover:text-violet-400 transition-all group text-left">
-      <div className="text-slate-400 group-hover:text-violet-400 transition-colors">
-        {icon}
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Recent Activity</div>
+        <span style={{ fontSize: 12, color: C.primary, fontWeight: 600, cursor: "pointer",
+          display: "flex", alignItems: "center", gap: 4 }}>
+          View All <ArrowRight size={13} />
+        </span>
       </div>
-      <span className="text-xs font-medium text-slate-300 group-hover:text-violet-300 transition-colors">{label}</span>
-    </button>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 12,
+            padding: "10px 0", borderBottom: i < items.length - 1 ? `1px solid ${C.border}` : "none" }}>
+            <Dot color={item.color} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{item.name} </span>
+              <span style={{ fontSize: 13, color: C.textSec }}>{item.action}</span>
+            </div>
+            <span style={{ fontSize: 11, color: C.textMute, flexShrink: 0,
+              background: C.pageBg, padding: "2px 8px", borderRadius: 20,
+              border: `1px solid ${C.border}` }}>
+              {item.time}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Attendance Chart ────────────────────────────────────────────────────────
+function AttendanceChart() {
+  const days = [
+    { day: "Mon", pct: 96 }, { day: "Tue", pct: 94 }, { day: "Wed", pct: 92 },
+    { day: "Thu", pct: 95 }, { day: "Fri", pct: 91 }, { day: "Sat", pct: 78 },
+  ];
+  const maxH = 80;
+  return (
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Attendance This Week</div>
+          <div style={{ fontSize: 12, color: C.textMute }}>Daily presence rate</div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: C.emerald }} />
+            <span style={{ fontSize: 11, color: C.textMute }}>Present</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: "#E5E7EB" }} />
+            <span style={{ fontSize: 11, color: C.textMute }}>Absent</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 12, height: maxH + 28 }}>
+        {days.map((d, i) => {
+          const h = Math.round((d.pct / 100) * maxH);
+          const absentH = maxH - h;
+          const isLow = d.pct < 80;
+          return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: isLow ? C.rose : C.text }}>
+                {d.pct}%
+              </div>
+              <div style={{ width: "100%", height: maxH, display: "flex",
+                flexDirection: "column", justifyContent: "flex-end", gap: 0, borderRadius: 6, overflow: "hidden",
+                background: "#F3F4F6" }}>
+                {absentH > 0 && <div style={{ height: absentH, background: "#E5E7EB" }} />}
+                <div style={{ height: h, background: isLow ? C.amber : C.emerald, borderRadius: "4px 4px 0 0" }} />
+              </div>
+              <div style={{ fontSize: 11, color: C.textMute, fontWeight: 500 }}>{d.day}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Quick Actions ────────────────────────────────────────────────────────────
+function QuickActions() {
+  const actions = [
+    { icon: UserPlus,     label: "Add Employee",       color: C.primary,  bg: C.primaryLt },
+    { icon: DollarSign,   label: "Run Payroll",         color: C.emerald,  bg: C.emeraldLt },
+    { icon: CheckCircle2, label: "Approve Leaves",      color: C.amber,    bg: C.amberLt },
+    { icon: FileText,     label: "Generate Report",     color: C.blue,     bg: C.blueLt },
+    { icon: CalendarCheck,label: "Schedule Interview",  color: "#8B5CF6",  bg: "#F5F3FF" },
+    { icon: PlayCircle,   label: "Send Offer",          color: C.rose,     bg: C.roseLt },
+  ];
+  return (
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 14 }}>Quick Actions</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        {actions.map((a, i) => {
+          const Icon = a.icon;
+          return (
+            <button key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center",
+              gap: 7, padding: "12px 8px", borderRadius: 10,
+              border: `1px solid ${C.border}`, background: C.pageBg,
+              cursor: "pointer", transition: "background 0.15s" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: a.bg,
+                display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon size={16} color={a.color} />
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 500, color: C.text,
+                textAlign: "center", lineHeight: 1.3 }}>{a.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Pending Approvals ────────────────────────────────────────────────────────
+function PendingApprovals() {
+  const items = [
+    { name: "Priya Nair",    type: "Leave Request",   days: "3 days",    status: "Casual",   color: C.amber },
+    { name: "Arjun Desai",   type: "WFH Request",     days: "Tomorrow",  status: "WFH",      color: C.blue },
+    { name: "Meera Pillai",  type: "Expense Claim",   days: "₹4,200",    status: "Expense",  color: C.primary },
+  ];
+  return (
+    <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+      padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Pending Approvals</div>
+        <Badge label="7 pending" color={C.amber} bg={C.amberLt} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {items.map((item, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 0", borderBottom: i < items.length - 1 ? `1px solid ${C.border}` : "none" }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: item.color + "18",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              fontSize: 12, fontWeight: 700, color: item.color }}>
+              {item.name.charAt(0)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{item.name}</div>
+              <div style={{ fontSize: 11, color: C.textMute }}>{item.type} · {item.days}</div>
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.emerald}`,
+                background: C.emeraldLt, fontSize: 11, fontWeight: 600, color: C.emerald, cursor: "pointer" }}>
+                Approve
+              </button>
+              <button style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`,
+                background: C.pageBg, fontSize: 11, fontWeight: 500, color: C.textSec, cursor: "pointer" }}>
+                Decline
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Root Component ───────────────────────────────────────────────────────────
+export function Dashboard() {
+  const kpis = [
+    { label: "Active Employees", value: "147", sub: "↑ +3 this month",      subColor: C.emerald, accent: C.emerald, icon: Users },
+    { label: "In Onboarding",    value: "12",  sub: "4 pending activation",  subColor: C.amber,   accent: C.amber,   icon: UserCheck },
+    { label: "Open Positions",   value: "18",  sub: "6 urgent",              subColor: C.rose,    accent: C.rose,    icon: Briefcase },
+    { label: "Offer Accepted",   value: "15",  sub: "This cycle",            subColor: C.emerald, accent: C.primary, icon: CheckCircle2 },
+    { label: "Pending Actions",  value: "7",   sub: "Requires attention",    subColor: C.amber,   accent: C.amber,   icon: AlertCircle },
+    { label: "Avg Attendance",   value: "94.2%", sub: "↑ +1.3% vs last mo", subColor: C.emerald, accent: C.emerald, icon: TrendingUp },
+  ];
+
+  return (
+    <div style={{ width: 1600, height: 900, overflow: "hidden", display: "flex",
+      fontFamily: "'Inter', -apple-system, sans-serif", background: C.pageBg }}>
+
+      <Sidebar />
+
+      {/* Main */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <TopBar />
+
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex",
+          flexDirection: "column", gap: 16 }}>
+
+          {/* Greeting */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: C.text }}>
+                Good morning, HR Admin! 👋
+              </div>
+              <div style={{ fontSize: 13, color: C.textMute, marginTop: 2 }}>
+                You have <span style={{ color: C.amber, fontWeight: 600 }}>7 pending actions</span> and{" "}
+                <span style={{ color: C.primary, fontWeight: 600 }}>3 approvals</span> waiting today.
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Badge label="● 147 Active" color={C.emerald} bg={C.emeraldLt} />
+              <Badge label="12 Onboarding" color={C.primary} bg={C.primaryLt} />
+              <Badge label="7 Actions" color={C.amber} bg={C.amberLt} />
+            </div>
+          </div>
+
+          {/* KPI Row */}
+          <div style={{ display: "flex", gap: 12 }}>
+            {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
+          </div>
+
+          {/* Row 2: Pipeline + Activity */}
+          <div style={{ display: "flex", gap: 16, flex: "0 0 auto" }}>
+            <div style={{ flex: "0 0 60%" }}><HiringPipeline /></div>
+            <div style={{ flex: 1 }}><ActivityFeed /></div>
+          </div>
+
+          {/* Row 3: Attendance + Quick Actions + Pending */}
+          <div style={{ display: "flex", gap: 16 }}>
+            <div style={{ flex: "0 0 34%" }}><AttendanceChart /></div>
+            <div style={{ flex: "0 0 26%" }}><QuickActions /></div>
+            <div style={{ flex: 1 }}><PendingApprovals /></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   );
 }

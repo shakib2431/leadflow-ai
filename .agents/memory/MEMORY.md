@@ -3,3 +3,4 @@
 - [Windows local dev](windows-local-dev.md) — 4 fixes so this Replit pnpm monorepo installs/runs on a user's Windows machine (platform binaries, sh preinstall, pnpm11 builds, Node 22)
 - [gitPush commit-first](gitpush-commit-first.md) — gitPush ships committed HEAD only; commit before pushing and verify origin advanced, or user's pull silently gets nothing
 - [OneDrive breaks Vite watcher](onedrive-vite-hmr.md) — project in a OneDrive folder breaks HMR/file-watching on Windows; use CHOKIDAR_USEPOLLING=true or move out of OneDrive
+- [HRMS fetch adapter](hrms-fetch-adapter.md) — HRMS v2 pages served from Supabase via a window.fetch monkeypatch (no real backend); Supabase enum cols reject ilike (400) — use eq/in/neq

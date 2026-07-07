@@ -1,31 +1,45 @@
 
-
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { LogOut, Bell, Search, X, ChevronRight } from "lucide-react";
+import { LogOut, Bell, Search, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
 import { useHRMSRole } from "@/components/hrms/use-hrms-role";
+
+interface SearchResult {
+  id: string;
+  name: string;
+  subtitle?: string;
+  type: string;
+}
+
+interface Notification {
+  title: string;
+  message: string;
+  time: string;
+  type: string;
+  link?: string;
+}
 
 export default function HRMSMainNav() {
   const [, navigate] = useLocation();
   const { role } = useHRMSRole();
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const searchRef = useRef(null);
-  const notifRef = useRef(null);
-  const notifButtonRef = useRef(null);
-  const notifPanelRef = useRef(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
+  const notifButtonRef = useRef<HTMLButtonElement>(null);
+  const notifPanelRef = useRef<HTMLDivElement>(null);
   const [notifPanelTop, setNotifPanelTop] = useState(64);
 
   // Fetch notifications on mount
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Refresh every 30s
+    const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -44,22 +58,21 @@ export default function HRMSMainNav() {
       const anchor = notifButtonRef.current;
       if (!anchor) return;
       const rect = anchor.getBoundingClientRect();
-      const top = rect.bottom + 8;
-      setNotifPanelTop(top);
+      setNotifPanelTop(rect.bottom + 8);
     }
 
-    function handleClickOutside(e) {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSearchResults(false);
       }
-      const clickedBell = notifButtonRef.current && notifButtonRef.current.contains(e.target);
-      const clickedPanel = notifPanelRef.current && notifPanelRef.current.contains(e.target);
+      const clickedBell = notifButtonRef.current?.contains(e.target as Node);
+      const clickedPanel = notifPanelRef.current?.contains(e.target as Node);
       if (!clickedBell && !clickedPanel) {
         setShowNotifications(false);
       }
     }
 
-    function handleEscape(e) {
+    function handleEscape(e: KeyboardEvent) {
       if (e.key === "Escape") setShowNotifications(false);
     }
 
@@ -111,7 +124,7 @@ export default function HRMSMainNav() {
     window.location.reload();
   }
 
-  function handleSearchSelect(result) {
+  function handleSearchSelect(result: SearchResult) {
     setShowSearchResults(false);
     setSearchQuery("");
     if (result.type === "employee") {
@@ -121,7 +134,7 @@ export default function HRMSMainNav() {
     }
   }
 
-  function handleNotificationClick(notif) {
+  function handleNotificationClick(notif: Notification) {
     setShowNotifications(false);
     if (notif.link) {
       navigate(notif.link);

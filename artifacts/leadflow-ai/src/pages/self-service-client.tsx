@@ -2054,7 +2054,7 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
               </div>
               <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
                 <p className="text-xs uppercase tracking-wide text-emerald-700">Net Pay</p>
-                <p className="mt-1 font-semibold text-emerald-900">{formatINR(data.payroll.latest_payslip.net_pay)}</p>
+                <p className="mt-1 font-semibold text-emerald-900">{formatINR(data.payroll.latest_payslip.net_pay ?? undefined)}</p>
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                 <p className="text-xs uppercase tracking-wide text-amber-700">TDS</p>

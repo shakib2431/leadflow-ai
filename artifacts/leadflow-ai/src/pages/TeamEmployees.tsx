@@ -80,19 +80,20 @@ export default function EmployeesPage() {
   const [deptMap, setDeptMap] = useState<Record<string, string>>({});
   const [desigMap, setDesigMap] = useState<Record<string, string>>({});
 
-  async function authHeader() {
+  async function authHeader(): Promise<Record<string, string>> {
     if (typeof window !== "undefined" && !window.location.hostname.includes("prod")) {
       const { data } = await supabase.auth.getSession();
       const devEmail = String(data.session?.user?.email || "").trim().toLowerCase();
-      return {
+      const headers: Record<string, string> = {
         "x-dev-mode": "true",
         "x-dev-role": "HR Admin",
-        ...(devEmail ? { "x-dev-email": devEmail } : {}),
         "Content-Type": "application/json",
       };
+      if (devEmail) headers["x-dev-email"] = devEmail;
+      return headers;
     }
     const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
+    const token = data.session?.access_token ?? "";
     return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   }
 

@@ -11,6 +11,14 @@ import {
 import HRMSSidebarNav from "@/components/hrms/hrms-sidebar-nav";
 import HRMSTopHeader from "@/components/hrms/hrms-top-header";
 
+type ChecklistTask = {
+  id: string;
+  label?: string;
+  title?: string;
+  done?: boolean;
+  status?: string;
+};
+
 type EmployeeRow = {
   id: string;
   first_name?: string;
@@ -18,13 +26,7 @@ type EmployeeRow = {
   email?: string;
   status?: string;
   onboarding_checklist?: {
-    tasks?: Array<{
-      id: string;
-      label?: string;
-      title?: string;
-      done?: boolean;
-      status?: string;
-    }>;
+    tasks?: ChecklistTask[];
     pre_onboarding?: {
       status?: string;
       submitted_at?: string;
@@ -141,7 +143,7 @@ export default function HRTeamOnboardingPage() {
   }
 
   function getChecklist(emp: EmployeeRow) {
-    const tasks = emp.onboarding_checklist?.tasks || DEFAULT_CHECKLIST.map((t) => ({ ...t, done: false }));
+    const tasks: ChecklistTask[] = emp.onboarding_checklist?.tasks || DEFAULT_CHECKLIST.map((t) => ({ ...t, done: false as boolean }));
     return tasks.map((t) => ({
       ...t,
       label: CHECKLIST_METADATA[t.id]?.label || t.label || t.title || "Checklist item",

@@ -149,7 +149,7 @@ async function fetchLeaveData(start?: string, end?: string): Promise<LeaveData> 
             createdAt: String(row?.created_at || ""),
           };
         })
-        .sort((a, b) => {
+        .sort((a: { createdAt: string; startDate: string }, b: { createdAt: string; startDate: string }) => {
           const aTime = new Date(a.createdAt || a.startDate || 0).getTime();
           const bTime = new Date(b.createdAt || b.startDate || 0).getTime();
           return bTime - aTime;

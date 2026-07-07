@@ -147,7 +147,7 @@ export default function RecruitmentPage() {
         if (emails.has(candidateEmail) && candidate.stage !== "Hired") {
           // Candidate has employee record but not marked as Hired - update stage
           updates.push(
-            supabase.from("candidates").update({ stage: "Hired" }).eq("id", candidate.id)
+            Promise.resolve(supabase.from("candidates").update({ stage: "Hired" }).eq("id", candidate.id))
           );
           return { ...candidate, stage: "Hired" as CandidateStage };
         }

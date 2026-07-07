@@ -30,7 +30,7 @@ const C = {
   pageBg:    "#F5F6FB",
   text:      "#0F172A",
   textSec:   "#475569",
-  textMute:  "#94A3B8",
+  textMute:  "#64748B",
 };
 
 // gradient pair for icon chips / accents

@@ -1645,21 +1645,28 @@ body {
 }
 
 .hrms-lifecycle-card {
-  border: 1px solid #dbe3ef;
-  border-radius: 12px;
-  background: #f8fbff;
-  padding: 12px;
+  border: 1px solid #E9ECF5;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px;
   display: grid;
   gap: 8px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03), 0 12px 30px rgba(16, 24, 40, 0.05);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.hrms-lifecycle-card:hover {
+  box-shadow: 0 6px 24px rgba(79, 70, 229, 0.12);
+  transform: translateY(-1px);
 }
 
 .hrms-lifecycle-step {
   display: inline-flex;
   width: fit-content;
   border-radius: 999px;
-  border: 1px solid #bfdbfe;
-  background: #dbeafe;
-  color: #1d4ed8;
+  border: 1px solid #e0e7ff;
+  background: #eef2ff;
+  color: #4338ca;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1683,9 +1690,9 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid #c7d7ec;
+  border: 1px solid #e0e7ff;
   background: #ffffff;
-  color: #1e3a8a;
+  color: #4338ca;
   font-size: 12px;
   font-weight: 700;
   padding: 8px 10px;

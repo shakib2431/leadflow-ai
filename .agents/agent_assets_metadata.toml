@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "i5308RRNzKS8HIbkUx9wV"
+uri = "file://screenshots/hrms-dashboard-redesign.jpg"
+type = "image"
+title = "HRMS Dashboard — Redesigned (Light Theme)"

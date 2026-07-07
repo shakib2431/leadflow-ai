@@ -1,6 +1,6 @@
-# [Project name]
+# LeadFlow AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An AI-powered CRM and HRMS platform for managing leads, pipelines, team employees, and HR workflows.
 
 ## Run & Operate
 
@@ -34,7 +34,7 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- All work is scoped to the **HRMS** and **CRM** sections of LeadFlow AI.
 
 ## Gotchas
 

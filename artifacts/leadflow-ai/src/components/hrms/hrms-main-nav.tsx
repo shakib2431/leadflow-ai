@@ -108,7 +108,7 @@ export default function HRMSMainNav() {
     setLoading(true);
     await supabase.auth.signOut();
     navigate("/login");
-    router.refresh();
+    window.location.reload();
   }
 
   function handleSearchSelect(result) {

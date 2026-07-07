@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "wouter";
-import { useParams, useRouter } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
 import { CheckCircle2, Circle, Clock, Download, Eye, FileText, RefreshCw, Send, Trash2, Upload, X } from "lucide-react";
 import EditEmployeeForm from "@/components/hrms/edit-employee-form";

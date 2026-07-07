@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { ChevronLeft, AlertCircle, CheckCircle } from "lucide-react";
 import HRMSSidebarNav from "@/components/hrms/hrms-sidebar-nav";
 import HRMSTopHeader from "@/components/hrms/hrms-top-header";
@@ -360,7 +360,7 @@ export default function OnboardingDetailPage() {
       <HRMSSidebarNav />
       <div className="hrms-main-with-nav">
         <div className="mb-6 flex items-center gap-3">
-          <button onClick={() => router.back()} className="rounded-lg border border-slate-300 p-2 hover:bg-slate-50">
+          <button onClick={() => window.history.back()} className="rounded-lg border border-slate-300 p-2 hover:bg-slate-50">
             <ChevronLeft size={20} />
           </button>
           <div>
@@ -577,7 +577,7 @@ export default function OnboardingDetailPage() {
             )}
 
             <div className="sticky bottom-0 flex items-center justify-between gap-2 border-t border-slate-200 bg-white -mx-6 px-6 py-3 mt-6">
-              <button type="button" onClick={() => router.back()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back</button>
+              <button type="button" onClick={() => window.history.back()} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Back</button>
               {viewMode === "edit" ? (
                 <button type="submit" disabled={isActivating} className="hrms-btn hrms-btn-primary px-6 py-2 text-sm disabled:opacity-50">
                   {isActivating ? "Loading..." : "Proceed to Review"}

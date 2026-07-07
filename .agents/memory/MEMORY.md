@@ -1,0 +1,2 @@
+- [Next.js → Vite migration patterns](nextjs-vite-migration.md) — key transforms needed when porting a Next.js App Router project to React+Vite+Wouter
+- [VITE_ secrets in Replit](vite-secrets-replit.md) — Replit secrets with VITE_ prefix ARE in process.env; add define block in vite.config.ts to inject them into import.meta.env

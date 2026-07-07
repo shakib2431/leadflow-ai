@@ -1037,7 +1037,7 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
             <Link
               key={item.key}
               href={item.href}
-              prefetch={false}
+             
               className={`${TAB_BASE_CLASS} ${
                 active ? TAB_ACTIVE_CLASS : TAB_INACTIVE_CLASS
               }`}
@@ -1095,18 +1095,18 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
                 <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">Status: {pretty(data?.employee?.status)}</span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Link prefetch={false} href="/hrms/v2/self-service/leave" className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700">Request Leave</Link>
-                <Link prefetch={false} href="/hrms/v2/self-service/attendance" className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700">Mark Attendance</Link>
-                <Link prefetch={false} href="/hrms/v2/self-service/payroll" className="rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs font-semibold text-cyan-700">Download Payslip</Link>
-                <Link prefetch={false} href="/hrms/v2/self-service/profile" className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-semibold text-amber-700">Update Profile</Link>
-                <Link prefetch={false} href="/hrms/v2/self-service/work-mode" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">More</Link>
+                <Link to="/hrms/v2/self-service/leave" className="rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700">Request Leave</Link>
+                <Link to="/hrms/v2/self-service/attendance" className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-700">Mark Attendance</Link>
+                <Link to="/hrms/v2/self-service/payroll" className="rounded-lg border border-cyan-200 bg-white px-3 py-2 text-xs font-semibold text-cyan-700">Download Payslip</Link>
+                <Link to="/hrms/v2/self-service/profile" className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-semibold text-amber-700">Update Profile</Link>
+                <Link to="/hrms/v2/self-service/work-mode" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700">More</Link>
               </div>
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-base font-semibold text-slate-900">Today's Activity</h3>
-                <Link prefetch={false} href="/hrms/v2/self-service/attendance" className="text-xs font-semibold text-indigo-600">View All</Link>
+                <Link to="/hrms/v2/self-service/attendance" className="text-xs font-semibold text-indigo-600">View All</Link>
               </div>
               <div className="space-y-3">
                 {todayActivity.length > 0 ? todayActivity.map((item) => (
@@ -1185,13 +1185,13 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
                   <div className="rounded-xl border border-dashed border-slate-300 py-6 text-center text-sm text-slate-500">No pending tasks.</div>
                 )}
               </div>
-              <Link prefetch={false} href="/hrms/v2/self-service/attendance" className="mt-3 inline-flex text-xs font-semibold text-indigo-600">View all tasks</Link>
+              <Link to="/hrms/v2/self-service/attendance" className="mt-3 inline-flex text-xs font-semibold text-indigo-600">View all tasks</Link>
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-slate-900">Upcoming Events</h3>
-                <Link prefetch={false} href="/hrms/v2/self-service/calendar" className="text-xs font-semibold text-indigo-600">View Calendar</Link>
+                <Link to="/hrms/v2/self-service/calendar" className="text-xs font-semibold text-indigo-600">View Calendar</Link>
               </div>
               <div className="space-y-2">
                 {upcomingItems.length > 0 ? upcomingItems.map((item) => (
@@ -1206,19 +1206,19 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
                   <div className="rounded-xl border border-dashed border-slate-300 py-6 text-center text-sm text-slate-500">No upcoming events.</div>
                 )}
               </div>
-              <Link prefetch={false} href="/hrms/v2/self-service/calendar" className="mt-3 inline-flex text-xs font-semibold text-indigo-600">View full calendar</Link>
+              <Link to="/hrms/v2/self-service/calendar" className="mt-3 inline-flex text-xs font-semibold text-indigo-600">View full calendar</Link>
             </article>
 
             <article className="space-y-4">
               <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 <h3 className="mb-3 text-lg font-semibold text-slate-900">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Link prefetch={false} href="/hrms/v2/self-service/attendance" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Attendance</Link>
-                  <Link prefetch={false} href="/hrms/v2/self-service/leave" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Leave</Link>
-                  <Link prefetch={false} href="/hrms/v2/self-service/payroll" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Payroll</Link>
-                  <Link prefetch={false} href="/hrms/v2/self-service/profile" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Documents</Link>
-                  <Link prefetch={false} href="/hrms/v2/self-service/work-mode" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Goals</Link>
-                  <Link prefetch={false} href="/hrms/v2/settings" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">Settings</Link>
+                  <Link to="/hrms/v2/self-service/attendance" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Attendance</Link>
+                  <Link to="/hrms/v2/self-service/leave" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Leave</Link>
+                  <Link to="/hrms/v2/self-service/payroll" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Payroll</Link>
+                  <Link to="/hrms/v2/self-service/profile" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Documents</Link>
+                  <Link to="/hrms/v2/self-service/work-mode" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">My Goals</Link>
+                  <Link to="/hrms/v2/settings" className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-semibold text-slate-700">Settings</Link>
                 </div>
               </div>
 
@@ -1246,9 +1246,9 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
                       <li>Work mode: {pretty(workMode)}</li>
                     </ul>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <Link prefetch={false} href="/hrms/v2/self-service/attendance" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Attendance</Link>
-                      <Link prefetch={false} href="/hrms/v2/self-service/leave" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Leave</Link>
-                      <Link prefetch={false} href="/hrms/v2/self-service/calendar" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Calendar</Link>
+                      <Link to="/hrms/v2/self-service/attendance" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Attendance</Link>
+                      <Link to="/hrms/v2/self-service/leave" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Leave</Link>
+                      <Link to="/hrms/v2/self-service/calendar" className="rounded-md border border-indigo-200 px-2 py-1 font-semibold text-indigo-700">Calendar</Link>
                     </div>
                   </div>
                 )}
@@ -1259,7 +1259,7 @@ export default function SelfServiceClient({ initialTab = 'overview' }: { initial
           <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-slate-900">Recent Payslips</h3>
-              <Link prefetch={false} href="/hrms/v2/self-service/payroll" className="text-xs font-semibold text-indigo-600">View All</Link>
+              <Link to="/hrms/v2/self-service/payroll" className="text-xs font-semibold text-indigo-600">View All</Link>
             </div>
             <div className="overflow-x-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-left text-sm">

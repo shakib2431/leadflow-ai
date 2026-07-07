@@ -143,7 +143,6 @@ export default function EditEmployeeForm({ employee, onClose, mapped, options }:
       const body = await res.json();
       if (!res.ok) throw new Error(body.error || 'Update failed');
 
-      onEmployeeUpdated();
 
       onClose();
     } catch (err: any) {

@@ -1,6 +1,6 @@
 
 
-import { ReportFilters, type ReportFilterState } from "../reports/components/report-filters";
+import { ReportFilters, type ReportFilterState } from "@/pages/components/report-filters";
 
 export interface FilterConfig {
   [key: string]: any;

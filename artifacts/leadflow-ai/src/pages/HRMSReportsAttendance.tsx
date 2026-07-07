@@ -134,7 +134,7 @@ export default function AttendanceReportsPage() {
     <div className="flex h-screen bg-slate-100">
       <HRMSSidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden ml-60">
-        <HRMSTopHeader />
+        <HRMSTopHeader title="" />
 
         <div className="flex-1 overflow-auto">
           <div className="px-6 py-6 space-y-6">
@@ -297,7 +297,7 @@ export default function AttendanceReportsPage() {
                   <AlertCircle className="text-red-600" size={20} />
                 </div>
                 <p className="text-3xl font-bold text-slate-900">
-                  {data?.totalRecords > 0
+                  {(data?.totalRecords ?? 0) > 0
                     ? (
                         ((data?.absentCount || 0) / (data?.totalRecords || 1)) *
                         100

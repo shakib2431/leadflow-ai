@@ -45,7 +45,7 @@ export default function HRMSSetupPage() {
     }
 
     setup();
-  }, [router]);
+  }, []);
 
   return (
     <div className="hrms-enterprise flex min-h-screen items-center justify-center p-8">

@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Link } from "wouter";
 import { useParams } from "wouter";
 import { Building2, DollarSign, Users, Clock, ArrowLeft, Mail } from "lucide-react";
-import ContactEnrichmentPanel from "../../../components/crm/contact-enrichment-panel";
+import ContactEnrichmentPanel from "@/components/crm/contact-enrichment-panel";
 
 export default function CompanyDetailPage() {
   const params = useParams();

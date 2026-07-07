@@ -451,7 +451,7 @@ export default function ExecutiveDashboard() {
     <div className="flex h-screen bg-slate-100">
       <HRMSSidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0 ml-60">
-        <HRMSTopHeader />
+        <HRMSTopHeader title="" />
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full min-w-0">
           <div className="w-full px-8 py-8 space-y-8 box-border">
             <div className="w-full">

@@ -17,7 +17,7 @@ export default function HRMSUserMenu() {
     setLoading(true);
     await supabase.auth.signOut();
     navigate("/login");
-    router.refresh();
+    window.location.reload();
   }
 
   return (

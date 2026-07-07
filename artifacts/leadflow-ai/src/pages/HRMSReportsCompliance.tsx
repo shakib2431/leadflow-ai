@@ -124,8 +124,8 @@ export default function ComplianceReportsPage() {
         setError(null);
 
         const headers = await authHeaders();
-        const month = parseMonth(filters?.month);
-        const year = parseYear(filters?.year);
+        const month = parseMonth((filters as any)?.month);
+        const year = parseYear((filters as any)?.year);
         const query = new URLSearchParams();
         if (month) query.set("month", String(month));
         if (year) query.set("year", String(year));
@@ -157,7 +157,7 @@ export default function ComplianceReportsPage() {
     return () => {
       cancelled = true;
     };
-  }, [filters?.month, filters?.year]);
+  }, [(filters as any)?.month, (filters as any)?.year]);
 
   const runStatusByPeriod = useMemo(() => {
     const map = new Map<string, string>();
@@ -186,7 +186,7 @@ export default function ComplianceReportsPage() {
     <div className="flex h-screen bg-slate-100">
       <HRMSSidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden ml-60">
-        <HRMSTopHeader />
+        <HRMSTopHeader title="" />
 
         <div className="flex-1 overflow-auto">
           <div className="px-6 py-6 space-y-6">

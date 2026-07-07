@@ -12,7 +12,7 @@ export default function LogoutButton() {
     setLoading(true);
     await supabase.auth.signOut();
     navigate("/login");
-    router.refresh();
+    window.location.reload();
   }
 
   return (

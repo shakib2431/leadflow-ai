@@ -120,7 +120,7 @@ function Router() {
       <Route path="/hrms/v2/roles" component={HRMSRoles} />
       <Route path="/hrms/v2/self-service/offer-acceptance" component={HRMSOfferAcceptance} />
       <Route path="/hrms/v2/self-service/:tab" component={HRMSSelfServiceTab} />
-      <Route path="/hrms/v2/self-service" component={HRMSSelfService} />
+      <Route path="/hrms/v2/self-service">{() => <HRMSSelfService />}</Route>
       <Route path="/hrms/v2/separation" component={HRMSSeparation} />
       <Route path="/hrms/v2/settings" component={HRMSSettings} />
       <Route path="/hrms/v2/setup" component={HRMSSetup} />

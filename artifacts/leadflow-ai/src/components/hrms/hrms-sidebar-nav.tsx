@@ -137,7 +137,7 @@ export default function HRMSSidebarNav() {
       }, 3000);
       return () => window.clearTimeout(timer);
     }
-  }, [isEmployee, loading, pathname, router, serverResolved]);
+  }, [isEmployee, loading, pathname, serverResolved]);
 
   function isActive(item: NavItem) {
     return item.match.some((prefix) => {

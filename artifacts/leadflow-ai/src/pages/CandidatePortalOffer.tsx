@@ -1,7 +1,7 @@
 
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { CheckCircle2, FileText, Loader2, XCircle } from "lucide-react";
 
 type OfferState = "loading" | "ready" | "submitting" | "accepted" | "declined" | "error";

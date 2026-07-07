@@ -25,7 +25,7 @@ export default function PayrollReportsPage() {
     <div className="flex h-screen bg-slate-100">
       <HRMSSidebarNav />
       <div className="flex-1 flex flex-col overflow-hidden ml-60">
-        <HRMSTopHeader />
+        <HRMSTopHeader title="" />
 
         <div className="flex-1 overflow-auto">
           <div className="px-6 py-6 space-y-6">

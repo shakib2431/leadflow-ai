@@ -1,0 +1,74 @@
+Node.js v20.11.1
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>nvm install 22
+Downloading node.js version 22.23.1 (64-bit)... 
+Extracting node and npm...
+Complete
+Installation complete.
+If you want to use this version, type:
+
+nvm use 22.23.1
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>nvm use 22
+Now using node v22.23.1 (64-bit)
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>node -v
+v22.23.1
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>corepack enable pnpm
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm -v
+11.10.0
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>git pull
+remote: Enumerating objects: 28, done.
+remote: Counting objects: 100% (28/28), done.
+remote: Compressing objects: 100% (11/11), done.
+remote: Total 24 (delta 13), reused 24 (delta 13), pack-reused 0 (from 0)
+Unpacking objects: 100% (24/24), 172.50 KiB | 423.00 KiB/s, done.
+From https://github.com/shakib2431/leadflow-ai
+   dc38a85..c6d1551  master     -> origin/master
+Updating dc38a85..c6d1551
+Fast-forward
+ attached_assets/image_1783440390182.png | Bin 0 -> 40629 bytes
+ attached_assets/image_1783440467545.png | Bin 0 -> 69124 bytes
+ attached_assets/image_1783440543299.png | Bin 0 -> 19287 bytes
+ attached_assets/image_1783440585580.png | Bin 0 -> 9638 bytes
+ attached_assets/image_1783440749827.png | Bin 0 -> 56362 bytes
+ pnpm-lock.yaml                          | 119 ++++++++++++++++++++++++++++----
+ pnpm-workspace.yaml                     |  13 ----
+ 7 files changed, 106 insertions(+), 26 deletions(-)
+ create mode 100644 attached_assets/image_1783440390182.png
+ create mode 100644 attached_assets/image_1783440467545.png
+ create mode 100644 attached_assets/image_1783440543299.png
+ create mode 100644 attached_assets/image_1783440585580.png
+ create mode 100644 attached_assets/image_1783440749827.png
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm install
+Scope: all 9 workspace projects
+✓ Lockfile passes supply-chain policies (542 entries in 31.4s)
+Lockfile is up to date, resolution step is skipped
+Packages: +521
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Downloading pdfjs-dist@5.4.296: 9.72 MB/9.72 MB, done
+Downloading @napi-rs/canvas-win32-x64-msvc@0.1.80: 14.76 MB/14.76 MB, done
+[WARN] Request took 10346ms: https://registry.npmjs.org/@radix-ui%2Freact-tooltip
+[WARN] Request took 16743ms: https://registry.npmjs.org/pnpm
+[WARN] Request took 10149ms: https://registry.npmjs.org/@supabase%2Frealtime-js
+[WARN] Request took 10765ms: https://registry.npmjs.org/@supabase%2Fpostgrest-js
+[WARN] Request took 10919ms: https://registry.npmjs.org/@tailwindcss%2Foxide-wasm32-wasi
+[WARN] 13 other warnings
+Downloading react-icons@5.7.0: 22.76 MB/22.76 MB, done
+Progress: resolved 521, reused 0, downloaded 521, added 521, done
+
+devDependencies:
++ prettier 3.8.4
++ typescript 5.9.3
+
+. preinstall$ sh -c 'rm -f package-lock.json yarn.lock; case "$npm_config_user_agent" in pnpm/*) ;; *) echo "Use pnpm instead" >&2; exit 1 ;; esac'
+│ 'sh' is not recognized as an internal or external command,
+│ operable program or batch file.
+└─ Failed in 141ms at C:\Users\paapr\OneDrive\Desktop\leadflow-replit
+[ELIFECYCLE] Command failed with exit code 1.
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>

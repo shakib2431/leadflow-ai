@@ -1,0 +1,53 @@
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>git pull
+remote: Enumerating objects: 11, done.
+remote: Counting objects: 100% (11/11), done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 8 (delta 4), reused 8 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (8/8), 31.70 KiB | 268.00 KiB/s, done.
+From https://github.com/shakib2431/leadflow-ai
+   c6d1551..4526159  master     -> origin/master
+Updating c6d1551..4526159
+Fast-forward
+ ...CURITY-Minimum--1783440919501_1783440919503.txt | 160 +++++++++++++++++++++
+ attached_assets/image_1783440853075.png            | Bin 0 -> 35721 bytes
+ package.json                                       |   2 +-
+ 3 files changed, 161 insertions(+), 1 deletion(-)
+ create mode 100644 attached_assets/Pasted--SECURITY-Minimum--1783440919501_1783440919503.txt
+ create mode 100644 attached_assets/image_1783440853075.png
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm install
+Scope: all 9 workspace projects
+✓ Lockfile passes supply-chain policies (verified 9m ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+. preinstall$ node -e "const fs=require('fs');for(const f of ['package-lock.json','yarn.lock']){try{fs.unlinkSync(f)}catch{}}if(!String(process.env.npm_confi…
+└─ Done in 306ms
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: core-js@3.49.0, esbuild@0.27.3
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm --filter @workspace/leadflow-ai run dev
+Scope: all 9 workspace projects
+✓ Lockfile passes supply-chain policies (verified 9m ago)
+Lockfile is up to date, resolution step is skipped
+Already up to date
+. preinstall$ node -e "const fs=require('fs');for(const f of ['package-lock.json','yarn.lock']){try{fs.unlinkSync(f)}catch{}}if(!String(process.env.npm_confi…
+└─ Done in 247ms
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: core-js@3.49.0, esbuild@0.27.3
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
+[ERROR] Command failed with exit code 1: "C:\nvm4w\nodejs\node.exe" "C:\Users\paapr\AppData\Local\node\corepack\v1\pnpm\11.10.0\bin\pnpm.mjs" install
+
+pnpm: Command failed with exit code 1: "C:\nvm4w\nodejs\node.exe" "C:\Users\paapr\AppData\Local\node\corepack\v1\pnpm\11.10.0\bin\pnpm.mjs" install
+    at getFinalError (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:36339:14)
+    at makeError (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:38646:21)
+    at getSyncResult (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:40490:10)
+    at spawnSubprocessSync (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:40450:14)
+    at execaCoreSync (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:40380:23)
+    at callBoundExeca (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:42908:23)
+    at boundExeca (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:42885:49)
+    at sync (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:43044:10)
+    at runPnpmCli (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:247663:5)
+    at runDepsStatusCheck (file:///C:/Users/paapr/AppData/Local/node/corepack/v1/pnpm/11.10.0/dist/pnpm.mjs:249406:7)
+
+C:\Users\paapr\OneDrive\Desktop\leadflow-replit>pnpm --filter @workspace/leadflow-ai run dev

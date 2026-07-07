@@ -3,13 +3,35 @@
 import { useEffect, useState } from "react";
 import {
   AlertCircle, ArrowRight, Briefcase, CheckCircle2, Clock, DollarSign,
-  FileText, LogOut, Plus, RefreshCw, TrendingUp, UserCheck, Users, UserPlus,
-  Activity, ChevronRight,
+  FileText, LogOut, TrendingUp, UserCheck, Users, UserPlus,
+  Activity, ChevronRight, CalendarCheck, PlayCircle, Settings,
 } from "lucide-react";
 import { Link } from "wouter";
 import { supabase } from "@/lib/supabase";
 import HRMSSidebarNav from "@/components/hrms/hrms-sidebar-nav";
 import HRMSMainNav from "@/components/hrms/hrms-main-nav";
+
+// ─── Palette (matches approved light-theme mockup) ────────────────────────────
+const C = {
+  card:      "#FFFFFF",
+  primary:   "#5B4CF5",
+  primaryLt: "#EEF2FF",
+  emerald:   "#10B981",
+  emeraldLt: "#ECFDF5",
+  amber:     "#F59E0B",
+  amberLt:   "#FFFBEB",
+  rose:      "#EF4444",
+  roseLt:    "#FFF1F2",
+  blue:      "#3B82F6",
+  blueLt:    "#EFF6FF",
+  violet:    "#8B5CF6",
+  violetLt:  "#F5F3FF",
+  border:    "#E8ECF4",
+  pageBg:    "#F4F6FB",
+  text:      "#111827",
+  textSec:   "#6B7280",
+  textMute:  "#9CA3AF",
+};
 
 type PendingTask = {
   type: "leave" | "attendance" | "onboarding" | "payroll" | "exit" | "offer";
@@ -45,7 +67,6 @@ export default function HRAdminDashboardPage() {
     pendingLeave: 0, pendingAttendance: 0, pendingPreOnboarding: 0,
     pendingPayroll: 0, pendingExit: 0, pendingOffers: 0,
   });
-  const [refreshedAt, setRefreshedAt] = useState(new Date());
 
   function authHeaders() {
     return {
@@ -81,11 +102,8 @@ export default function HRAdminDashboardPage() {
       const activeEmpData = activeEmpRes.ok ? await activeEmpRes.json() : { data: [] };
       const onboardingEmpData = onboardingEmpRes.ok ? await onboardingEmpRes.json() : { data: [] };
 
-      // Fetch candidates from supabase
       const { data: candidates } = await supabase.from("candidates").select("id,stage,created_at");
       const allCandidates = candidates || [];
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
       const pendingLeave = leaveData.data?.length || 0;
       const pendingAtt = attData.data?.length || 0;
@@ -94,13 +112,6 @@ export default function HRAdminDashboardPage() {
       const pendingExit = exitData.data?.length || 0;
       const activeEmps = activeEmpData.data?.length || 0;
       const onboardingEmps = onboardingEmpData.data?.length || 0;
-
-      // New hires this month = active employees joined this month (approximate via created_at)
-      const newThisMonth = (activeEmpData.data || []).filter((e: { created_at?: string }) =>
-        e.created_at && e.created_at >= monthStart
-      ).length;
-
-      const totalPending = pendingLeave + pendingAtt + preOnboardQueue + pendingPay + pendingExit;
 
       setStats({
         activeEmployees: activeEmps,
@@ -130,247 +141,231 @@ export default function HRAdminDashboardPage() {
       console.error("Dashboard load failed:", err);
     } finally {
       setLoading(false);
-      setRefreshedAt(new Date());
     }
   }
 
   useEffect(() => { loadDashboard(); }, []);
 
   const totalPending = tasks.reduce((sum, t) => sum + t.count, 0);
-  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const V = (n: number) => (loading ? "—" : String(n));
 
-  const pipelineStages = [
-    { label: "Applied", count: stats.candidateApplied, color: "bg-slate-100 text-slate-700 border-slate-200", dot: "bg-slate-400" },
-    { label: "Interviewing", count: stats.candidateInterviewing, color: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-400" },
-    { label: "Offered", count: stats.candidateOffered, color: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500" },
-    { label: "Offer Accepted", count: stats.candidateHired, color: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-    { label: "Onboarding", count: stats.onboardingEmployees, color: "bg-violet-50 text-violet-700 border-violet-200", dot: "bg-violet-500" },
-    { label: "Active", count: stats.activeEmployees, color: "bg-teal-50 text-teal-700 border-teal-200", dot: "bg-teal-500" },
+  // ── KPI cards (real data) ──
+  const kpis = [
+    { label: "Active Employees", value: V(stats.activeEmployees),    sub: "Currently on payroll",    subColor: C.emerald, accent: C.emerald, icon: Users },
+    { label: "In Onboarding",    value: V(stats.onboardingEmployees), sub: "Being activated",         subColor: C.violet,  accent: C.violet,  icon: UserCheck },
+    { label: "Open Pipeline",    value: V(stats.totalCandidates),     sub: "Candidates in process",   subColor: C.amber,   accent: C.amber,   icon: Briefcase },
+    { label: "Offer Accepted",   value: V(stats.candidateHired),      sub: "This cycle",              subColor: C.emerald, accent: C.primary, icon: CheckCircle2 },
+    { label: "Pending Actions",  value: V(totalPending),              sub: "Requires attention",      subColor: C.rose,    accent: C.rose,    icon: AlertCircle },
+    { label: "Offered",          value: V(stats.candidateOffered),    sub: "Awaiting response",       subColor: C.blue,    accent: C.blue,    icon: TrendingUp },
   ];
 
-  const urgencyColors = {
-    high: { bg: "bg-rose-50 border-rose-200", badge: "bg-rose-500 text-white", icon: "text-rose-600", dot: "bg-rose-500" },
-    medium: { bg: "bg-amber-50 border-amber-200", badge: "bg-amber-500 text-white", icon: "text-amber-600", dot: "bg-amber-500" },
-    low: { bg: "bg-slate-50 border-slate-200", badge: "bg-emerald-500 text-white", icon: "text-slate-400", dot: "bg-emerald-400" },
-  };
+  // ── Hiring pipeline (real data) ──
+  const pipelineStages = [
+    { label: "Applied",      count: stats.candidateApplied,       color: C.blue,    bg: C.blueLt },
+    { label: "Interviewing", count: stats.candidateInterviewing,  color: C.violet,  bg: C.violetLt },
+    { label: "Offered",      count: stats.candidateOffered,       color: C.primary, bg: C.primaryLt },
+    { label: "Accepted",     count: stats.candidateHired,         color: C.amber,   bg: C.amberLt },
+    { label: "Onboarding",   count: stats.onboardingEmployees,    color: C.emerald, bg: C.emeraldLt },
+    { label: "Active",       count: stats.activeEmployees,        color: "#059669", bg: "#D1FAE5" },
+  ];
 
   const quickActions = [
-    { label: "Add Candidate", href: "/team/recruitment", icon: UserPlus, color: "text-indigo-600 bg-indigo-50 border-indigo-200" },
-    { label: "Employee Directory", href: "/team/employees", icon: Users, color: "text-teal-600 bg-teal-50 border-teal-200" },
-    { label: "Process Payroll", href: "/team/payroll", icon: DollarSign, color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-    { label: "Attendance Report", href: "/team/attendance", icon: Activity, color: "text-blue-600 bg-blue-50 border-blue-200" },
-    { label: "Leave Management", href: "/team/leave", icon: Clock, color: "text-amber-600 bg-amber-50 border-amber-200" },
-    { label: "Analytics & Reports", href: "/hrms/v2/reports", icon: TrendingUp, color: "text-violet-600 bg-violet-50 border-violet-200" },
-    { label: "Organization Setup", href: "/hrms/v2/organization", icon: Briefcase, color: "text-slate-600 bg-slate-50 border-slate-200" },
-    { label: "Templates", href: "/hrms/v2/templates", icon: FileText, color: "text-rose-600 bg-rose-50 border-rose-200" },
+    { label: "Add Candidate",     href: "/team/recruitment",     icon: UserPlus,     color: C.primary, bg: C.primaryLt },
+    { label: "Employee Directory",href: "/team/employees",       icon: Users,        color: C.emerald, bg: C.emeraldLt },
+    { label: "Process Payroll",   href: "/team/payroll",         icon: DollarSign,   color: "#059669", bg: "#D1FAE5" },
+    { label: "Attendance",        href: "/team/attendance",      icon: Activity,     color: C.blue,    bg: C.blueLt },
+    { label: "Leave Management",  href: "/team/leave",           icon: Clock,        color: C.amber,   bg: C.amberLt },
+    { label: "Reports",           href: "/hrms/v2/reports",      icon: TrendingUp,   color: C.violet,  bg: C.violetLt },
+    { label: "Organization",      href: "/hrms/v2/organization", icon: Briefcase,    color: C.textSec, bg: "#F3F4F6" },
+    { label: "Templates",         href: "/hrms/v2/templates",    icon: FileText,     color: C.rose,    bg: C.roseLt },
   ];
+
+  const taskColor = (u: PendingTask["urgency"]) =>
+    u === "high" ? { c: C.rose, bg: C.roseLt } : u === "medium" ? { c: C.amber, bg: C.amberLt } : { c: C.emerald, bg: C.emeraldLt };
+
+  const cardStyle: React.CSSProperties = {
+    background: C.card, borderRadius: 12, border: `1px solid ${C.border}`,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
 
   return (
     <>
       <HRMSMainNav />
       <div className="flex h-screen overflow-hidden">
         <HRMSSidebarNav />
-        <main className="hrms-enterprise flex-1 overflow-y-auto bg-slate-50/50">
-          <div className="w-full px-4 py-6 md:px-8 md:py-8">
-            <div className="w-full hrms-main-with-nav">
+        <main className="hrms-enterprise flex-1 overflow-y-auto" style={{ background: C.pageBg }}>
+          <div className="w-full px-4 py-6 md:px-8 md:py-6">
+            <div className="w-full hrms-main-with-nav" style={{ fontFamily: "'Inter', sans-serif" }}>
 
-        {/* ── Header ── */}
-        <div className="mb-4">
-          <h1 className="text-xl font-bold text-slate-900">HR Command Center</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Real-time workforce overview</p>
-        </div>
-
-        {/* ── KPI Strip ── */}
-        <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-          <article className="hrms-kpi-card hrms-kpi-1">
-            <div className="hrms-kpi-icon"><Users size={16} /></div>
-            <p className="hrms-section-label">Active Employees</p>
-            <p className="hrms-kpi-value">{loading ? "—" : stats.activeEmployees}</p>
-          </article>
-          <article className="hrms-kpi-card hrms-kpi-4">
-            <div className="hrms-kpi-icon"><UserCheck size={16} /></div>
-            <p className="hrms-section-label">In Onboarding</p>
-            <p className="hrms-kpi-value">{loading ? "—" : stats.onboardingEmployees}</p>
-          </article>
-          <article className="hrms-kpi-card hrms-kpi-2">
-            <div className="hrms-kpi-icon"><Briefcase size={16} /></div>
-            <p className="hrms-section-label">Open Pipeline</p>
-            <p className="hrms-kpi-value">{loading ? "—" : stats.totalCandidates}</p>
-          </article>
-          <article className="hrms-kpi-card hrms-kpi-5">
-            <div className="hrms-kpi-icon"><CheckCircle2 size={16} /></div>
-            <p className="hrms-section-label">Offer Accepted This Cycle</p>
-            <p className="hrms-kpi-value">{loading ? "—" : stats.candidateHired}</p>
-          </article>
-          <article className="hrms-kpi-card hrms-kpi-3">
-            <div className="hrms-kpi-icon"><AlertCircle size={16} /></div>
-            <p className="hrms-section-label">Pending Actions</p>
-            <p className="hrms-kpi-value">{loading ? "—" : totalPending}</p>
-          </article>
-          <article className="hrms-kpi-card hrms-kpi-4">
-            <div className="hrms-kpi-icon"><TrendingUp size={16} /></div>
-            <p className="hrms-section-label">Offered</p>
-            <p className="hrms-kpi-value">{loading ? "—" : stats.candidateOffered}</p>
-          </article>
-        </section>
-
-        {/* ── Hiring Lifecycle Pipeline ── */}
-        <section className="hrms-dashboard-shell">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Hiring-to-Activation Pipeline</h2>
-              <p className="text-xs text-slate-500 mt-0.5">End-to-end journey: from first application to active employee</p>
-            </div>
-            <Link to="/team/recruitment" className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">
-              Open Recruitment <ChevronRight size={13} />
-            </Link>
-          </div>
-          <div className="flex items-stretch gap-2 overflow-x-auto pb-1">
-            {pipelineStages.map((stage, idx) => (
-              <div key={stage.label} className="flex items-center gap-2 min-w-0">
-                <div className={`flex-shrink-0 min-w-[110px] rounded-xl border px-4 py-3 text-center ${stage.color}`}>
-                  <div className="flex items-center justify-center gap-1.5 mb-1">
-                    <div className={`w-2 h-2 rounded-full ${stage.dot}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wide">{stage.label}</span>
-                  </div>
-                  <div className="text-2xl font-black">{loading ? "—" : stage.count}</div>
+              {/* ── Greeting ── */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0 }}>HR Command Center</h1>
+                  <p style={{ fontSize: 13, color: C.textMute, marginTop: 2 }}>
+                    {loading ? "Loading workforce overview…" : (
+                      <>You have <span style={{ color: C.amber, fontWeight: 600 }}>{totalPending} pending action{totalPending !== 1 ? "s" : ""}</span> waiting today.</>
+                    )}
+                  </p>
                 </div>
-                {idx < pipelineStages.length - 1 && (
-                  <ArrowRight size={16} className="text-slate-300 flex-shrink-0" />
-                )}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <Badge label={`● ${V(stats.activeEmployees)} Active`} color={C.emerald} bg={C.emeraldLt} />
+                  <Badge label={`${V(stats.onboardingEmployees)} Onboarding`} color={C.primary} bg={C.primaryLt} />
+                  <Badge label={`${V(totalPending)} Actions`} color={C.amber} bg={C.amberLt} />
+                </div>
               </div>
-            ))}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Link to="/team/recruitment" className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition">
-              <Briefcase size={12} /> Recruitment Board
-            </Link>
-            <Link to="/team/offer-management" className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition">
-              <FileText size={12} /> Offer Management
-            </Link>
-            <Link to="/team/pre-onboarding" className="inline-flex items-center gap-1.5 rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition">
-              <UserCheck size={12} /> Pre-Onboarding
-            </Link>
-            <Link to="/team/onboarding" className="inline-flex items-center gap-1.5 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition">
-              <UserPlus size={12} /> Activate Employees
-            </Link>
-          </div>
-        </section>
 
-        {/* ── Pending Approvals + Quick Actions ── */}
-        <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-
-          {/* Pending Approvals */}
-          <section className="hrms-dashboard-shell">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-bold text-slate-900">Pending Approvals</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Items awaiting your review and action</p>
-              </div>
-              {totalPending > 0 && (
-                <span className="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-bold text-rose-700 border border-rose-200">
-                  {totalPending} pending
-                </span>
-              )}
-            </div>
-
-            {loading ? (
-              <div className="space-y-2">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-slate-100 animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((task) => {
-                  const uc = urgencyColors[task.urgency];
+              {/* ── KPI Row ── */}
+              <section style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="hrms-kpi-grid">
+                {kpis.map((k) => {
+                  const Icon = k.icon;
                   return (
-                    <Link key={task.type} href={task.href}>
-                      <div className={`flex items-center justify-between rounded-xl border p-4 hover:shadow-md transition cursor-pointer ${uc.bg}`}>
-                        <div className="flex items-center gap-3">
-                          <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${uc.bg}`}>
-                            <task.icon size={16} className={uc.icon} />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-slate-900">{task.label}</p>
-                            <p className="text-xs text-slate-500">
-                              {task.count === 0 ? "No pending items" : `${task.count} item${task.count !== 1 ? "s" : ""} pending`}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${task.count > 0 ? uc.badge : "bg-slate-200 text-slate-600"}`}>
-                            {task.count}
-                          </span>
-                          <ChevronRight size={14} className="text-slate-400" />
+                    <div key={k.label} style={{ ...cardStyle, padding: "16px 18px", borderLeft: `3px solid ${k.accent}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.04em" }}>{k.label}</div>
+                        <div style={{ width: 32, height: 32, borderRadius: 9, background: k.accent + "18", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <Icon size={16} color={k.accent} />
                         </div>
                       </div>
-                    </Link>
+                      <div style={{ fontSize: 28, fontWeight: 800, color: C.text, lineHeight: 1, marginTop: 8 }}>{k.value}</div>
+                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 500, color: k.subColor }}>{k.sub}</div>
+                    </div>
                   );
                 })}
-              </div>
-            )}
+              </section>
 
-            {!loading && totalPending === 0 && (
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-                <CheckCircle2 className="mx-auto mb-2 text-emerald-500" size={32} />
-                <p className="font-semibold text-emerald-800">All caught up!</p>
-                <p className="text-xs text-emerald-600 mt-1">No pending approvals at this time.</p>
-              </div>
-            )}
-          </section>
-
-          {/* Quick Actions */}
-          <section className="hrms-dashboard-shell flex flex-col gap-4">
-            <div>
-              <h2 className="text-base font-bold text-slate-900">Quick Actions</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Jump to any module instantly</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {quickActions.map((action) => (
-                <Link key={action.label} href={action.href}>
-                  <div className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-3 text-center hover:shadow-md transition cursor-pointer ${action.color}`}>
-                    <action.icon size={20} />
-                    <span className="text-xs font-semibold leading-tight">{action.label}</span>
+              {/* ── Hiring Pipeline ── */}
+              <section style={{ ...cardStyle, padding: 20 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                  <div>
+                    <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Hiring-to-Activation Pipeline</h2>
+                    <p style={{ fontSize: 12, color: C.textMute, marginTop: 2 }}>From first application to active employee</p>
                   </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
+                  <Link to="/team/recruitment" style={{ fontSize: 12, color: C.primary, fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                    Open Recruitment <ChevronRight size={13} />
+                  </Link>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", marginBottom: 16 }}>
+                  {pipelineStages.map((s, i) => (
+                    <div key={s.label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+                      <div style={{ flex: 1, textAlign: "center" }}>
+                        <div style={{ width: 52, height: 52, borderRadius: "50%", background: s.bg, border: `2px solid ${s.color}22`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 6px", fontSize: 18, fontWeight: 800, color: s.color }}>
+                          {loading ? "—" : s.count}
+                        </div>
+                        <div style={{ fontSize: 10, fontWeight: 600, color: C.textMute, textTransform: "uppercase", letterSpacing: "0.04em" }}>{s.label}</div>
+                      </div>
+                      {i < pipelineStages.length - 1 && (
+                        <div style={{ width: 24, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+                          <ArrowRight size={15} color={C.textMute} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 8, borderTop: `1px solid ${C.border}`, paddingTop: 14, flexWrap: "wrap" }}>
+                  {[
+                    { label: "Recruitment Board", href: "/team/recruitment", icon: Briefcase },
+                    { label: "Offer Management", href: "/team/offer-management", icon: FileText },
+                    { label: "Pre-Onboarding", href: "/team/pre-onboarding", icon: UserCheck },
+                    { label: "Activate Employees", href: "/team/onboarding", icon: UserPlus },
+                  ].map((b) => {
+                    const Icon = b.icon;
+                    return (
+                      <Link key={b.label} to={b.href} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.pageBg, fontSize: 12, fontWeight: 500, color: C.textSec }}>
+                        <Icon size={13} /> {b.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
 
-        {/* ── Lifecycle Flow Guide ── */}
-        <section className="hrms-dashboard-shell">
-          <h2 className="text-base font-bold text-slate-900 mb-4">Recruitment-to-Activation Flow</h2>
-          <div className="flex flex-wrap gap-2 items-center">
-            {[
-              { label: "Add Candidate", href: "/team/recruitment", color: "bg-slate-100 text-slate-700 border-slate-200" },
-              { label: "Move to Offered", href: "/team/recruitment", color: "bg-amber-50 text-amber-700 border-amber-200" },
-              { label: "Hire & Create Employee", href: "/team/recruitment", color: "bg-blue-50 text-blue-700 border-blue-200" },
-              { label: "Send Offer Letter", href: "/team/offer-management", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-              { label: "Employee Signs", href: "/team/offer-management", color: "bg-violet-50 text-violet-700 border-violet-200" },
-              { label: "Pre-Onboarding Form", href: "/team/pre-onboarding", color: "bg-pink-50 text-pink-700 border-pink-200" },
-              { label: "HR Reviews", href: "/team/onboarding", color: "bg-orange-50 text-orange-700 border-orange-200" },
-              { label: "Activate Employee", href: "/team/onboarding", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-              { label: "Employee Directory", href: "/team/employees", color: "bg-teal-50 text-teal-700 border-teal-200" },
-            ].map((step, idx, arr) => (
-              <div key={step.label} className="flex items-center gap-2">
-                <Link to={step.href}>
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold hover:shadow-sm transition ${step.color}`}>
-                    <span className="text-[10px] font-black opacity-60">{idx + 1}</span>
-                    {step.label}
-                  </span>
-                </Link>
-                {idx < arr.length - 1 && <ArrowRight size={12} className="text-slate-300 flex-shrink-0" />}
+              {/* ── Pending Approvals + Quick Actions ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }} className="hrms-lower-grid">
+
+                {/* Pending Approvals */}
+                <section style={{ ...cardStyle, padding: 20 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                    <div>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Pending Approvals</h2>
+                      <p style={{ fontSize: 12, color: C.textMute, marginTop: 2 }}>Items awaiting your review and action</p>
+                    </div>
+                    {totalPending > 0 && <Badge label={`${totalPending} pending`} color={C.rose} bg={C.roseLt} />}
+                  </div>
+
+                  {loading ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {[1, 2, 3].map((i) => <div key={i} style={{ height: 60, borderRadius: 10, background: "#F1F5F9" }} className="animate-pulse" />)}
+                    </div>
+                  ) : totalPending === 0 ? (
+                    <div style={{ borderRadius: 12, border: `1px solid ${C.emerald}33`, background: C.emeraldLt, padding: 28, textAlign: "center" }}>
+                      <CheckCircle2 style={{ margin: "0 auto 8px" }} color={C.emerald} size={30} />
+                      <p style={{ fontWeight: 600, color: "#065F46", margin: 0 }}>All caught up!</p>
+                      <p style={{ fontSize: 12, color: C.emerald, marginTop: 4 }}>No pending approvals at this time.</p>
+                    </div>
+                  ) : (
+                    <div>
+                      {tasks.map((task, idx) => {
+                        const tc = taskColor(task.urgency);
+                        const Icon = task.icon;
+                        return (
+                          <Link key={task.type} href={task.href}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 0", borderBottom: idx < tasks.length - 1 ? `1px solid ${C.border}` : "none", cursor: "pointer" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 9, background: tc.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                  <Icon size={16} className="" />
+                                </div>
+                                <div>
+                                  <p style={{ fontSize: 13, fontWeight: 600, color: C.text, margin: 0 }}>{task.label}</p>
+                                  <p style={{ fontSize: 11, color: C.textMute, margin: 0 }}>
+                                    {task.count === 0 ? "No pending items" : `${task.count} item${task.count !== 1 ? "s" : ""} pending`}
+                                  </p>
+                                </div>
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ borderRadius: 20, padding: "2px 9px", fontSize: 12, fontWeight: 700, background: task.count > 0 ? tc.bg : "#F1F5F9", color: task.count > 0 ? tc.c : C.textSec }}>{task.count}</span>
+                                <ChevronRight size={14} color={C.textMute} />
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
+
+                {/* Quick Actions */}
+                <section style={{ ...cardStyle, padding: 20 }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: "0 0 14px" }}>Quick Actions</h2>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {quickActions.map((a) => {
+                      const Icon = a.icon;
+                      return (
+                        <Link key={a.label} href={a.href}>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "14px 8px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.pageBg, cursor: "pointer", textAlign: "center" }}>
+                            <div style={{ width: 34, height: 34, borderRadius: 9, background: a.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Icon size={16} color={a.color} />
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 500, color: C.text, lineHeight: 1.3 }}>{a.label}</span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
               </div>
-            ))}
-          </div>
-        </section>
 
             </div>
           </div>
         </main>
       </div>
     </>
+  );
+}
+
+// ─── Small badge helper ───────────────────────────────────────────────────────
+function Badge({ label, color, bg }: { label: string; color: string; bg: string }) {
+  return (
+    <span style={{ background: bg, color, fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20 }}>
+      {label}
+    </span>
   );
 }
